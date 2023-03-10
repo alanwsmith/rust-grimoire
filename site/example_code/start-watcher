@@ -1,0 +1,6 @@
+fswatch --event Updated -e ".*" -i "\.rs$" -0 "./src/bin" \
+  | xargs -0 -I{} basename {} ".rs" \
+  | xargs -I{} sh -c \
+  'export RUNFILE="{}" && clear && echo "----------------------------------" && cargo run --bin $RUNFILE'
+
+
