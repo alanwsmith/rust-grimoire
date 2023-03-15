@@ -4,6 +4,8 @@ use nom::character::complete::not_line_ending;
 use nom::multi::many0;
 use nom::IResult;
 
+// TODO: rename this file from _take_until_ to _many0
+
 fn main() {
     let source = ">> target1\n>> target2\nexcluded text";
     let expected: Vec<&str> = vec!["target1", "target2"];
