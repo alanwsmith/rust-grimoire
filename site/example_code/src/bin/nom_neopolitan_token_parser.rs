@@ -15,7 +15,7 @@ use nom::sequence::tuple;
 use nom::IResult;
 // use nom::Parser;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 enum RawBlock {
     Title { text: String },
     P { text: String },
@@ -23,9 +23,19 @@ enum RawBlock {
 }
 
 fn main() {
+    println!("Testing...");
     let source = "-> TITLE\n\na title\n\n-> P\n\nsome\n\nparagraphs";
-    let parts = split_tokens(source);
-    dbg!(parts);
+    let expected: Vec<RawBlock> = vec![
+        RawBlock::Title {
+            text: "a title".to_string(),
+        },
+        RawBlock::P {
+            text: "some\n\nparagraphs".to_string(),
+        },
+    ];
+    assert_eq!(expected, split_tokens(source));
+
+    println!("Process complete");
 }
 
 fn split_tokens(source: &str) -> Vec<RawBlock> {
@@ -34,9 +44,9 @@ fn split_tokens(source: &str) -> Vec<RawBlock> {
 }
 
 fn do_split(source: &str) -> IResult<&str, RawBlock> {
-    dbg!(source);
+    //dbg!(source);
     let (source, _) = multispace0(source)?;
-    dbg!(source);
+    // dbg!(source);
     let (source, _) = tag("-> ")(source)?;
     let (source, value) = tuple((
         alt((tag("TITLE"), tag("P"))),
@@ -55,6 +65,5 @@ fn do_split(source: &str) -> IResult<&str, RawBlock> {
             text: value.2.to_string(),
         },
     };
-    // dbg!(source);
     Ok((source, response))
 }
