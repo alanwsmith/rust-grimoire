@@ -28,6 +28,8 @@ fn main() {
     // as the first or last word of the file if there's
     // no padding.
 
+    // TODO: Cover the end of line versions.
+
     // // TODO: Fix this (shouldn't turn into
     // // an `em`` because the closing `_`` isn't
     // // connected to the text
@@ -53,13 +55,17 @@ fn main() {
     parse(&mut p);
     assert_eq!(" <<em|alfa>> bravo <<em|charlie>> ".to_string(), p.text);
 
-    p.text = " alfa _bravo_ charlie ".to_string();
+    p.text = "alfa _bravo_ charlie".to_string();
     parse(&mut p);
-    assert_eq!(" alfa <<em|bravo>> charlie ".to_string(), p.text);
+    assert_eq!("alfa <<em|bravo>> charlie".to_string(), p.text);
 
-    p.text = " delta ".to_string();
+    p.text = "alfa _bravo\ncharlie_ delta".to_string();
     parse(&mut p);
-    assert_eq!(" delta ".to_string(), p.text);
+    assert_eq!("alfa <<em|bravo\ncharlie>> delta".to_string(), p.text);
+
+    p.text = "delta".to_string();
+    parse(&mut p);
+    assert_eq!("delta".to_string(), p.text);
 
     p.text = " *delta* ".to_string();
     parse(&mut p);
@@ -76,9 +82,13 @@ fn main() {
         p.text
     );
 
-    p.text = " delta *echo* foxtrot ".to_string();
+    p.text = "delta *echo* foxtrot".to_string();
     parse(&mut p);
-    assert_eq!(" delta <<strong|echo>> foxtrot ".to_string(), p.text);
+    assert_eq!("delta <<strong|echo>> foxtrot".to_string(), p.text);
+
+    p.text = "delta *echo\nfoxtrot* golf".to_string();
+    parse(&mut p);
+    assert_eq!("delta <<strong|echo\nfoxtrot>> golf".to_string(), p.text);
 
     println!("Process complete");
 
@@ -114,13 +124,13 @@ fn preprocess_ems(source: &str) -> IResult<&str, Vec<&str>> {
 fn preprocess_strongs(source: &str) -> IResult<&str, Vec<&str>> {
     let (source, value) = alt((
         pair(
-            take_until("*"),
-            delimited(char('*'), take_until("*"), char('*')),
+            take_until(" *"),
+            delimited(tag(" *"), take_until("*"), tag("* ")),
         ),
         tuple((rest, rest)),
     ))(source)?;
     if value.1.len() > 0 {
-        Ok((source, vec![value.0, "<<strong|", value.1, ">>"]))
+        Ok((source, vec![value.0, " <<strong|", value.1, ">> "]))
     } else {
         Ok((source, vec![value.0]))
     }
