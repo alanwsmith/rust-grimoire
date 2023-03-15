@@ -1,6 +1,6 @@
 #![allow(warnings)]
 use nom::branch::alt;
-use nom::bytes::complete::tag;
+// use nom::bytes::complete::tag;
 use nom::bytes::complete::take_until;
 use nom::character::complete::char;
 use nom::combinator::eof;
@@ -13,6 +13,10 @@ use nom::sequence::tuple;
 use nom::IResult;
 // use nom::Parser;
 
+// GOAL here is to prep the text for both `_`` and
+// `*`` preprocessed so they are ready to go.
+//
+
 #[derive(Debug)]
 struct Page {
     text: String,
@@ -20,73 +24,10 @@ struct Page {
 
 fn main() {
     let mut p = Page {
-        text: "".to_string(),
+        text: "alfa _bravo_ *charlie* _delta_ *echo* foxtrot".to_string(),
     };
-
-    // NOTE: The parsing requires a space in front
-    // of and behind the semaphores. It doesn't work
-    // as the first or last word of the file if there's
-    // no padding.
-
-    // // TODO: Fix this (shouldn't turn into
-    // // an `em`` because the closing `_`` isn't
-    // // connected to the text
-    // p.text = " _alfa _ ".to_string();
-    // parse(&mut p);
-    // assert_eq!(" _alfa _ ".to_string(), p.text);
-
-    println!("Testing...");
-
-    p.text = "alfa".to_string();
     parse(&mut p);
-    assert_eq!("alfa".to_string(), p.text);
-
-    p.text = " _alfa_ ".to_string();
-    parse(&mut p);
-    assert_eq!(" <<em|alfa>> ".to_string(), p.text);
-
-    p.text = " _alfa bravo_ ".to_string();
-    parse(&mut p);
-    assert_eq!(" <<em|alfa bravo>> ".to_string(), p.text);
-
-    p.text = " _alfa_ bravo _charlie_ ".to_string();
-    parse(&mut p);
-    assert_eq!(" <<em|alfa>> bravo <<em|charlie>> ".to_string(), p.text);
-
-    p.text = " alfa _bravo_ charlie ".to_string();
-    parse(&mut p);
-    assert_eq!(" alfa <<em|bravo>> charlie ".to_string(), p.text);
-
-    p.text = " delta ".to_string();
-    parse(&mut p);
-    assert_eq!(" delta ".to_string(), p.text);
-
-    p.text = " *delta* ".to_string();
-    parse(&mut p);
-    assert_eq!(" <<strong|delta>> ".to_string(), p.text);
-
-    p.text = " *delta echo* ".to_string();
-    parse(&mut p);
-    assert_eq!(" <<strong|delta echo>> ".to_string(), p.text);
-
-    p.text = " *delta* echo *foxtrot* ".to_string();
-    parse(&mut p);
-    assert_eq!(
-        " <<strong|delta>> echo <<strong|foxtrot>> ".to_string(),
-        p.text
-    );
-
-    p.text = " delta *echo* foxtrot ".to_string();
-    parse(&mut p);
-    assert_eq!(" delta <<strong|echo>> foxtrot ".to_string(), p.text);
-
-    println!("Process complete");
-
-    // let mut p = Page {
-    //     text: "alfa _bravo_ *charlie* _delta_ *echo* foxtrot".to_string(),
-    // };
-    // parse(&mut p);
-    // dbg!(p);
+    dbg!(p);
 }
 
 fn parse(p: &mut Page) {
@@ -99,13 +40,13 @@ fn parse(p: &mut Page) {
 fn preprocess_ems(source: &str) -> IResult<&str, Vec<&str>> {
     let (source, value) = alt((
         pair(
-            take_until(" _"),
-            delimited(tag(" _"), take_until("_ "), tag("_ ")),
+            take_until("_"),
+            delimited(char('_'), take_until("_"), char('_')),
         ),
         tuple((rest, rest)),
     ))(source)?;
     if value.1.len() > 0 {
-        Ok((source, vec![value.0, " <<em|", value.1, ">> "]))
+        Ok((source, vec![value.0, "<<em|", value.1, ">>"]))
     } else {
         Ok((source, vec![value.0]))
     }
