@@ -78,9 +78,7 @@ The straw nest housed five robins.
 
     let mut results: Vec<&str> = vec![];
 
-    while let Ok((next, grabbed)) =
-        grab_content(input)
-    {
+    while let Ok((next, grabbed)) = grab_content(input) {
         results.push(grabbed);
         input = next;
     }

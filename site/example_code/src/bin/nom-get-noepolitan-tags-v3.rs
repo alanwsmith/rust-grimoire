@@ -25,8 +25,7 @@ With a second line
 
 This is another header"#;
 
-    while let Ok((next, (token, content))) =
-        get_stuff(s)
+    while let Ok((next, (token, content))) = get_stuff(s)
     {
         dbg!(token);
         dbg!(content);
@@ -35,9 +34,7 @@ This is another header"#;
     }
 }
 
-fn get_stuff(
-    data: &str,
-) -> IResult<&str, (&str, &str)> {
+fn get_stuff(data: &str) -> IResult<&str, (&str, &str)> {
     let (data, _) = multispace0(data)?;
     let (data, _) = tag("-> ")(data)?;
     let (data, token) = alphanumeric1(data)?;
@@ -45,7 +42,7 @@ fn get_stuff(
     let (data, _) = multispace1(data)?;
 
     let (data, content) =
-        alt((take_until1("\n\n-> "), rest))(data)?;
+        alt((take_until1("\n\n-> P"), rest))(data)?;
     // dbg!(data);
     // dbg!(content);
 

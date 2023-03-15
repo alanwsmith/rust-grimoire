@@ -54,13 +54,13 @@ enum Kind {
 
 fn main() {
     println!("Starting...");
-    let input = "-> P\n\nthe quick\n-> P\n\nbrown fox";
+    let input = "-> P\n\nthe quick-> P\n\nbrown fox";
     let mut page = Node {
         kind: Kind::Page,
         children: vec![],
         text: vec![],
     };
-    let mut lex = Token::lexer(&input);
+    let mut lex = Token::lexer(&input).peekable();
     parse_next(&mut lex, &mut page);
     dbg!(&page);
     println!("Done.");
@@ -68,49 +68,66 @@ fn main() {
 
 fn parse_next(
     mut lex: &mut dyn Iterator<Item = Token>,
-    mut node: &mut Node,
+    mut parent: &mut Node,
 ) {
-    let mut inner_lex = lex.peekable();
+    // fn parse_next(
+    //     mut lex: &mut dyn Logos<
+    //         Extras = dyn Default,
+    //         Source = &str,
+    //     >,
+    //     mut parent: &mut Node,
+    // ) {
 
-    match inner_lex.peek() {
-        Some(Token::Paragraph) => {
-            println!("Peek Paragraph");
-        }
-        Some(Token::Word(text)) => {
-            println!("Peek Word: {}", text);
-        }
-        Some(Token::Space) => {
-            println!("Peek Space");
-        }
-        Some(Token::Error) => {
-            println!("Peek Error");
-        }
-        None => {
-            println!("NONE");
-        }
-    }
+    // let mut inner_lex = lex.peekable();
+    let mut inner_lex = lex;
+    let the_peek = &inner_lex.peekable().peek();
+    let the_next = &inner_lex.next();
 
-    match inner_lex.next() {
+    match the_next {
         Some(Token::Paragraph) => {
             println!("- Next Paragraph");
-            parse_next(&mut lex, &mut node);
+            let mut paragraph = Node {
+                kind: Kind::Paragraph,
+                children: vec![],
+                text: vec![],
+            };
+            parse_next(&mut inner_lex, &mut paragraph);
         }
         Some(Token::Word(text)) => {
+            parent.text.push(text.to_string());
             println!("- Next Word: {}", text);
-            parse_next(&mut lex, &mut node);
+            parse_next(&mut inner_lex, &mut parent);
         }
         Some(Token::Space) => {
             println!("- Next Space");
-            parse_next(&mut lex, &mut node);
+            parse_next(&mut inner_lex, &mut parent);
         }
         Some(Token::Error) => {
             println!("- Next Error");
-            parse_next(&mut lex, &mut node);
+            parse_next(&mut inner_lex, &mut parent);
         }
         None => {
             println!("IS DONE");
         }
     }
+
+    // match the_peek {
+    //     Some(Token::Paragraph) => {
+    //         println!("Peek Paragraph");
+    //     }
+    //     Some(Token::Word(text)) => {
+    //         println!("Peek Word: {}", text);
+    //     }
+    //     Some(Token::Space) => {
+    //         println!("Peek Space");
+    //     }
+    //     Some(Token::Error) => {
+    //         println!("Peek Error");
+    //     }
+    //     None => {
+    //         println!("NONE");
+    //     }
+    // }
 
     // dbg!(inner_lex.peek());
     // dbg!(inner_lex.peek());

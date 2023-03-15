@@ -19,6 +19,8 @@ fn grab_until() -> Option<String> {
     let result: IResult<&str, &str> =
         take_until(search)(text);
 
+
+
     match result {
         Ok(value) => Some(String::from(value.0)),
         Err(_) => None,
