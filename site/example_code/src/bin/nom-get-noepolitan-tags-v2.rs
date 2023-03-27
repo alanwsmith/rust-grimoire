@@ -36,20 +36,14 @@ This is some content"#;
     };
 }
 
-fn get_stuff(
-    data: &str,
-) -> IResult<&str, (&str, &str)> {
+fn get_stuff(data: &str) -> IResult<&str, (&str, &str)> {
     let (data, _) = multispace0(data)?;
     let (data, _) = tag("-> ")(data)?;
     let (data, token) = alphanumeric1(data)?;
     dbg!(token);
     let (data, _) = multispace1(data)?;
-
-    let (data, content) =
-        alt((take_until1("\n\n-> "), rest))(data)?;
-
+    let (data, content) = alt((take_until1("\n\n-> "), rest))(data)?;
     dbg!(data);
     dbg!(content);
-
     Ok((data, (token, content)))
 }
