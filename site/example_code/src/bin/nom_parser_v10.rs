@@ -3,8 +3,10 @@ use nom::bytes::complete::tag;
 use nom::bytes::complete::tag_no_case;
 use nom::bytes::complete::take_till;
 use nom::bytes::complete::take_until;
+use nom::character::complete::multispace0;
 use nom::character::complete::multispace1;
 use nom::combinator::eof;
+use nom::combinator::rest;
 use nom::error::Error;
 use nom::multi::many_till;
 use nom::sequence::tuple;
@@ -19,6 +21,7 @@ enum Wrapper {
 #[derive(Debug, PartialEq)]
 enum Section {
     Title { children: Vec<Block> },
+    Paragraphs { children: Vec<Block> },
 }
 
 #[derive(Debug, PartialEq)]
@@ -33,34 +36,70 @@ enum Content {
     Space,
 }
 
+// #[derive(Debug, PartialEq)]
+// enum Trigger {
+//     Title,
+//     Paragraphs,
+// }
+
 fn main() {
-    let lines = vec!["-> title", "", "quick <<link|example.com|brown>> fox"].join("\n");
+    let lines = vec![
+        "-> title",
+        "",
+        "quick <<link|example.com|brown>> fox",
+        "",
+        "-> p",
+        "",
+        "the book cover",
+    ]
+    .join("\n");
     let source = lines.as_str();
     let expected = Wrapper::Page {
-        children: vec![Section::Title {
-            children: vec![Block::P {
-                children: vec![
-                    Content::Text {
-                        text: "quick".to_string(),
-                    },
-                    Content::Space,
-                    Content::Link {
-                        text: "brown".to_string(),
-                        url: "example.com".to_string(),
-                    },
-                    Content::Space,
-                    Content::Text {
-                        text: "fox".to_string(),
-                    },
-                ],
-            }],
-        }],
+        children: vec![
+            Section::Title {
+                children: vec![Block::P {
+                    children: vec![
+                        Content::Text {
+                            text: "quick".to_string(),
+                        },
+                        Content::Space,
+                        Content::Link {
+                            text: "brown".to_string(),
+                            url: "example.com".to_string(),
+                        },
+                        Content::Space,
+                        Content::Text {
+                            text: "fox".to_string(),
+                        },
+                    ],
+                }],
+            },
+            Section::Paragraphs {
+                children: vec![Block::P {
+                    children: vec![
+                        Content::Text {
+                            text: "the".to_string(),
+                        },
+                        Content::Space,
+                        Content::Text {
+                            text: "book".to_string(),
+                        },
+                        Content::Space,
+                        Content::Text {
+                            text: "cover".to_string(),
+                        },
+                    ],
+                }],
+            },
+        ],
     };
     let result = parse(source).unwrap().1;
     assert_eq!(expected, result);
+    println!("Process complete");
 }
 
 fn parse(source: &str) -> IResult<&str, Wrapper> {
+    dbg!(source);
     let (_, sections) = many_till(section, eof)(source)?;
     let expected = Wrapper::Page {
         children: sections.0,
@@ -69,15 +108,58 @@ fn parse(source: &str) -> IResult<&str, Wrapper> {
 }
 
 fn section(source: &str) -> IResult<&str, Section> {
-    let (source, _) = tag("-> title\n\n")(source)?;
-    let (_, blocks) = many_till(block, eof)(source)?;
-    Ok(("", Section::Title { children: blocks.0 }))
+    dbg!(source);
+    let (source, _) = multispace0(source)?;
+    let (remainder, sec) = alt((
+        tuple((tag("-> title\n\n"), alt((take_until("\n\n-> "), rest)))).map(|t| {
+            let (_, b) = many_till(block, eof)(t.1).unwrap();
+            Section::Title { children: b.0 }
+        }),
+        tuple((tag("-> p\n\n"), alt((take_until("\n\n-> "), rest)))).map(|t| {
+            let (_, b) = many_till(block, eof)(t.1).unwrap();
+            Section::Paragraphs { children: b.0 }
+        }),
+        // tag("-> p\n\n").map(|_| Trigger::Paragraphs),
+    ))(source)?;
+
+    // .map(|(a, b)| match b {
+    //     Trigger::Title => {
+    //         let (remainder, blocks) = many_till(block, eof)(a).unwrap();
+    //         (remainder, Section::Title { children: blocks.0 })
+    //     }
+    //     Trigger::Paragraphs => {
+    //         let (remainder, blocks) = many_till(block, eof)(a).unwrap();
+    //         (remainder, Section::Paragraphs { children: blocks.0 })
+    //     }
+    // })?;
+
+    Ok((remainder, sec))
 }
 
+// fn section(source: &str) -> IResult<&str, Section> {
+//     dbg!(source);
+//     let (remainder, sec) = alt((
+//         tag("-> title\n\n").map(|_| Trigger::Title),
+//         tag("-> p\n\n").map(|_| Trigger::Paragraphs),
+//     ))(source)
+//     .map(|(a, b)| match b {
+//         Trigger::Title => {
+//             let (remainder, blocks) = many_till(block, eof)(a).unwrap();
+//             (remainder, Section::Title { children: blocks.0 })
+//         }
+//         Trigger::Paragraphs => {
+//             let (remainder, blocks) = many_till(block, eof)(a).unwrap();
+//             (remainder, Section::Paragraphs { children: blocks.0 })
+//         }
+//     })?;
+//     Ok((remainder, sec))
+// }
+
 fn block(source: &str) -> IResult<&str, Block> {
-    let (_, content) = many_till(content, eof)(source)?;
+    dbg!(source);
+    let (remainder, content) = many_till(content, alt((tag("\n\n"), eof)))(source)?;
     Ok((
-        "",
+        remainder,
         Block::P {
             children: content.0,
         },
@@ -85,6 +167,7 @@ fn block(source: &str) -> IResult<&str, Block> {
 }
 
 fn content(source: &str) -> IResult<&str, Content> {
+    dbg!(source);
     let (remainder, content) = alt((
         tuple((
             // I'm not sure if this is the right way to
