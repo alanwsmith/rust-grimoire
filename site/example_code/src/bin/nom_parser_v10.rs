@@ -51,6 +51,9 @@ fn main() {
         "-> p",
         "",
         "the book cover",
+        "",
+        "random string",
+        "with content",
     ]
     .join("\n");
     let source = lines.as_str();
@@ -75,21 +78,42 @@ fn main() {
                 }],
             },
             Section::Paragraphs {
-                children: vec![Block::P {
-                    children: vec![
-                        Content::Text {
-                            text: "the".to_string(),
-                        },
-                        Content::Space,
-                        Content::Text {
-                            text: "book".to_string(),
-                        },
-                        Content::Space,
-                        Content::Text {
-                            text: "cover".to_string(),
-                        },
-                    ],
-                }],
+                children: vec![
+                    Block::P {
+                        children: vec![
+                            Content::Text {
+                                text: "the".to_string(),
+                            },
+                            Content::Space,
+                            Content::Text {
+                                text: "book".to_string(),
+                            },
+                            Content::Space,
+                            Content::Text {
+                                text: "cover".to_string(),
+                            },
+                        ],
+                    },
+                    Block::P {
+                        children: vec![
+                            Content::Text {
+                                text: "random".to_string(),
+                            },
+                            Content::Space,
+                            Content::Text {
+                                text: "string".to_string(),
+                            },
+                            Content::Space,
+                            Content::Text {
+                                text: "with".to_string(),
+                            },
+                            Content::Space,
+                            Content::Text {
+                                text: "content".to_string(),
+                            },
+                        ],
+                    },
+                ],
             },
         ],
     };
