@@ -1,43 +1,35 @@
-// use miette::Severity::Error;
 use core::fmt::Error;
 use core::time::Duration;
-use miette::{IntoDiagnostic, Result};
+use miette::Result;
 use std::path::PathBuf;
 use watchexec::{
     action::Action,
     action::Outcome,
     config::{InitConfig, RuntimeConfig},
-    //handler::PrintDebug,
     Watchexec,
 };
 use watchexec_events::filekind::FileEventKind;
 use watchexec_events::filekind::ModifyKind;
 use watchexec_events::Tag;
 
-// This is to see about making a set and then executing
-// things that way as a way to do a type of debouce
+// This is doing the debouncing by adding event
+// paths to a vec and then deduping it that way.
+// It's doing what I expect though I wouldn't be
+// surprised to find a more native way.
 
 #[tokio::main]
 async fn main() -> Result<()> {
     println!("Starting process");
     let init = InitConfig::default();
-    // let mut init = InitConfig::default();
-    //    init.on_error(PrintDebug(std::io::stderr()));
-
     let mut runtime = RuntimeConfig::default();
     runtime.pathset(["/Users/alan/Desktop"]);
+    // I think this is the time in nanoseconds that the
+    // debounc takes, but it starts from the leading edge
+    // so things can trigger if they happen right at
+    // the end of the time. So, like it's not really
+    // a debounce but something like it.
     runtime.action_throttle(Duration::new(0, 100000));
-
-    // let conf = YourConfigFormat::load_from_file("watchexec.conf").await?;
-    // conf.apply(&mut runtime);
-    //
-    //
-
     let we = Watchexec::new(init, runtime.clone())?;
-    // let w = we.clone();
-    //
-
-    // let c = runtime.clone();
     runtime.on_action(move |action: Action| {
         // let mut c = c.clone();
         // let w = w.clone();
@@ -80,12 +72,16 @@ async fn main() -> Result<()> {
 
             events.dedup();
 
-            dbg!(events);
+            events.iter().for_each(|p| do_something(p.to_path_buf()));
+
+            // dbg!(events);
 
             // if trigger {
             //     do_something(file_path.unwrap());
             // }
 
+            // Not sure if this is necessary or not
+            // TBD on that
             action.outcome(Outcome::DoNothing);
 
             // action.outcome(Outcome::if_running(
@@ -97,12 +93,14 @@ async fn main() -> Result<()> {
         }
     });
 
+    // This can probably be setup differently so you don't
+    // have to reload with reconfigure.
     we.reconfigure(runtime).unwrap();
-    we.main().await.into_diagnostic()?.unwrap();
-    // we.main().await;
+    // we.main().await.into_diagnostic()?.unwrap();
+    we.main().await.unwrap().unwrap();
     Ok(())
 }
 
-// fn do_something(file_path: PathBuf) {
-//     dbg!(file_path);
-// }
+fn do_something(file_path: PathBuf) {
+    dbg!(file_path);
+}
