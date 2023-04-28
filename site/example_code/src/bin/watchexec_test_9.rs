@@ -31,14 +31,9 @@ async fn main() -> Result<()> {
     runtime.action_throttle(Duration::new(0, 100000));
     let we = Watchexec::new(init, runtime.clone())?;
     runtime.on_action(move |action: Action| {
-        // let mut c = c.clone();
-        // let w = w.clone();
         async move {
             let mut events: Vec<PathBuf> = vec![];
             for event in action.events.iter() {
-                // dbg!(event);
-                // dbg!("delta");
-
                 let mut trigger: bool = false;
                 let mut file_path: Option<PathBuf> = None;
                 event.tags.iter().for_each(|tag| match tag {
@@ -60,43 +55,18 @@ async fn main() -> Result<()> {
                     },
                     _ => {}
                 });
-
-                // if event.paths().any(|(p, _)| p.ends_with("/watchexec.conf")) {
-                //     // let conf = YourConfigFormat::load_from_file("watchexec.conf").await?;
-                //     // conf.apply(&mut c);
-                //     // w.reconfigure(c.clone());
-                //     // tada! self-reconfiguring watchexec on config file change!
-                //     break;
-                // }
             }
-
             events.dedup();
-
             events.iter().for_each(|p| do_something(p.to_path_buf()));
-
-            // dbg!(events);
-
-            // if trigger {
-            //     do_something(file_path.unwrap());
-            // }
-
             // Not sure if this is necessary or not
             // TBD on that
             action.outcome(Outcome::DoNothing);
-
-            // action.outcome(Outcome::if_running(
-            //     Outcome::DoNothing,
-            //     Outcome::both(Outcome::Clear, Outcome::Start),
-            // ));
-
             Ok::<(), Error>(())
         }
     });
-
     // This can probably be setup differently so you don't
     // have to reload with reconfigure.
     we.reconfigure(runtime).unwrap();
-    // we.main().await.into_diagnostic()?.unwrap();
     we.main().await.unwrap().unwrap();
     Ok(())
 }
