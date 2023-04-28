@@ -14,23 +14,19 @@ use watchexec_events::filekind::FileEventKind;
 use watchexec_events::filekind::ModifyKind;
 use watchexec_events::Tag;
 
-// NOTE: This was an attempt to deboune using the
-// built in throttle, but it hangs onto all the
-// events (which makes sence when I think about it)
-// instead of just sending the last one (which is
-// what I thought would happen). Will look for
-// other options to debouce, but for now just
-// gonna let things fly
+// This is to see about making a set and then executing
+// things that way as a way to do a type of debouce
 
 #[tokio::main]
 async fn main() -> Result<()> {
     println!("Starting process");
-    let mut init = InitConfig::default();
+    let init = InitConfig::default();
+    // let mut init = InitConfig::default();
     //    init.on_error(PrintDebug(std::io::stderr()));
 
     let mut runtime = RuntimeConfig::default();
     runtime.pathset(["/Users/alan/Desktop"]);
-    runtime.action_throttle(Duration::new(1, 1000));
+    runtime.action_throttle(Duration::new(0, 100000));
 
     // let conf = YourConfigFormat::load_from_file("watchexec.conf").await?;
     // conf.apply(&mut runtime);
@@ -38,15 +34,17 @@ async fn main() -> Result<()> {
     //
 
     let we = Watchexec::new(init, runtime.clone())?;
-    let w = we.clone();
+    // let w = we.clone();
+    //
 
-    let c = runtime.clone();
+    // let c = runtime.clone();
     runtime.on_action(move |action: Action| {
         // let mut c = c.clone();
         // let w = w.clone();
         async move {
+            let mut events: Vec<PathBuf> = vec![];
             for event in action.events.iter() {
-                dbg!(event);
+                // dbg!(event);
                 // dbg!("delta");
 
                 let mut trigger: bool = false;
@@ -54,6 +52,7 @@ async fn main() -> Result<()> {
                 event.tags.iter().for_each(|tag| match tag {
                     Tag::Path { path, .. } => {
                         file_path = Some(path.to_path_buf());
+                        events.push(file_path.clone().unwrap());
                     }
                     Tag::FileEventKind(event_kind) => match event_kind {
                         FileEventKind::Create(_) => {
@@ -70,10 +69,6 @@ async fn main() -> Result<()> {
                     _ => {}
                 });
 
-                if trigger {
-                    do_something(file_path.unwrap());
-                }
-
                 // if event.paths().any(|(p, _)| p.ends_with("/watchexec.conf")) {
                 //     // let conf = YourConfigFormat::load_from_file("watchexec.conf").await?;
                 //     // conf.apply(&mut c);
@@ -82,6 +77,14 @@ async fn main() -> Result<()> {
                 //     break;
                 // }
             }
+
+            events.dedup();
+
+            dbg!(events);
+
+            // if trigger {
+            //     do_something(file_path.unwrap());
+            // }
 
             action.outcome(Outcome::DoNothing);
 
@@ -94,13 +97,12 @@ async fn main() -> Result<()> {
         }
     });
 
-    we.reconfigure(runtime);
+    we.reconfigure(runtime).unwrap();
     we.main().await.into_diagnostic()?.unwrap();
     // we.main().await;
     Ok(())
 }
 
-fn do_something(file_path: PathBuf) {
-    // dbg!("ping");
-    // dbg!(file_path);
-}
+// fn do_something(file_path: PathBuf) {
+//     dbg!(file_path);
+// }

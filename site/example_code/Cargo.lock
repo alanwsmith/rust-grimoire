@@ -641,6 +641,7 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "serde_yaml",
+ "sets",
  "svg",
  "syntect",
  "tokio",
@@ -1267,6 +1268,12 @@ dependencies = [
  "autocfg",
  "hashbrown",
 ]
+
+[[package]]
+name = "indxvec"
+version = "1.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9af70e7bfe82e5f780811544cd4805c188bf85420ae063f1d884d566c6e00d1d"
 
 [[package]]
 name = "inotify"
@@ -2478,6 +2485,15 @@ dependencies = [
  "ryu",
  "serde",
  "unsafe-libyaml",
+]
+
+[[package]]
+name = "sets"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4dbe0786a87068954c69454cba181d8fa8bb71b049cddfa0f3ad3174c6234bd5"
+dependencies = [
+ "indxvec",
 ]
 
 [[package]]
