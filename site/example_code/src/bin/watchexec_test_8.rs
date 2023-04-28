@@ -35,35 +35,33 @@ async fn main() -> Result<()> {
         // let w = w.clone();
         async move {
             for event in action.events.iter() {
-                dbg!(event);
-                dbg!("bravo");
+                // dbg!(event);
+                dbg!("delta");
 
-                ////
-                ////
-                //let mut trigger: bool = false;
-                //let mut file_path: Option<PathBuf> = None;
-                //event.tags.iter().for_each(|tag| match tag {
-                //    Tag::Path { path, .. } => {
-                //        file_path = Some(path.to_path_buf());
-                //    }
-                //    Tag::FileEventKind(event_kind) => match event_kind {
-                //        FileEventKind::Create(_) => {
-                //            trigger = true;
-                //        }
-                //        FileEventKind::Modify(modify_kind) => match modify_kind {
-                //            ModifyKind::Data(_) => {
-                //                trigger = true;
-                //            }
-                //            _ => {}
-                //        },
-                //        _ => {}
-                //    },
-                //    _ => {}
-                //});
+                let mut trigger: bool = false;
+                let mut file_path: Option<PathBuf> = None;
+                event.tags.iter().for_each(|tag| match tag {
+                    Tag::Path { path, .. } => {
+                        file_path = Some(path.to_path_buf());
+                    }
+                    Tag::FileEventKind(event_kind) => match event_kind {
+                        FileEventKind::Create(_) => {
+                            trigger = true;
+                        }
+                        FileEventKind::Modify(modify_kind) => match modify_kind {
+                            ModifyKind::Data(_) => {
+                                trigger = true;
+                            }
+                            _ => {}
+                        },
+                        _ => {}
+                    },
+                    _ => {}
+                });
 
-                // if trigger {
-                //     do_something(file_path.unwrap());
-                // }
+                if trigger {
+                    do_something(file_path.unwrap());
+                }
 
                 // if event.paths().any(|(p, _)| p.ends_with("/watchexec.conf")) {
                 //     // let conf = YourConfigFormat::load_from_file("watchexec.conf").await?;
@@ -92,6 +90,6 @@ async fn main() -> Result<()> {
 }
 
 fn do_something(file_path: PathBuf) {
-    dbg!("alfa");
+    dbg!("ping");
     dbg!(file_path);
 }
