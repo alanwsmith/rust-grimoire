@@ -23,6 +23,9 @@ use nom::error::ErrorKind;
 use nom::sequence::preceded;
 use nom::Err;
 
+// TODO: combine this with the get_newlines_after_tag
+// or whatever it's called
+
 fn main() {
     let source = "alfa\n\n->\n\nbravo";
     let expected = Ok(("bravo", "alfa"));
