@@ -33,7 +33,19 @@ fn neotag(source: &str) -> IResult<&str, String> {
         ),
         |v: &Vec<&str>| v.len() > 1,
     )(source)?;
-    Ok((a, format!("<{}>{}</{}>", b[1], b[0], b[1])))
+
+    let attributes = b
+        .clone()
+        .into_iter()
+        .skip(2)
+        .map(|x| {
+            let parts: Vec<_> = x.split(": ").collect();
+            format!(r#" {}="{}""#, parts[0], parts[1])
+        })
+        .collect::<Vec<_>>()
+        .join("");
+
+    Ok((a, format!("<{}{}>{}</{}>", b[1], attributes, b[0], b[1])))
 }
 
 fn content(source: &str) -> IResult<&str, String> {
@@ -99,10 +111,18 @@ mod test {
     // use crate::nom_parse_multiple_neopolitan_tags::tags;
 
     #[test]
-    pub fn strong_tag() {
+    pub fn strong_tag_no_attributes() {
         assert_eq!(
             neotag("<<bravo|strong>>"),
             Ok(("", format!("<strong>bravo</strong>"))),
+        )
+    }
+
+    #[test]
+    pub fn strong_tag_with_attributes() {
+        assert_eq!(
+            neotag("<<bravo|strong|class: echo>>"),
+            Ok(("", format!(r#"<strong class="echo">bravo</strong>"#))),
         )
     }
 
