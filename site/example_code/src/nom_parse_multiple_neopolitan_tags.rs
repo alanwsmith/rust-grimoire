@@ -13,16 +13,23 @@ use nom::combinator::verify;
 use nom::IResult;
 // use nom::Parser;
 
-// fn cutit(source: &str) -> IResult<&str, String> {
-//     let (a, b) = tuple((
-//         // separated_list1(tag("|"), take_until("|")),
-//         separated_list1(take_until("|"), tag("|")),
-//         alt((rest, rest)),
-//     ))(source)?;
-//     dbg!(b);
-//     dbg!(a);
-//     Ok(("", format!("")))
-// }
+fn attributes(v: &Vec<&str>, position: usize) -> String {
+    if v.len() >= position {
+        v.clone()
+            .into_iter()
+            .skip(position)
+            .collect::<Vec<&str>>()
+            .into_iter()
+            .map(|att| {
+                let parts: Vec<&str> = att.split(": ").collect();
+                format!(r#" {}="{}""#, parts[0], parts[1])
+            })
+            .collect::<Vec<String>>()
+            .join("")
+    } else {
+        format!("")
+    }
+}
 
 fn neotag(source: &str) -> IResult<&str, String> {
     let (a, b) = verify(
@@ -34,48 +41,65 @@ fn neotag(source: &str) -> IResult<&str, String> {
         |v: &Vec<&str>| v.len() > 1,
     )(source)?;
 
-    let attributes = b
-        .clone()
-        .into_iter()
-        .skip(2)
-        .map(|x| {
-            let parts: Vec<_> = x.split(": ").collect();
-            format!(r#" {}="{}""#, parts[0], parts[1])
-        })
-        .collect::<Vec<_>>()
-        .join("");
+    // dbg!(&b[1]);
 
-    Ok((a, format!("<{}{}>{}</{}>", b[1], attributes, b[0], b[1])))
+    match b[1] {
+        "link" => Ok((a, format!(r#"<a href="{}">{}</a>"#, b[2], b[0]))),
+        "strong" => Ok((
+            a,
+            format!("<{}{}>{}</{}>", b[1], attributes(&b, 2), b[0], b[1]),
+        )),
+        _ => Ok((a, format!(r#""#))),
+    }
+
+    // let attributes = b
+    //     .clone()
+    //     .into_iter()
+    //     .skip(2)
+    //     .map(|x| {
+    //         let parts: Vec<_> = x.split(": ").collect();
+    //         format!(r#" {}="{}""#, parts[0], parts[1])
+    //     })
+    //     .collect::<Vec<_>>()
+    //     .join("");
+
+    // dbg!(&attributes);
+
+    // match attributes[0] {
+    //     "link" => Ok((a, format!("<{}{}>{}</{}>", b[1], attributes, b[0], b[1]))),
+    //     "strong" => Ok((a, format!("<{}{}>{}</{}>", b[1], attributes, b[0], b[1]))),
+    //     _ => Ok((a, format!("<{}{}>{}</{}>", b[1], attributes, b[0], b[1]))),
+    // }
+
+    //
 }
 
-fn content(source: &str) -> IResult<&str, String> {
-    // dbg!(&a);
-    // dbg!(&b);
-
-    // let (a, b) = many0(
-    //     tuple((
-    //         take_until(" <<"),
-    //         tag(" <<"),
-    //         take_until(">>").map(|x| cutit(x)),
-    //         tag(">>"),
-    //     )), // .map(
-    //         //     |(preface, _, text, _, payload)| match attributes(preface, payload) {
-    //         //         Ok((_, y)) => {
-    //         //             dbg!(&preface);
-    //         //             dbg!(&text);
-    //         //             dbg!(&payload);
-    //         //             format!("{}", y)
-    //         //         }
-    //         //         Err(_) => format!("aaaaaaaaa"),
-    //         //     },
-    //         // ),
-    // )(source)?;
-    // // dbg!(&a);
-    // // dbg!(&b);
-    // Ok(("", format!("")))
-
-    Ok(("", format!("")))
-}
+// fn content(source: &str) -> IResult<&str, String> {
+//     // dbg!(&a);
+//     // dbg!(&b);
+//     // let (a, b) = many0(
+//     //     tuple((
+//     //         take_until(" <<"),
+//     //         tag(" <<"),
+//     //         take_until(">>").map(|x| cutit(x)),
+//     //         tag(">>"),
+//     //     )), // .map(
+//     //         //     |(preface, _, text, _, payload)| match attributes(preface, payload) {
+//     //         //         Ok((_, y)) => {
+//     //         //             dbg!(&preface);
+//     //         //             dbg!(&text);
+//     //         //             dbg!(&payload);
+//     //         //             format!("{}", y)
+//     //         //         }
+//     //         //         Err(_) => format!("aaaaaaaaa"),
+//     //         //     },
+//     //         // ),
+//     // )(source)?;
+//     // // dbg!(&a);
+//     // // dbg!(&b);
+//     // Ok(("", format!("")))
+//     Ok(("", format!("")))
+// }
 
 // fn attributes<'a>(preface: &'a str, payload: &'a str) -> IResult<&'a str, String> {
 //     // dbg!(preface);
@@ -108,7 +132,6 @@ fn content(source: &str) -> IResult<&str, String> {
 mod test {
 
     use super::*;
-    // use crate::nom_parse_multiple_neopolitan_tags::tags;
 
     #[test]
     pub fn strong_tag_no_attributes() {
@@ -123,6 +146,17 @@ mod test {
         assert_eq!(
             neotag("<<bravo|strong|class: echo>>"),
             Ok(("", format!(r#"<strong class="echo">bravo</strong>"#))),
+        )
+    }
+
+    #[test]
+    pub fn link_without_attributes() {
+        assert_eq!(
+            neotag("<<delta|link|https://www.example.com/>>"),
+            Ok((
+                "",
+                format!(r#"<a href="https://www.example.com/">delta</a>"#)
+            )),
         )
     }
 
