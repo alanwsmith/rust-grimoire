@@ -14,21 +14,17 @@ use nom::IResult;
 // use nom::Parser;
 
 fn attributes(v: &Vec<&str>, position: usize) -> String {
-    if v.len() >= position {
-        v.clone()
-            .into_iter()
-            .skip(position)
-            .collect::<Vec<&str>>()
-            .into_iter()
-            .map(|att| {
-                let parts: Vec<&str> = att.split(": ").collect();
-                format!(r#" {}="{}""#, parts[0], parts[1])
-            })
-            .collect::<Vec<String>>()
-            .join("")
-    } else {
-        format!("")
-    }
+    v.clone()
+        .into_iter()
+        .skip(position)
+        .collect::<Vec<&str>>()
+        .into_iter()
+        .map(|att| {
+            let parts: Vec<&str> = att.split(": ").collect();
+            format!(r#" {}="{}""#, parts[0], parts[1])
+        })
+        .collect::<Vec<String>>()
+        .join("")
 }
 
 fn neotag(source: &str) -> IResult<&str, String> {
@@ -40,38 +36,17 @@ fn neotag(source: &str) -> IResult<&str, String> {
         ),
         |v: &Vec<&str>| v.len() > 1,
     )(source)?;
-
-    // dbg!(&b[1]);
-
     match b[1] {
-        "link" => Ok((a, format!(r#"<a href="{}">{}</a>"#, b[2], b[0]))),
+        "link" => Ok((
+            a,
+            format!(r#"<a href="{}"{}>{}</a>"#, b[2], attributes(&b, 3), b[0]),
+        )),
         "strong" => Ok((
             a,
             format!("<{}{}>{}</{}>", b[1], attributes(&b, 2), b[0], b[1]),
         )),
         _ => Ok((a, format!(r#""#))),
     }
-
-    // let attributes = b
-    //     .clone()
-    //     .into_iter()
-    //     .skip(2)
-    //     .map(|x| {
-    //         let parts: Vec<_> = x.split(": ").collect();
-    //         format!(r#" {}="{}""#, parts[0], parts[1])
-    //     })
-    //     .collect::<Vec<_>>()
-    //     .join("");
-
-    // dbg!(&attributes);
-
-    // match attributes[0] {
-    //     "link" => Ok((a, format!("<{}{}>{}</{}>", b[1], attributes, b[0], b[1]))),
-    //     "strong" => Ok((a, format!("<{}{}>{}</{}>", b[1], attributes, b[0], b[1]))),
-    //     _ => Ok((a, format!("<{}{}>{}</{}>", b[1], attributes, b[0], b[1]))),
-    // }
-
-    //
 }
 
 // fn content(source: &str) -> IResult<&str, String> {
