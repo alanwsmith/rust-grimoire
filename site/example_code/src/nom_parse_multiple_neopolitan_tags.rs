@@ -1,17 +1,21 @@
-// use nom::branch::alt;
-use nom::bytes::complete::tag;
-// use nom::bytes::complete::take_until;
-// use nom::combinator::opt;
-// use nom::combinator::rest;
-// use nom::multi::many0;
-// use nom::multi::separated_list0;
 use nom::bytes::complete::is_not;
+use nom::bytes::complete::tag;
+use nom::bytes::complete::take_until;
+use nom::combinator::verify;
+use nom::multi::many0;
 use nom::multi::separated_list1;
 use nom::sequence::delimited;
-// use nom::sequence::tuple;
-use nom::combinator::verify;
+use nom::sequence::tuple;
 use nom::IResult;
-// use nom::Parser;
+use nom::Parser;
+
+fn block_parse(source: &str) -> IResult<&str, String> {
+    let (a, b) =
+        many0(tuple((take_until("<<"), neotag)).map(|(x, y)| format!("{}{}", x, y)))(source)?;
+    let mut result = b.join("").to_string();
+    result.push_str(a);
+    Ok(("", result))
+}
 
 fn attributes(v: &Vec<&str>, position: usize) -> String {
     v.clone()
@@ -35,7 +39,6 @@ fn code_attributes(v: &Vec<&str>) -> String {
             classes.push(format!("language-{}", parts[0].to_string()))
         }
     }
-
     let mut attributes = v
         .clone()
         .into_iter()
@@ -57,7 +60,6 @@ fn code_attributes(v: &Vec<&str>) -> String {
         })
         .collect::<Vec<String>>()
         .join("");
-
     if classes.len() > 0 {
         attributes.push_str(r#" class=""#);
         attributes.push_str(classes.join(" ").as_str());
@@ -100,7 +102,7 @@ mod test {
     #[test]
     pub fn strong_tag_no_attributes() {
         assert_eq!(
-            neotag("<<bravo|strong>>"),
+            block_parse("<<bravo|strong>>"),
             Ok(("", format!("<strong>bravo</strong>"))),
         )
     }
@@ -108,7 +110,7 @@ mod test {
     #[test]
     pub fn strong_tag_with_attributes() {
         assert_eq!(
-            neotag("<<bravo|strong|class: echo>>"),
+            block_parse("<<bravo|strong|class: echo>>"),
             Ok(("", format!(r#"<strong class="echo">bravo</strong>"#))),
         )
     }
@@ -116,7 +118,7 @@ mod test {
     #[test]
     pub fn link_without_attributes() {
         assert_eq!(
-            neotag("<<delta|link|https://www.example.com/>>"),
+            block_parse("<<delta|link|https://www.example.com/>>"),
             Ok((
                 "",
                 format!(r#"<a href="https://www.example.com/">delta</a>"#)
@@ -127,7 +129,7 @@ mod test {
     #[test]
     pub fn link_with_attributes() {
         assert_eq!(
-            neotag("<<tango|link|https://tango.example.com/|class: whiskey>>"),
+            block_parse("<<tango|link|https://tango.example.com/|class: whiskey>>"),
             Ok((
                 "",
                 format!(r#"<a href="https://tango.example.com/" class="whiskey">tango</a>"#)
@@ -138,7 +140,7 @@ mod test {
     #[test]
     pub fn link_with_multiple_attributes() {
         assert_eq!(
-            neotag("<<foxtrot|link|https://foxtrot.example.com/|class: november|id: zulu>>"),
+            block_parse("<<foxtrot|link|https://foxtrot.example.com/|class: november|id: zulu>>"),
             Ok((
                 "",
                 format!(
@@ -151,7 +153,7 @@ mod test {
     #[test]
     pub fn code_without_language() {
         assert_eq!(
-            neotag("<<tango|code>>"),
+            block_parse("<<tango|code>>"),
             Ok(("", format!(r#"<code>tango</code>"#))),
         )
     }
@@ -159,7 +161,7 @@ mod test {
     #[test]
     pub fn code_with_language() {
         assert_eq!(
-            neotag("<<tango|code|rust>>"),
+            block_parse("<<tango|code|rust>>"),
             Ok(("", format!(r#"<code class="language-rust">tango</code>"#))),
         )
     }
@@ -167,7 +169,7 @@ mod test {
     #[test]
     pub fn code_with_multiple_attributes() {
         assert_eq!(
-            neotag("<<tango|code|class: highlighted|id: baseline>>"),
+            block_parse("<<tango|code|class: highlighted|id: baseline>>"),
             Ok((
                 "",
                 format!(r#"<code id="baseline" class="highlighted">tango</code>"#)
@@ -178,11 +180,27 @@ mod test {
     #[test]
     pub fn code_with_language_and_class_attributes() {
         assert_eq!(
-            neotag("<<tango|code|rust|class: highlighted|id: baseline>>"),
+            block_parse("<<tango|code|rust|class: highlighted|id: baseline>>"),
             Ok((
                 "",
                 format!(r#"<code id="baseline" class="language-rust highlighted">tango</code>"#)
             )),
+        )
+    }
+
+    #[test]
+    pub fn no_tags() {
+        assert_eq!(
+            block_parse("light the candle"),
+            Ok(("", format!(r#"light the candle"#)))
+        )
+    }
+
+    #[test]
+    pub fn solo_prelude_text_with_tags() {
+        assert_eq!(
+            block_parse("light <<the|strong>> candle"),
+            Ok(("", format!(r#"light <strong>the</strong> candle"#)))
         )
     }
 
