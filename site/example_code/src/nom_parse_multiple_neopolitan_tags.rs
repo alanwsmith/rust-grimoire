@@ -27,6 +27,10 @@ fn attributes(v: &Vec<&str>, position: usize) -> String {
         .join("")
 }
 
+fn code_attributes(v: &Vec<&str>) -> String {
+    format!("{}", r#" class="language-rust""#)
+}
+
 fn neotag(source: &str) -> IResult<&str, String> {
     let (a, b) = verify(
         delimited(
@@ -37,6 +41,10 @@ fn neotag(source: &str) -> IResult<&str, String> {
         |v: &Vec<&str>| v.len() > 1,
     )(source)?;
     match b[1] {
+        "code" => Ok((
+            a,
+            format!(r#"<code{}>{}</code>"#, code_attributes(&b), b[0]),
+        )),
         "link" => Ok((
             a,
             format!(r#"<a href="{}"{}>{}</a>"#, b[2], attributes(&b, 3), b[0]),
@@ -48,60 +56,6 @@ fn neotag(source: &str) -> IResult<&str, String> {
         _ => Ok((a, format!(r#""#))),
     }
 }
-
-// fn content(source: &str) -> IResult<&str, String> {
-//     // dbg!(&a);
-//     // dbg!(&b);
-//     // let (a, b) = many0(
-//     //     tuple((
-//     //         take_until(" <<"),
-//     //         tag(" <<"),
-//     //         take_until(">>").map(|x| cutit(x)),
-//     //         tag(">>"),
-//     //     )), // .map(
-//     //         //     |(preface, _, text, _, payload)| match attributes(preface, payload) {
-//     //         //         Ok((_, y)) => {
-//     //         //             dbg!(&preface);
-//     //         //             dbg!(&text);
-//     //         //             dbg!(&payload);
-//     //         //             format!("{}", y)
-//     //         //         }
-//     //         //         Err(_) => format!("aaaaaaaaa"),
-//     //         //     },
-//     //         // ),
-//     // )(source)?;
-//     // // dbg!(&a);
-//     // // dbg!(&b);
-//     // Ok(("", format!("")))
-//     Ok(("", format!("")))
-// }
-
-// fn attributes<'a>(preface: &'a str, payload: &'a str) -> IResult<&'a str, String> {
-//     // dbg!(preface);
-//     // dbg!(payload);
-//     let (a, b) = many0(tuple((take_until("|"), tag("|"))))(payload)?;
-//     // dbg!(&a);
-//     // dbg!(&b);
-//     match a {
-//         // "link" => Ok(("", format!(r#"{} <a>{}</a> "#, preface, b.0))),
-//         "link" => {
-//             dbg!("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
-//             Ok(("", format!(r#"{} <a>{}</a> "#, preface, b.0)))
-//         }
-//         "strong" => Ok(("", format!(r#"{} <strong>{}</strong> "#, preface, b.0))),
-//         _ => Ok(("", format!(""))),
-//     }
-//     Ok(("", format!("ATTRIBUTES")))
-// }
-
-// fn attributes<'a>(preface: &'a str, payload: &'a str) -> IResult<&'a str, String> {
-//     let (a, b) = tuple((take_until("|"), tag("|")))(payload)?;
-//     match a {
-//         "link" => Ok(("", format!("{} <link>{}</link> ", preface, b.0))),
-//         "strong" => Ok(("", format!("{} <strong>{}</strong> ", preface, b.0))),
-//         _ => Ok(("", format!(""))),
-//     }
-// }
 
 #[cfg(test)]
 mod test {
@@ -135,51 +89,48 @@ mod test {
         )
     }
 
-    // #[test]
-    // pub fn link_tags() {
-    //     assert_eq!(
-    //         tags("alfa <<bravo|link|https://www.example.com/>> charlie <<delta|link|https://www.alanwsmith.com/>> echo"),
-    //         Ok((
-    //             "",
-    //             format!("alfa <link>bravo</link> charlie <link>delta</link> echo")
-    //         )),
-    //     )
-    // }
+    #[test]
+    pub fn link_with_attributes() {
+        assert_eq!(
+            neotag("<<tango|link|https://tango.example.com/|class: whiskey>>"),
+            Ok((
+                "",
+                format!(r#"<a href="https://tango.example.com/" class="whiskey">tango</a>"#)
+            )),
+        )
+    }
 
-    // #[test]
-    // fn it_works() {
-    //     let input = "<<alfa|strong>>";
-    //     assert_eq!(tag(input).unwrap().1, vec!["alfa", "strong"]);
-    // }
+    #[test]
+    pub fn link_with_multiple_attributes() {
+        assert_eq!(
+            neotag("<<foxtrot|link|https://foxtrot.example.com/|class: november|id: zulu>>"),
+            Ok((
+                "",
+                format!(
+                    r#"<a href="https://foxtrot.example.com/" class="november" id="zulu">foxtrot</a>"#
+                )
+            )),
+        )
+    }
 
-    // #[test]
-    // fn it_works2() {
-    //     let input = "<<bravo|link|https://localhost.com/>>";
-    //     assert_eq!(
-    //         tag(input).unwrap().1,
-    //         vec!["bravo", "link", "https://localhost.com/"]
-    //     );
-    // }
+    #[test]
+    pub fn code_with_multiple_attributes() {
+        assert_eq!(
+            neotag("<<tango|code|class: highlighted|id: baseline>>"),
+            Ok((
+                "",
+                format!(r#"<code class="highlighted" id="baseline">tango</code>"#)
+            )),
+        )
+    }
 
-    // #[test]
-    // fn it_works3() {
-    //     let input = "<<charlie|link|https://localhost.com/|class: whatever>>";
-    //     assert_eq!(
-    //         tag(input).unwrap().1,
-    //         vec![
-    //             "charlie",
-    //             "link",
-    //             "https://localhost.com/",
-    //             "class: whatever"
-    //         ]
-    //     );
-    // }
-
-    // #[test]
-    // fn it_works4() {
-    //     let input = "<<delta|emd|class: more>>";
-    //     assert_eq!(tag(input).unwrap().1, vec!["delta", "emd", "class: more"]);
-    // }
+    #[test]
+    pub fn code_with_language() {
+        assert_eq!(
+            neotag("<<tango|code|rust>>"),
+            Ok(("", format!(r#"<code class="language-rust">tango</code>"#))),
+        )
+    }
 
     //
 }
