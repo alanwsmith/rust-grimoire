@@ -28,7 +28,37 @@ fn attributes(v: &Vec<&str>, position: usize) -> String {
 }
 
 fn code_attributes(v: &Vec<&str>) -> String {
-    format!("{}", r#" class="language-rust""#)
+    let mut classes: Vec<String> = vec![];
+    if v.len() >= 3 {
+        let parts: Vec<&str> = v[2].split(": ").collect();
+        if parts.len() == 1 {
+            classes.push(format!("language-{}", parts[0].to_string()))
+        }
+    }
+
+    let mut attributes = v
+        .clone()
+        .into_iter()
+        .skip(2)
+        .collect::<Vec<&str>>()
+        .into_iter()
+        .map(|att| {
+            let parts: Vec<&str> = att.split(": ").collect();
+            if parts.len() == 2 {
+                format!(r#" {}="{}""#, parts[0], parts[1])
+            } else {
+                format!("")
+            }
+        })
+        .collect::<Vec<String>>()
+        .join("");
+
+    if classes.len() > 0 {
+        attributes.push_str(r#" class=""#);
+        attributes.push_str(classes.join(" ").as_str());
+        attributes.push_str(r#"""#);
+    }
+    attributes
 }
 
 fn neotag(source: &str) -> IResult<&str, String> {
@@ -114,13 +144,10 @@ mod test {
     }
 
     #[test]
-    pub fn code_with_multiple_attributes() {
+    pub fn code_without_language() {
         assert_eq!(
-            neotag("<<tango|code|class: highlighted|id: baseline>>"),
-            Ok((
-                "",
-                format!(r#"<code class="highlighted" id="baseline">tango</code>"#)
-            )),
+            neotag("<<tango|code>>"),
+            Ok(("", format!(r#"<code>tango</code>"#))),
         )
     }
 
@@ -129,6 +156,17 @@ mod test {
         assert_eq!(
             neotag("<<tango|code|rust>>"),
             Ok(("", format!(r#"<code class="language-rust">tango</code>"#))),
+        )
+    }
+
+    #[test]
+    pub fn code_with_multiple_attributes() {
+        assert_eq!(
+            neotag("<<tango|code|class: highlighted|id: baseline>>"),
+            Ok((
+                "",
+                format!(r#"<code class="highlighted" id="baseline">tango</code>"#)
+            )),
         )
     }
 
