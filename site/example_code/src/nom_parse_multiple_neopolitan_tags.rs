@@ -45,7 +45,12 @@ fn code_attributes(v: &Vec<&str>) -> String {
         .map(|att| {
             let parts: Vec<&str> = att.split(": ").collect();
             if parts.len() == 2 {
-                format!(r#" {}="{}""#, parts[0], parts[1])
+                if parts[0] == "class" {
+                    classes.push(format!("{}", parts[1]));
+                    format!(r#""#)
+                } else {
+                    format!(r#" {}="{}""#, parts[0], parts[1])
+                }
             } else {
                 format!("")
             }
@@ -165,7 +170,18 @@ mod test {
             neotag("<<tango|code|class: highlighted|id: baseline>>"),
             Ok((
                 "",
-                format!(r#"<code class="highlighted" id="baseline">tango</code>"#)
+                format!(r#"<code id="baseline" class="highlighted">tango</code>"#)
+            )),
+        )
+    }
+
+    #[test]
+    pub fn code_with_language_and_class_attributes() {
+        assert_eq!(
+            neotag("<<tango|code|rust|class: highlighted|id: baseline>>"),
+            Ok((
+                "",
+                format!(r#"<code id="baseline" class="language-rust highlighted">tango</code>"#)
             )),
         )
     }
