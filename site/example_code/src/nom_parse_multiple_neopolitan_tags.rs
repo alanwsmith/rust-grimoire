@@ -1,3 +1,6 @@
+// NOTE: This is just the perliminary work. The
+// full file is in the neopolitan project
+
 use nom::bytes::complete::is_not;
 use nom::bytes::complete::tag;
 use nom::bytes::complete::take_until;
@@ -197,7 +200,7 @@ mod test {
     }
 
     #[test]
-    pub fn solo_prelude_text_with_tags() {
+    pub fn prelude_text_with_tags() {
         assert_eq!(
             block_parse("light <<the|strong>> candle"),
             Ok(("", format!(r#"light <strong>the</strong> candle"#)))
