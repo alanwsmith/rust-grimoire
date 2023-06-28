@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cargo watch -x "test separated_by_empty_lines --color always -- --nocapture"
+# cargo watch -x "test solo --color always -- --nocapture"
