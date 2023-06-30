@@ -3,6 +3,7 @@ use crossterm::{
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
+
 use std::{error::Error, io};
 use tui::{
     backend::{Backend, CrosstermBackend},
@@ -17,7 +18,7 @@ use tui::{
     },
     Frame, Terminal,
 };
-use unicode_width::UnicodeWidthStr;
+// use unicode_width::UnicodeWidthStr;
 
 enum InputMode {
     Normal,
@@ -49,6 +50,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     enable_raw_mode()?;
     let mut stdout = io::stdout();
     execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
+
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
@@ -79,30 +81,36 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
         if let Event::Key(key) = event::read()? {
             match app.input_mode {
                 InputMode::Normal => match key.code {
-                    KeyCode::Char('e') => {
-                        app.input_mode = InputMode::Editing;
+                    // KeyCode::Char('e') => {
+                    //     app.input_mode = InputMode::Editing;
+                    // }
+                    KeyCode::Char('y') => {
+                        return Ok(());
                     }
-                    KeyCode::Char('q') => {
+                    KeyCode::Char('n') => {
                         return Ok(());
                     }
                     _ => {}
-                },
+                }
 
-                InputMode::Editing => match key.code {
-                    // KeyCode::Enter => {
-                    //   app.messages.push(app.input.drain(..).collect());
-                    // }
-                    KeyCode::Char(c) => {
-                        app.input.push(c);
-                    }
-                    KeyCode::Backspace => {
-                        app.input.pop();
-                    }
-                    KeyCode::Esc => {
-                        app.input_mode = InputMode::Normal;
-                    }
-                    _ => {}
-                },
+                _ => {}
+
+                // InputMode::Editing => match key.code {
+                //     // KeyCode::Enter => {
+                //     //   app.messages.push(app.input.drain(..).collect());
+                //     // }
+                //     KeyCode::Char(c) => {
+                //         app.input.push(c);
+                //     }
+                //     KeyCode::Backspace => {
+                //         app.input.pop();
+                //     }
+                //     KeyCode::Esc => {
+                //         app.input_mode = InputMode::Normal;
+                //     }
+                //     _ => {}
+                // },
+
             }
         }
     }
@@ -122,30 +130,31 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
         )
         .split(f.size());
 
-    let (msg, style) = match app.input_mode {
-        InputMode::Normal => (
-            vec![
-                Span::raw("Press "),
-                Span::styled("q", Style::default().add_modifier(Modifier::BOLD)),
-                Span::raw(" to exit, "),
-                Span::styled("e", Style::default().add_modifier(Modifier::BOLD)),
-                Span::raw(" to start editing."),
-            ],
-            Style::default().add_modifier(Modifier::RAPID_BLINK),
-        ),
-        InputMode::Editing => (
-            vec![
-                Span::raw("Press "),
-                Span::styled("Esc", Style::default().add_modifier(Modifier::BOLD)),
-                Span::raw(" to stop editing, "),
-                Span::styled("Enter", Style::default().add_modifier(Modifier::BOLD)),
-                Span::raw(" to record the message"),
-            ],
-            Style::default(),
-        ),
-    };
-    let mut text = Text::from(Spans::from(msg));
-    text.patch_style(style);
+    // let (msg, style) = match app.input_mode {
+    //     InputMode::Normal => (
+    //         vec![
+    //             Span::raw("Press "),
+    //             Span::styled("q", Style::default().add_modifier(Modifier::BOLD)),
+    //             Span::raw(" to exit, "),
+    //             Span::styled("e", Style::default().add_modifier(Modifier::BOLD)),
+    //             Span::raw(" to start editing."),
+    //         ],
+    //         Style::default().add_modifier(Modifier::RAPID_BLINK),
+    //     ),
+    //     InputMode::Editing => (
+    //         vec![
+    //             Span::raw("Press "),
+    //             Span::styled("Esc", Style::default().add_modifier(Modifier::BOLD)),
+    //             Span::raw(" to stop editing, "),
+    //             Span::styled("Enter", Style::default().add_modifier(Modifier::BOLD)),
+    //             Span::raw(" to record the message"),
+    //         ],
+    //         Style::default(),
+    //     ),
+    // };
+
+    // let mut text = Text::from(Spans::from(msg));
+    // text.patch_style(style);
 
     // let help_message = Paragraph::new(text);
     // f.render_widget(help_message, chunks[0]);
@@ -155,7 +164,11 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
             InputMode::Normal => Style::default(),
             InputMode::Editing => Style::default().fg(Color::Yellow),
         })
-        .block(Block::default().borders(Borders::ALL).title("Input"));
+        .block(
+            Block::default()
+                // .borders(Borders::ALL)
+                .title(" That file doesn't exist. Would you like to create it? (y/n) "),
+        );
     f.render_widget(input, chunks[1]);
 
     // match app.input_mode {
