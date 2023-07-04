@@ -492,13 +492,18 @@ pub fn paragraph_block(
 
 pub fn headline_block(
     source: &str,
-) -> IResult<&str, String> {
+) -> IResult<&str, Content> {
     let (source, content) = many_till(
         pair(not_line_ending, alt((line_ending, eof)))
             .map(|x| x.0),
         alt((multispace1, eof)),
     )(source.trim())?;
-    Ok((source, content.0.join(" ")))
+    Ok((
+        source,
+        Content::Headline {
+            text: content.0.join(" "),
+        },
+    ))
 }
 
 pub fn paragraph_blocks(
@@ -513,11 +518,7 @@ pub fn paragraph_blocks(
 pub fn title_section(
     source: &str,
 ) -> IResult<&str, Section> {
-    // let mut blocks: Vec<Content> = vec![];
-    let (source, headline_block) = headline_block(source)?;
-    let headline = Content::Headline {
-        text: headline_block,
-    };
+    let (source, headline) = headline_block(source)?;
     let (source, paragraphs) = paragraph_blocks(source)?;
 
     // blocks.push(Content::Headline {
