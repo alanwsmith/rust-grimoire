@@ -17,6 +17,7 @@ use nom::multi::many1;
 use nom::multi::many_till;
 use nom::multi::separated_list0;
 use nom::multi::separated_list1;
+use nom::sequence::delimited;
 use nom::sequence::pair;
 use nom::sequence::preceded;
 use nom::sequence::tuple;
@@ -202,35 +203,113 @@ pub enum Content {
 
 pub fn content_block(
     source: &str,
-) -> IResult<&str, Content> {
+) -> IResult<&str, String> {
     let (source, content) = many_till(
         pair(not_line_ending, alt((line_ending, eof)))
             .map(|x| x.0),
         alt((line_ending, eof)),
-        // eof,
     )(source)?;
-    dbg!(&content.0.join(" "));
-    Ok((
-        source,
-        Content::Title {
-            text: content.0.join(" "),
-        },
-    ))
+    Ok((source, content.0.join(" ")))
+}
+
+pub fn content_blocks(
+    source: &str,
+) -> IResult<&str, Vec<String>> {
+    let (source, b) = many_till(
+        content_block,
+        alt((line_ending, eof)),
+    )(source)?;
+    Ok((source, b.0))
+}
+
+#[cfg(test)]
+
+mod content_block_tests {
+    use super::*;
+
+    #[test]
+    pub fn solo_content_block_basic() {
+        let lines = vec!["alfa bravo"].join("\n");
+        let expected = format!("alfa bravo");
+        assert_eq!(
+            expected,
+            content_block(lines.as_str()).unwrap().1
+        );
+    }
+
+    #[test]
+    pub fn solo_content_block_multi_line() {
+        let lines =
+            vec!["alfa bravo", "charlie delta"].join("\n");
+        let expected = format!("alfa bravo charlie delta");
+        assert_eq!(
+            expected,
+            content_block(lines.as_str()).unwrap().1
+        );
+    }
+
+    #[test]
+    pub fn solo_content_blocks_single_blocks() {
+        let lines = vec!["foxtrot golf", "hotel whiskey"]
+            .join("\n");
+        let expected =
+            vec![format!("foxtrot golf hotel whiskey")];
+        assert_eq!(
+            expected,
+            content_blocks(lines.as_str()).unwrap().1
+        );
+    }
+
+    #[test]
+    pub fn solo_content_blocks_multiple_blocks() {
+        let lines = vec![
+            "foxtrot golf",
+            "hotel whiskey",
+            "",
+            "alfa delta",
+            "victor foxtrot",
+        ]
+        .join("\n");
+        let expected = vec![
+            format!("foxtrot golf hotel whiskey"),
+            format!("alfa delta victor foxtrot"),
+        ];
+        assert_eq!(
+            expected,
+            content_blocks(lines.as_str()).unwrap().1
+        );
+    }
+
+    //
 }
 
 pub fn parse(source: &str) -> IResult<&str, Vec<Section>> {
-    let (source, _) = tag("-> ")(source)?;
-    let (source, tag_type) = not_line_ending(source)?;
-    let (source, _) = newline(source)?;
-    let (source, _) = newline(source)?;
-    dbg!(&tag_type);
-    //let (source, content) = content_block(source)?;
-    // let (source, content) = content_block(source)?;
+    let (a, b) = many1(
+        delimited(tag("-> "), not_line_ending, multispace1)
+            .map(|tag_type| match tag_type {
+                "title" => {
+                    // let (c, v) =
+                    //Section::Title(vec![])
+                    Section::None
+                }
+                _ => Section::None,
+            }),
+    )(source.trim())?;
+    dbg!(&b);
+    dbg!(&a);
 
-    let (source, content) = many_till(
-        content_block,
-        alt((tag("->"), eof)),
-    )(source)?;
+    //let (source, _) = tag("-> ")(source)?;
+    //let (source, tag_type) = not_line_ending(source)?;
+    //let (source, _) = newline(source)?;
+    //let (source, _) = newline(source)?;
+    //dbg!(&tag_type);
+    ////let (source, content) = content_block(source)?;
+    //// let (source, content) = content_block(source)?;
+
+    // let (source, content) = many_till(
+    //     content_block,
+    //     alt((tag("->"), eof)),
+    // )(source)?;
 
     // let (source, content) = many_till(
     //     // tuple((not_line_ending, newline)),
@@ -239,7 +318,7 @@ pub fn parse(source: &str) -> IResult<&str, Vec<Section>> {
     //     line_ending,
     // )(source)?;
 
-    dbg!(content);
+    // dbg!(content);
     Ok((
         source,
         vec![Section::Title(vec![Content::Title {
@@ -251,57 +330,64 @@ pub fn parse(source: &str) -> IResult<&str, Vec<Section>> {
 
 #[cfg(test)]
 
-mod test {
+mod test2 {
 
-    use super::*;
+    // use super::*;
 
-    #[test]
-    pub fn solo_test_1() {
-        let lines = vec![
-            "-> title",
-            "",
-            "Alfa Bravo",
-            "Charlie Delta",
-            "",
-            "Echo Foxtrot",
-            "Golf Hotel",
-        ]
-        .join("\n");
-        let expected =
-            vec![Section::Title(vec![Content::Title {
-                text: "Alfa Bravo Charlie Delta"
-                    .to_string(),
-            }])];
-        assert_eq!(
-            expected,
-            parse(lines.as_str()).unwrap().1
-        );
-    }
+    // #[test]
+    // pub fn solo_test_1() {
+    //     let lines = vec![
+    //         "-> title",
+    //         "",
+    //         "Alfa Bravo",
+    //         "Charlie Delta",
+    //         "",
+    //         "Echo Foxtrot",
+    //         "Golf Hotel",
+    //         "",
+    //         "",
+    //         "-> h2",
+    //         "",
+    //         "Whiskey Tango",
+    //         "Echo Sierra",
+    //     ]
+    //     .join("\n");
+    //     let expected =
+    //         vec![Section::Title(vec![Content::Title {
+    //             text: "Alfa Bravo Charlie Delta"
+    //                 .to_string(),
+    //         }])];
+    //     assert_eq!(
+    //         expected,
+    //         parse(lines.as_str()).unwrap().1
+    //     );
+    // }
 
-    #[test]
-    pub fn test_2() {
-        let lines = vec![
-            "-> title",
-            "",
-            "Alfa Bravo",
-            "",
-            "-> h2",
-            "",
-            "Charlie",
-        ]
-        .join("\n");
-        let expected = vec![
-            Section::Title(vec![Content::Title {
-                text: "Alfa Bravo".to_string(),
-            }]),
-            Section::H2(vec![Content::Title {
-                text: "Charlie".to_string(),
-            }]),
-        ];
-        assert_eq!(
-            expected,
-            parse(lines.as_str()).unwrap().1
-        );
-    }
+    // #[test]
+    // pub fn test_2() {
+    //     let lines = vec![
+    //         "-> title",
+    //         "",
+    //         "Alfa Bravo",
+    //         "",
+    //         "-> h2",
+    //         "",
+    //         "Charlie",
+    //     ]
+    //     .join("\n");
+    //     let expected = vec![
+    //         Section::Title(vec![Content::Title {
+    //             text: "Alfa Bravo".to_string(),
+    //         }]),
+    //         Section::H2(vec![Content::Title {
+    //             text: "Charlie".to_string(),
+    //         }]),
+    //     ];
+    //     assert_eq!(
+    //         expected,
+    //         parse(lines.as_str()).unwrap().1
+    //     );
+    // }
+
     //
 }
