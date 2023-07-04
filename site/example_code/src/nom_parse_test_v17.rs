@@ -223,7 +223,6 @@ pub fn content_blocks(
 }
 
 #[cfg(test)]
-
 mod content_block_tests {
     use super::*;
 
@@ -310,111 +309,102 @@ mod content_block_tests {
     //
 }
 
-pub fn parse(source: &str) -> IResult<&str, Vec<Section>> {
-    let (a, b) = many1(
-        delimited(tag("-> "), not_line_ending, multispace1)
-            .map(|tag_type| match tag_type {
-                "title" => {
-                    // let (c, v) =
-                    //Section::Title(vec![])
-                    Section::None
-                }
-                _ => Section::None,
-            }),
-    )(source.trim())?;
-    dbg!(&b);
-    dbg!(&a);
+//pub fn parse(source: &str) -> IResult<&str, Vec<Section>> {
+//    let (a, b) = many1(
+//        delimited(tag("-> "), not_line_ending, multispace1)
+//            .map(|tag_type| match tag_type {
+//                "title" => {
+//                    // let (c, v) =
+//                    //Section::Title(vec![])
+//                    Section::None
+//                }
+//                _ => Section::None,
+//            }),
+//    )(source.trim())?;
+//    dbg!(&b);
+//    dbg!(&a);
+//    //let (source, _) = tag("-> ")(source)?;
+//    //let (source, tag_type) = not_line_ending(source)?;
+//    //let (source, _) = newline(source)?;
+//    //let (source, _) = newline(source)?;
+//    //dbg!(&tag_type);
+//    ////let (source, content) = content_block(source)?;
+//    //// let (source, content) = content_block(source)?;
+//    // let (source, content) = many_till(
+//    //     content_block,
+//    //     alt((tag("->"), eof)),
+//    // )(source)?;
+//    // let (source, content) = many_till(
+//    //     // tuple((not_line_ending, newline)),
+//    //     pair(not_line_ending, line_ending),
+//    //     // pair(line_ending, line_ending),
+//    //     line_ending,
+//    // )(source)?;
+//    // dbg!(content);
+//    Ok((
+//        source,
+//        vec![Section::Title(vec![Content::Title {
+//            //text: content.to_string(),
+//            text: "Alfa Bravo Charlie Delta".to_string(),
+//        }])],
+//    ))
+//}
 
-    //let (source, _) = tag("-> ")(source)?;
-    //let (source, tag_type) = not_line_ending(source)?;
-    //let (source, _) = newline(source)?;
-    //let (source, _) = newline(source)?;
-    //dbg!(&tag_type);
-    ////let (source, content) = content_block(source)?;
-    //// let (source, content) = content_block(source)?;
-
-    // let (source, content) = many_till(
-    //     content_block,
-    //     alt((tag("->"), eof)),
-    // )(source)?;
-
-    // let (source, content) = many_till(
-    //     // tuple((not_line_ending, newline)),
-    //     pair(not_line_ending, line_ending),
-    //     // pair(line_ending, line_ending),
-    //     line_ending,
-    // )(source)?;
-
-    // dbg!(content);
-    Ok((
-        source,
-        vec![Section::Title(vec![Content::Title {
-            //text: content.to_string(),
-            text: "Alfa Bravo Charlie Delta".to_string(),
-        }])],
-    ))
-}
-
-#[cfg(test)]
-
-mod test2 {
-
-    // use super::*;
-
-    // #[test]
-    // pub fn solo_test_1() {
-    //     let lines = vec![
-    //         "-> title",
-    //         "",
-    //         "Alfa Bravo",
-    //         "Charlie Delta",
-    //         "",
-    //         "Echo Foxtrot",
-    //         "Golf Hotel",
-    //         "",
-    //         "",
-    //         "-> h2",
-    //         "",
-    //         "Whiskey Tango",
-    //         "Echo Sierra",
-    //     ]
-    //     .join("\n");
-    //     let expected =
-    //         vec![Section::Title(vec![Content::Title {
-    //             text: "Alfa Bravo Charlie Delta"
-    //                 .to_string(),
-    //         }])];
-    //     assert_eq!(
-    //         expected,
-    //         parse(lines.as_str()).unwrap().1
-    //     );
-    // }
-
-    // #[test]
-    // pub fn test_2() {
-    //     let lines = vec![
-    //         "-> title",
-    //         "",
-    //         "Alfa Bravo",
-    //         "",
-    //         "-> h2",
-    //         "",
-    //         "Charlie",
-    //     ]
-    //     .join("\n");
-    //     let expected = vec![
-    //         Section::Title(vec![Content::Title {
-    //             text: "Alfa Bravo".to_string(),
-    //         }]),
-    //         Section::H2(vec![Content::Title {
-    //             text: "Charlie".to_string(),
-    //         }]),
-    //     ];
-    //     assert_eq!(
-    //         expected,
-    //         parse(lines.as_str()).unwrap().1
-    //     );
-    // }
-
-    //
-}
+//#[cfg(test)]
+//mod test2 {
+//    // use super::*;
+//    // #[test]
+//    // pub fn solo_test_1() {
+//    //     let lines = vec![
+//    //         "-> title",
+//    //         "",
+//    //         "Alfa Bravo",
+//    //         "Charlie Delta",
+//    //         "",
+//    //         "Echo Foxtrot",
+//    //         "Golf Hotel",
+//    //         "",
+//    //         "",
+//    //         "-> h2",
+//    //         "",
+//    //         "Whiskey Tango",
+//    //         "Echo Sierra",
+//    //     ]
+//    //     .join("\n");
+//    //     let expected =
+//    //         vec![Section::Title(vec![Content::Title {
+//    //             text: "Alfa Bravo Charlie Delta"
+//    //                 .to_string(),
+//    //         }])];
+//    //     assert_eq!(
+//    //         expected,
+//    //         parse(lines.as_str()).unwrap().1
+//    //     );
+//    // }
+//    // #[test]
+//    // pub fn test_2() {
+//    //     let lines = vec![
+//    //         "-> title",
+//    //         "",
+//    //         "Alfa Bravo",
+//    //         "",
+//    //         "-> h2",
+//    //         "",
+//    //         "Charlie",
+//    //     ]
+//    //     .join("\n");
+//    //     let expected = vec![
+//    //         Section::Title(vec![Content::Title {
+//    //             text: "Alfa Bravo".to_string(),
+//    //         }]),
+//    //         Section::H2(vec![Content::Title {
+//    //             text: "Charlie".to_string(),
+//    //         }]),
+//    //     ];
+//    //     assert_eq!(
+//    //         expected,
+//    //         parse(lines.as_str()).unwrap().1
+//    //     );
+//    // }
+//    //
+//}
