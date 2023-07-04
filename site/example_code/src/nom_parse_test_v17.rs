@@ -207,7 +207,7 @@ pub fn content_block(
     let (source, content) = many_till(
         pair(not_line_ending, alt((line_ending, eof)))
             .map(|x| x.0),
-        alt((line_ending, eof)),
+        alt((multispace1, eof)),
     )(source)?;
     Ok((source, content.0.join(" ")))
 }
@@ -218,7 +218,7 @@ pub fn content_blocks(
     let (source, b) = many_till(
         content_block,
         alt((line_ending, eof)),
-    )(source)?;
+    )(source.trim())?;
     Ok((source, b.0))
 }
 
@@ -273,6 +273,33 @@ mod content_block_tests {
         let expected = vec![
             format!("foxtrot golf hotel whiskey"),
             format!("alfa delta victor foxtrot"),
+        ];
+        assert_eq!(
+            expected,
+            content_blocks(lines.as_str()).unwrap().1
+        );
+    }
+
+    #[test]
+    pub fn solo_content_blocks_spacing_blocks() {
+        let lines = vec![
+            "",
+            "",
+            "tango alfa",
+            "whiskey oscar",
+            "    ",
+            "",
+            "",
+            "foxtrot hotel",
+            "echo charlie",
+            "",
+            "",
+            "",
+        ]
+        .join("\n");
+        let expected = vec![
+            format!("tango alfa whiskey oscar"),
+            format!("foxtrot hotel echo charlie"),
         ];
         assert_eq!(
             expected,
