@@ -1,6 +1,8 @@
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::anychar;
+use nom::character::complete::multispace0;
+use nom::character::complete::space0;
 use nom::combinator::eof;
 use nom::multi::many_till;
 use nom::sequence::tuple;
@@ -15,12 +17,27 @@ pub fn get_paragraphs(
             anychar
                 .map(|x| if x == '\n' { ' ' } else { x }),
             alt((
-                tuple((tag("\n"), tag("\n"))).map(|_| ""),
+                tuple((
+                    tag("\n"),
+                    space0,
+                    tag("\n"),
+                    multispace0,
+                ))
+                .map(|_| ""),
                 eof,
             )),
         )
         .map(|(x, y)| (x.iter().collect::<String>(), y)),
-        alt((tag("\n\n"), eof)),
+        alt((
+            tuple((
+                tag("\n"),
+                space0,
+                tag("\n"),
+                multispace0,
+            ))
+            .map(|_| ""),
+            eof,
+        )),
     )(source.trim())?;
     let results: Vec<_> =
         b.clone().0.into_iter().map(|x| x.0).collect();
@@ -131,7 +148,7 @@ mod test {
     }
 
     #[test]
-    pub fn solo_multiple_trailing_white_space() {
+    pub fn multiple_trailing_white_space() {
         let source = vec![
             "",
             "",
@@ -142,6 +159,7 @@ mod test {
             "Fry the egg",
             "Fly by night",
             "Waste little time",
+            "",
             "",
             "Set the lamp",
             "",
@@ -160,5 +178,16 @@ mod test {
                  "Beat the dust"
              ]
          );
+    }
+
+    #[test]
+    pub fn white_space_on_blank_line() {
+        let source =
+            vec!["Hang tinsel", "    ", "Heave the line"]
+                .join("\n");
+        assert_eq!(
+            get_paragraphs(source.as_str()).unwrap().1,
+            vec!["Hang tinsel", "Heave the line",]
+        );
     }
 }

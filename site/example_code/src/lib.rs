@@ -1,5 +1,8 @@
 pub mod convert_a_vec_of_tuples_to_a_vec_of_strings;
 pub mod nom_parse_multiple_neopolitan_tags;
 pub mod nom_parse_neopolitan_section_attributes;
+pub mod nom_parse_optional_neopolitan_attributes;
 pub mod nom_parse_paragraphs_separated_by_empty_lines;
+pub mod nom_parse_test_v17;
 pub mod pargraph_parsing_test;
+pub mod sort_a_list_of_files_in_a_directory;
