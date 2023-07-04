@@ -27,7 +27,10 @@ use nom::Parser;
 #[derive(Debug, PartialEq)]
 pub enum Section {
     H2(Vec<crate::nom_parse_test_v17::Content>),
-    Title { blocks: Vec<Content> },
+    Title {
+        headline: Content,
+        paragraphs: Vec<Content>,
+    },
     P(Vec<crate::nom_parse_test_v17::Content>),
     None,
 }
@@ -470,6 +473,23 @@ pub fn sections(
     //
 }
 
+pub fn paragraph_block(
+    source: &str,
+) -> IResult<&str, Content> {
+    dbg!(&source);
+    let (source, content) = many_till(
+        pair(not_line_ending, alt((line_ending, eof)))
+            .map(|x| x.0),
+        alt((multispace1, eof)),
+    )(source.trim())?;
+    Ok((
+        source,
+        Content::Paragraph {
+            text: (content.0.join(" ")),
+        },
+    ))
+}
+
 pub fn headline_block(
     source: &str,
 ) -> IResult<&str, String> {
@@ -481,16 +501,45 @@ pub fn headline_block(
     Ok((source, content.0.join(" ")))
 }
 
+pub fn paragraph_blocks(
+    source: &str,
+) -> IResult<&str, Vec<Content>> {
+    dbg!(&source);
+    let (source, paragraphs) =
+        many_till(paragraph_block, eof)(source)?;
+    Ok((source, paragraphs.0))
+}
+
 pub fn title_section(
     source: &str,
 ) -> IResult<&str, Section> {
-    let mut blocks: Vec<Content> = vec![];
+    // let mut blocks: Vec<Content> = vec![];
     let (source, headline_block) = headline_block(source)?;
-    blocks.push(Content::Headline {
-        text: headline_block.to_string(),
-    });
-    dbg!(&headline_block);
-    Ok((source, Section::Title { blocks }))
+    let headline = Content::Headline {
+        text: headline_block,
+    };
+    let (source, paragraphs) = paragraph_blocks(source)?;
+
+    // blocks.push(Content::Headline {
+    //     text: headline_block.to_string(),
+    // });
+
+    // // dbg!(&source);
+    // let (source, paragraph_blocks) =
+    //     paragraph_blocks(source)?;
+
+    // blocks.push(Content::Paragraph {
+    //     text: paragraph_block.to_string(),
+    // });
+
+    // dbg!(&headline_block);
+    Ok((
+        source,
+        Section::Title {
+            headline,
+            paragraphs,
+        },
+    ))
 }
 
 #[cfg(test)]
@@ -498,13 +547,45 @@ mod section_test {
     use super::*;
 
     #[test]
-    pub fn solo_basic_sections() {
+    pub fn solo_title_section_basic() {
         let lines =
             vec!["-> title", "", "delta echo"].join("\n");
         let expected = vec![Section::Title {
-            blocks: vec![Content::Headline {
+            headline: Content::Headline {
                 text: "delta echo".to_string(),
-            }],
+            },
+            paragraphs: vec![],
+        }];
+        assert_eq!(
+            expected,
+            sections(lines.as_str()).unwrap().1
+        );
+    }
+
+    #[test]
+    pub fn solo_title_section_with_multilines() {
+        let lines = vec![
+            "-> title",
+            "",
+            "delta echo",
+            "",
+            "tango sierra",
+            "",
+            "golf hotel",
+        ]
+        .join("\n");
+        let expected = vec![Section::Title {
+            headline: Content::Headline {
+                text: "delta echo".to_string(),
+            },
+            paragraphs: vec![
+                Content::Paragraph {
+                    text: "tango sierra".to_string(),
+                },
+                Content::Paragraph {
+                    text: "golf hotel".to_string(),
+                },
+            ],
         }];
         assert_eq!(
             expected,
