@@ -447,28 +447,11 @@ pub fn sections(
                 "title" => {
                     title_section(contents).unwrap().1
                 }
-                // Section::Title {
-                // blocks: vec![],
-                // title_section(contents).unwrap().1,
                 _ => Section::None,
             },
         ),
     ))(source)?;
-
     Ok((source, captured))
-
-    // dbg!("-------SECTIONS");
-    // dbg!(&captured);
-    // dbg!(&source);
-
-    // Ok((
-    //     source,
-    //     vec![Section::Title {
-    //         blocks: vec![Content::Headline {
-    //             text: "delta echo".to_string(),
-    //         }],
-    //     }],
-    // ))
 
     //
 }
@@ -520,20 +503,6 @@ pub fn title_section(
 ) -> IResult<&str, Section> {
     let (source, headline) = headline_block(source)?;
     let (source, paragraphs) = paragraph_blocks(source)?;
-
-    // blocks.push(Content::Headline {
-    //     text: headline_block.to_string(),
-    // });
-
-    // // dbg!(&source);
-    // let (source, paragraph_blocks) =
-    //     paragraph_blocks(source)?;
-
-    // blocks.push(Content::Paragraph {
-    //     text: paragraph_block.to_string(),
-    // });
-
-    // dbg!(&headline_block);
     Ok((
         source,
         Section::Title {
