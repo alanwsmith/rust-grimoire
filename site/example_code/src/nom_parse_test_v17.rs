@@ -1,6 +1,7 @@
 #![allow(unused_imports)]
 #![allow(unused_variables)]
 use nom::branch::alt;
+use nom::bytes::complete::is_not;
 use nom::bytes::complete::tag;
 use nom::bytes::complete::tag_no_case;
 use nom::bytes::complete::take_until;
@@ -12,7 +13,9 @@ use nom::character::complete::newline;
 use nom::character::complete::not_line_ending;
 use nom::combinator::eof;
 use nom::combinator::not;
+use nom::combinator::opt;
 use nom::combinator::rest;
+use nom::multi::many0;
 use nom::multi::many1;
 use nom::multi::many_till;
 use nom::multi::separated_list0;
@@ -20,6 +23,7 @@ use nom::multi::separated_list1;
 use nom::sequence::delimited;
 use nom::sequence::pair;
 use nom::sequence::preceded;
+use nom::sequence::separated_pair;
 use nom::sequence::tuple;
 use nom::IResult;
 use nom::Parser;
@@ -40,8 +44,20 @@ pub enum Section {
 
 #[derive(Debug, PartialEq)]
 pub enum Content {
-    Headline { text: String },
-    Paragraph { text: String },
+    Headline {
+        attributes: Vec<Attribute>,
+        text: String,
+    },
+    Paragraph {
+        text: String,
+    },
+    None,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum Attribute {
+    ClassAttr(Vec<String>),
+    DataAttr(String, String),
     None,
 }
 
@@ -415,75 +431,61 @@ pub enum Content {
 //
 // }
 
-pub fn content_block(
-    source: &str,
-) -> IResult<&str, String> {
+pub fn content_block(source: &str) -> IResult<&str, String> {
     let (source, content) = many_till(
-        pair(not_line_ending, alt((line_ending, eof)))
-            .map(|x| x.0),
+        pair(not_line_ending, alt((line_ending, eof))).map(|x| x.0),
         alt((multispace1, eof)),
     )(source)?;
     Ok((source, content.0.join(" ")))
 }
 
-pub fn content_blocks(
-    source: &str,
-) -> IResult<&str, Vec<String>> {
-    let (source, b) = many_till(
-        content_block,
-        alt((line_ending, eof)),
-    )(source.trim())?;
+pub fn content_blocks(source: &str) -> IResult<&str, Vec<String>> {
+    let (source, b) =
+        many_till(content_block, alt((line_ending, eof)))(source.trim())?;
     Ok((source, b.0))
 }
 
-pub fn sections(
-    source: &str,
-) -> IResult<&str, Vec<Section>> {
+pub fn sections(source: &str) -> IResult<&str, Vec<Section>> {
     let (source, captured) = many1(preceded(
         tuple((multispace0, tag("-> "))),
-        tuple((
-            not_line_ending,
-            alt((take_until("\n\n-> "), rest)),
-        ))
-        .map(|(tag_name, contents)| {
-            match tag_name {
-                "title" => {
-                    dbg!(&contents);
-                    // dbg!(&remainder);
-                    // (
-                    //     title_section(contents).unwrap().1,
-                    //     remainder,
-                    // )
-                    title_section(contents).unwrap().1
+        tuple((not_line_ending, alt((take_until("\n\n-> "), rest)))).map(
+            |(tag_name, contents)| {
+                match tag_name {
+                    "title" => {
+                        // dbg!(&contents);
+                        // dbg!(&remainder);
+                        // (
+                        //     title_section(contents).unwrap().1,
+                        //     remainder,
+                        // )
+                        title_section(contents).unwrap().1
+                    }
+                    "h2" => {
+                        // dbg!(&contents);
+                        // dbg!(&remainder);
+                        // (
+                        //     h2_section(contents).unwrap().1,
+                        //     remainder,
+                        // )
+                        h2_section(contents).unwrap().1
+                    }
+                    _ => {
+                        // dbg!(&contents);
+                        Section::None
+                    }
                 }
-                "h2" => {
-                    dbg!(&contents);
-                    // dbg!(&remainder);
-                    // (
-                    //     h2_section(contents).unwrap().1,
-                    //     remainder,
-                    // )
-                    h2_section(contents).unwrap().1
-                }
-                _ => {
-                    dbg!(&contents);
-                    Section::None
-                }
-            }
-        }),
+            },
+        ),
     ))(source)?;
     Ok((source, captured))
 
     //
 }
 
-pub fn paragraph_block(
-    source: &str,
-) -> IResult<&str, Content> {
-    dbg!(&source);
+pub fn paragraph_block(source: &str) -> IResult<&str, Content> {
+    // dbg!(&source);
     let (source, content) = many_till(
-        pair(not_line_ending, alt((line_ending, eof)))
-            .map(|x| x.0),
+        pair(not_line_ending, alt((line_ending, eof))).map(|x| x.0),
         alt((multispace1, eof)),
     )(source.trim())?;
     Ok((
@@ -494,38 +496,65 @@ pub fn paragraph_block(
     ))
 }
 
-pub fn headline_block(
-    source: &str,
-) -> IResult<&str, Content> {
+pub fn section_attrs(source: &str) -> IResult<&str, Vec<Attribute>> {
+    dbg!("-------------------------");
+    dbg!(&source);
+    let (source, attrs) = many0(preceded(
+        tag(">> "),
+        tuple((
+            opt(tag::<&str, &str, nom::error::Error<&str>>("data-")),
+            is_not(":"),
+            tag(": "),
+            not_line_ending,
+        ))
+        .map(|(is_data, key, spacer, value)| match is_data {
+            Some(_) => Attribute::DataAttr(key.to_string(), value.to_string()),
+            None => match key {
+                "class" => Attribute::ClassAttr(
+                    value
+                        .split(" ")
+                        .collect::<Vec<&str>>()
+                        .into_iter()
+                        .map(|s| s.to_string())
+                        .collect(),
+                ),
+                "data-" => {
+                    Attribute::DataAttr("dolf".to_string(), "asdf".to_string())
+                }
+                _ => Attribute::None,
+            },
+        }),
+    ))(source.trim())?;
+    dbg!(&source);
+    Ok((source, attrs))
+}
+
+pub fn headline_block(source: &str) -> IResult<&str, Content> {
+    let (source, attrs) = section_attrs(source)?;
     let (source, content) = many_till(
-        pair(not_line_ending, alt((line_ending, eof)))
-            .map(|x| x.0),
+        pair(not_line_ending, alt((line_ending, eof))).map(|x| x.0),
         alt((multispace1, eof)),
     )(source.trim())?;
     Ok((
         source,
         Content::Headline {
+            attributes: attrs,
             text: content.0.join(" "),
         },
     ))
 }
 
-pub fn paragraph_blocks(
-    source: &str,
-) -> IResult<&str, Vec<Content>> {
-    dbg!(&source);
-    let (source, paragraphs) =
-        many_till(paragraph_block, eof)(source)?;
+pub fn paragraph_blocks(source: &str) -> IResult<&str, Vec<Content>> {
+    // dbg!(&source);
+    let (source, paragraphs) = many_till(paragraph_block, eof)(source)?;
     Ok((source, paragraphs.0))
 }
 
-pub fn title_section(
-    source: &str,
-) -> IResult<&str, Section> {
-    dbg!(&source);
+pub fn title_section(source: &str) -> IResult<&str, Section> {
+    // dbg!(&source);
     let (source, headline) = headline_block(source)?;
     let (source, paragraphs) = paragraph_blocks(source)?;
-    dbg!(&source);
+    // dbg!(&source);
     Ok((
         source,
         Section::Title {
@@ -536,10 +565,10 @@ pub fn title_section(
 }
 
 pub fn h2_section(source: &str) -> IResult<&str, Section> {
-    dbg!(&source);
+    // dbg!(&source);
     let (source, headline) = headline_block(source)?;
     let (source, paragraphs) = paragraph_blocks(source)?;
-    dbg!(&source);
+    // dbg!(&source);
     Ok((
         source,
         Section::H2 {
@@ -555,18 +584,15 @@ mod section_test {
 
     #[test]
     pub fn title_section_basic() {
-        let lines =
-            vec!["-> title", "", "delta echo"].join("\n");
+        let lines = vec!["-> title", "", "delta echo"].join("\n");
         let expected = vec![Section::Title {
             headline: Content::Headline {
+                attributes: vec![],
                 text: "delta echo".to_string(),
             },
             paragraphs: vec![],
         }];
-        assert_eq!(
-            expected,
-            sections(lines.as_str()).unwrap().1
-        );
+        assert_eq!(expected, sections(lines.as_str()).unwrap().1);
     }
 
     #[test]
@@ -583,6 +609,7 @@ mod section_test {
         .join("\n");
         let expected = vec![Section::Title {
             headline: Content::Headline {
+                attributes: vec![],
                 text: "delta echo".to_string(),
             },
             paragraphs: vec![
@@ -594,14 +621,11 @@ mod section_test {
                 },
             ],
         }];
-        assert_eq!(
-            expected,
-            sections(lines.as_str()).unwrap().1
-        );
+        assert_eq!(expected, sections(lines.as_str()).unwrap().1);
     }
 
     #[test]
-    pub fn solo_multiple_secitons() {
+    pub fn multiple_secitons() {
         let lines = vec![
             "-> title",
             "",
@@ -617,20 +641,63 @@ mod section_test {
         let expected = vec![
             Section::Title {
                 headline: Content::Headline {
+                    attributes: vec![],
                     text: "sierra alfa".to_string(),
                 },
                 paragraphs: vec![],
             },
             Section::H2 {
                 headline: Content::Headline {
+                    attributes: vec![],
                     text: "echo tango".to_string(),
                 },
                 paragraphs: vec![],
             },
         ];
-        assert_eq!(
-            expected,
-            sections(lines.as_str()).unwrap().1
-        );
+        assert_eq!(expected, sections(lines.as_str()).unwrap().1);
     }
+
+    #[test]
+    pub fn solo_attributes() {
+        let lines = vec![
+            "-> h2",
+            ">> class: hotel",
+            "",
+            "alfa echo",
+            "bravo charlie",
+            "",
+            "-> h2",
+            ">> data-golf: victor",
+            "",
+            "delta tango",
+            "whiskey sierra",
+            "",
+            "",
+        ]
+        .join("\n");
+        let expected = vec![
+            Section::H2 {
+                headline: Content::Headline {
+                    attributes: vec![Attribute::ClassAttr(vec![
+                        "hotel".to_string()
+                    ])],
+                    text: "alfa echo bravo charlie".to_string(),
+                },
+                paragraphs: vec![],
+            },
+            Section::H2 {
+                headline: Content::Headline {
+                    attributes: vec![Attribute::DataAttr(
+                        "golf".to_string(),
+                        "victor".to_string(),
+                    )],
+                    text: "delta tango whiskey sierra".to_string(),
+                },
+                paragraphs: vec![],
+            },
+        ];
+        assert_eq!(expected, sections(lines.as_str()).unwrap().1);
+    }
+
+    //
 }
