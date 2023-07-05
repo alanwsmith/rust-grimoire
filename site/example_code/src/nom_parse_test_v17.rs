@@ -497,13 +497,24 @@ pub fn paragraph_block(source: &str) -> IResult<&str, Content> {
     ))
 }
 
+//////////////////////////////////////////////////////////////////////////
+// Section Attributes
+//////////////////////////////////////////////////////////////////////////
+
+pub fn autofocus_section_attr(source: &str) -> IResult<&str, Attribute> {
+    let (source, attr) = tag("autofocus")
+        .parse(source)
+        .map(|(x, y)| (x, Attribute::Autofocus))?;
+    Ok((source, attr))
+}
+
 pub fn section_attrs(source: &str) -> IResult<&str, Vec<Attribute>> {
     dbg!("-------------------------");
     dbg!(&source);
     let (source, attrs) = many0(preceded(
         tuple((multispace0, tag(">> "))),
         alt((
-            tag("autofocus").map(|_| Attribute::Autofocus),
+            autofocus_section_attr,
             preceded(
                 tag("data-"),
                 separated_pair(
