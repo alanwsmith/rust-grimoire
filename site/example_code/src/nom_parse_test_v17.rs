@@ -6,6 +6,7 @@ use nom::bytes::complete::tag;
 use nom::bytes::complete::tag_no_case;
 use nom::bytes::complete::take_until;
 use nom::character::complete::alpha1;
+use nom::character::complete::digit1;
 use nom::character::complete::line_ending;
 use nom::character::complete::multispace0;
 use nom::character::complete::multispace1;
@@ -63,6 +64,7 @@ pub enum Attribute {
     Hidden,
     Id(String),
     Style(Vec<(String, String)>),
+    TabIndex(u32),
     None,
 }
 
@@ -539,7 +541,7 @@ pub fn style_section_attr(source: &str) -> IResult<&str, Attribute> {
         tag("style: "),
         many1(
             tuple((
-                is_not::<&str, &str, nom::error::Error<&str>>(":"),
+                is_not::<&str, &str, nom::error::Error<&str>>(">:"),
                 tag(": "),
                 is_not(";\n"),
                 alt((tag("; "), tag(";"), line_ending)),
@@ -550,6 +552,13 @@ pub fn style_section_attr(source: &str) -> IResult<&str, Attribute> {
         ),
     )(source)?;
     Ok((source, Attribute::Style(styles)))
+}
+
+pub fn tab_index_section_attr(source: &str) -> IResult<&str, Attribute> {
+    let (source, tab_index) =
+        preceded(tag_no_case("tabindex: "), digit1)(source)?;
+    let index_number: u32 = tab_index.parse().unwrap();
+    Ok((source, Attribute::TabIndex(index_number)))
 }
 
 pub fn section_attrs(source: &str) -> IResult<&str, Vec<Attribute>> {
@@ -565,6 +574,7 @@ pub fn section_attrs(source: &str) -> IResult<&str, Vec<Attribute>> {
             hidden_section_attr,
             id_section_attr,
             style_section_attr,
+            tab_index_section_attr,
         )),
     ))(source.trim())?;
     Ok((source, attrs))
@@ -772,8 +782,11 @@ mod section_test {
             ">> contenteditable",
             ">> hidden",
             ">> style: color: red; padding: 12px",
+            ">> tabindex: 4",
             "",
             "tango tango",
+            "",
+            "sierra whiskey",
         ]
         .join("\n");
         let expected = vec![
@@ -809,10 +822,13 @@ mod section_test {
                             ("color".to_string(), "red".to_string()),
                             ("padding".to_string(), "12px".to_string()),
                         ]),
+                        Attribute::TabIndex(4),
                     ],
                     text: "tango tango".to_string(),
                 },
-                paragraphs: vec![],
+                paragraphs: vec![Content::Paragraph {
+                    text: "sierra whiskey".to_string(),
+                }],
             },
         ];
         assert_eq!(expected, sections(lines.as_str()).unwrap().1);
