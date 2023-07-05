@@ -508,6 +508,29 @@ pub fn autofocus_section_attr(source: &str) -> IResult<&str, Attribute> {
     Ok((source, attr))
 }
 
+pub fn class_section_attr(source: &str) -> IResult<&str, Attribute> {
+    let (source, values) = preceded(
+        tag("class: "),
+        many1(is_not(" \n").map(|x: &str| x.to_string())),
+    )(source)?;
+    Ok((source, Attribute::ClassAttr(values)))
+}
+
+pub fn data_section_attr(source: &str) -> IResult<&str, Attribute> {
+    let (source, attr) = preceded(
+        tag("data-"),
+        separated_pair(
+            is_not::<&str, &str, nom::error::Error<&str>>(":"),
+            tag(": "),
+            not_line_ending,
+        ),
+    )(source)?;
+    Ok((
+        source,
+        Attribute::DataAttr(attr.0.to_string(), attr.1.to_string()),
+    ))
+}
+
 pub fn section_attrs(source: &str) -> IResult<&str, Vec<Attribute>> {
     dbg!("-------------------------");
     dbg!(&source);
@@ -515,33 +538,8 @@ pub fn section_attrs(source: &str) -> IResult<&str, Vec<Attribute>> {
         tuple((multispace0, tag(">> "))),
         alt((
             autofocus_section_attr,
-            preceded(
-                tag("data-"),
-                separated_pair(
-                    is_not::<&str, &str, nom::error::Error<&str>>(":"),
-                    tag(": "),
-                    not_line_ending,
-                )
-                .map(|(key, value)| {
-                    Attribute::DataAttr(key.to_string(), value.to_string())
-                }),
-            ),
-            separated_pair(
-                is_not::<&str, &str, nom::error::Error<&str>>(":"),
-                tag(": "),
-                not_line_ending,
-            )
-            .map(|(key, value)| match key {
-                "class" => Attribute::ClassAttr(
-                    value
-                        .split(" ")
-                        .collect::<Vec<&str>>()
-                        .into_iter()
-                        .map(|s| s.to_string())
-                        .collect(),
-                ),
-                _ => Attribute::None,
-            }),
+            data_section_attr,
+            class_section_attr,
         )),
     ))(source.trim())?;
     Ok((source, attrs))
