@@ -58,7 +58,11 @@ pub enum Content {
 pub enum Attribute {
     Autofocus,
     ClassAttr(Vec<String>),
+    ContentEditable,
     DataAttr(String, String),
+    Hidden,
+    Id(String),
+    Style(Vec<(String, String)>),
     None,
 }
 
@@ -452,24 +456,8 @@ pub fn sections(source: &str) -> IResult<&str, Vec<Section>> {
         tuple((not_line_ending, alt((take_until("\n\n-> "), rest)))).map(
             |(tag_name, contents)| {
                 match tag_name {
-                    "title" => {
-                        // dbg!(&contents);
-                        // dbg!(&remainder);
-                        // (
-                        //     title_section(contents).unwrap().1,
-                        //     remainder,
-                        // )
-                        title_section(contents).unwrap().1
-                    }
-                    "h2" => {
-                        // dbg!(&contents);
-                        // dbg!(&remainder);
-                        // (
-                        //     h2_section(contents).unwrap().1,
-                        //     remainder,
-                        // )
-                        h2_section(contents).unwrap().1
-                    }
+                    "title" => title_section(contents).unwrap().1,
+                    "h2" => h2_section(contents).unwrap().1,
                     _ => {
                         // dbg!(&contents);
                         Section::None
@@ -502,7 +490,7 @@ pub fn paragraph_block(source: &str) -> IResult<&str, Content> {
 //////////////////////////////////////////////////////////////////////////
 
 pub fn autofocus_section_attr(source: &str) -> IResult<&str, Attribute> {
-    let (source, attr) = tag("autofocus")
+    let (source, attr) = tag_no_case("autofocus")
         .parse(source)
         .map(|(x, y)| (x, Attribute::Autofocus))?;
     Ok((source, attr))
@@ -510,10 +498,15 @@ pub fn autofocus_section_attr(source: &str) -> IResult<&str, Attribute> {
 
 pub fn class_section_attr(source: &str) -> IResult<&str, Attribute> {
     let (source, values) = preceded(
-        tag("class: "),
+        tag_no_case("class: "),
         many1(is_not(" \n").map(|x: &str| x.to_string())),
     )(source)?;
     Ok((source, Attribute::ClassAttr(values)))
+}
+
+pub fn contenteditable_section_attr(source: &str) -> IResult<&str, Attribute> {
+    let (source, values) = tag_no_case("contenteditable")(source)?;
+    Ok((source, Attribute::ContentEditable))
 }
 
 pub fn data_section_attr(source: &str) -> IResult<&str, Attribute> {
@@ -531,6 +524,34 @@ pub fn data_section_attr(source: &str) -> IResult<&str, Attribute> {
     ))
 }
 
+pub fn hidden_section_attr(source: &str) -> IResult<&str, Attribute> {
+    let (source, values) = tag_no_case("hidden")(source)?;
+    Ok((source, Attribute::Hidden))
+}
+
+pub fn id_section_attr(source: &str) -> IResult<&str, Attribute> {
+    let (source, value) = preceded(tag("id: "), not_line_ending)(source)?;
+    Ok((source, Attribute::Id(value.to_string())))
+}
+
+pub fn style_section_attr(source: &str) -> IResult<&str, Attribute> {
+    let (source, styles) = preceded(
+        tag("style: "),
+        many1(
+            tuple((
+                is_not::<&str, &str, nom::error::Error<&str>>(":"),
+                tag(": "),
+                is_not(";\n"),
+                alt((tag("; "), tag(";"), line_ending)),
+            ))
+            .map(|(key, spacer, value, terminator)| {
+                (key.to_string(), value.to_string())
+            }),
+        ),
+    )(source)?;
+    Ok((source, Attribute::Style(styles)))
+}
+
 pub fn section_attrs(source: &str) -> IResult<&str, Vec<Attribute>> {
     dbg!("-------------------------");
     dbg!(&source);
@@ -540,6 +561,10 @@ pub fn section_attrs(source: &str) -> IResult<&str, Vec<Attribute>> {
             autofocus_section_attr,
             data_section_attr,
             class_section_attr,
+            contenteditable_section_attr,
+            hidden_section_attr,
+            id_section_attr,
+            style_section_attr,
         )),
     ))(source.trim())?;
     Ok((source, attrs))
@@ -742,6 +767,13 @@ mod section_test {
             "whiskey sierra",
             "",
             "",
+            "-> h2",
+            ">> id: foxtrot",
+            ">> contenteditable",
+            ">> hidden",
+            ">> style: color: red; padding: 12px",
+            "",
+            "tango tango",
         ]
         .join("\n");
         let expected = vec![
@@ -764,6 +796,21 @@ mod section_test {
                         Attribute::Autofocus,
                     ],
                     text: "delta tango whiskey sierra".to_string(),
+                },
+                paragraphs: vec![],
+            },
+            Section::H2 {
+                headline: Content::Headline {
+                    attributes: vec![
+                        Attribute::Id("foxtrot".to_string()),
+                        Attribute::ContentEditable,
+                        Attribute::Hidden,
+                        Attribute::Style(vec![
+                            ("color".to_string(), "red".to_string()),
+                            ("padding".to_string(), "12px".to_string()),
+                        ]),
+                    ],
+                    text: "tango tango".to_string(),
                 },
                 paragraphs: vec![],
             },
