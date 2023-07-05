@@ -503,38 +503,90 @@ pub fn section_attrs(source: &str) -> IResult<&str, Vec<Attribute>> {
     let (source, attrs) = many0(preceded(
         tuple((multispace0, tag(">> "))),
         alt((
-            tuple((
-                opt(tag::<&str, &str, nom::error::Error<&str>>("data-")),
-                is_not(":"),
+            tag("autofocus").map(|_| Attribute::Autofocus),
+            preceded(
+                tag("data-"),
+                separated_pair(
+                    is_not::<&str, &str, nom::error::Error<&str>>(":"),
+                    tag(": "),
+                    not_line_ending,
+                )
+                .map(|(key, value)| {
+                    Attribute::DataAttr(key.to_string(), value.to_string())
+                }),
+            ),
+            separated_pair(
+                is_not::<&str, &str, nom::error::Error<&str>>(":"),
                 tag(": "),
                 not_line_ending,
-            ))
-            .map(|(is_data, key, spacer, value)| match is_data {
-                Some(_) => {
-                    Attribute::DataAttr(key.to_string(), value.to_string())
-                }
-                None => match key {
-                    "class" => Attribute::ClassAttr(
-                        value
-                            .split(" ")
-                            .collect::<Vec<&str>>()
-                            .into_iter()
-                            .map(|s| s.to_string())
-                            .collect(),
-                    ),
-                    "data-" => Attribute::DataAttr(
-                        "dolf".to_string(),
-                        "asdf".to_string(),
-                    ),
-                    _ => Attribute::None,
-                },
+            )
+            .map(|(key, value)| match key {
+                "class" => Attribute::ClassAttr(
+                    value
+                        .split(" ")
+                        .collect::<Vec<&str>>()
+                        .into_iter()
+                        .map(|s| s.to_string())
+                        .collect(),
+                ),
+                _ => Attribute::None,
             }),
-            tag("autofocus").map(|_| Attribute::Autofocus),
         )),
     ))(source.trim())?;
-    dbg!(&source);
     Ok((source, attrs))
 }
+
+// ))
+
+// Some(_) => {
+//     Attribute::DataAttr(key.to_string(), value.to_string())
+// }
+// None => match key {
+//     "class" => Attribute::ClassAttr(
+//         value
+//             .split(" ")
+//             .collect::<Vec<&str>>()
+//             .into_iter()
+//             .map(|s| s.to_string())
+//             .collect(),
+//     ),
+//     "data-" => Attribute::DataAttr(
+//         "dolf".to_string(),
+//         "asdf".to_string(),
+//     ),
+//     _ => Attribute::None,
+// },
+// }),
+
+// tuple((
+//     opt(tag::<&str, &str, nom::error::Error<&str>>("data-")),
+//     is_not(":"),
+//     tag(": "),
+//     not_line_ending,
+// ))
+// .map(|(is_data, key, spacer, value)| match is_data {
+//     Some(_) => {
+//         Attribute::DataAttr(key.to_string(), value.to_string())
+//     }
+//     None => match key {
+//         "class" => Attribute::ClassAttr(
+//             value
+//                 .split(" ")
+//                 .collect::<Vec<&str>>()
+//                 .into_iter()
+//                 .map(|s| s.to_string())
+//                 .collect(),
+//         ),
+//         "data-" => Attribute::DataAttr(
+//             "dolf".to_string(),
+//             "asdf".to_string(),
+//         ),
+//         _ => Attribute::None,
+//     },
+// }),
+// )),
+
+//}
 
 pub fn headline_block(source: &str) -> IResult<&str, Content> {
     let (source, attrs) = section_attrs(source)?;
