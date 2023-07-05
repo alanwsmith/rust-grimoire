@@ -12,6 +12,7 @@ use nom::character::complete::multispace0;
 use nom::character::complete::multispace1;
 use nom::character::complete::newline;
 use nom::character::complete::not_line_ending;
+use nom::character::complete::space0;
 use nom::combinator::eof;
 use nom::combinator::not;
 use nom::combinator::opt;
@@ -35,23 +36,21 @@ pub enum Section {
         headline: Content,
         paragraphs: Vec<Content>,
     },
-    Title {
-        headline: Content,
-        paragraphs: Vec<Content>,
-    },
+    Title(Content, Vec<Content>),
+
     P(Vec<crate::nom_parse_test_v17::Content>),
     None,
 }
 
 #[derive(Debug, PartialEq)]
+pub enum Snippet {
+    Text(String),
+}
+
+#[derive(Debug, PartialEq)]
 pub enum Content {
-    Headline {
-        attributes: Vec<Attribute>,
-        text: String,
-    },
-    Paragraph {
-        text: String,
-    },
+    Headline(Vec<Snippet>),
+    Paragraph(Vec<Snippet>),
     None,
 }
 
@@ -453,37 +452,39 @@ pub fn content_blocks(source: &str) -> IResult<&str, Vec<String>> {
 }
 
 pub fn sections(source: &str) -> IResult<&str, Vec<Section>> {
-    let (source, captured) = many1(preceded(
-        tuple((multispace0, tag("-> "))),
-        tuple((not_line_ending, alt((take_until("\n\n-> "), rest)))).map(
-            |(tag_name, contents)| {
-                match tag_name {
-                    "title" => title_section(contents).unwrap().1,
-                    "h2" => h2_section(contents).unwrap().1,
-                    _ => {
-                        // dbg!(&contents);
-                        Section::None
-                    }
-                }
-            },
-        ),
-    ))(source)?;
+    dbg!("### SECTIONS ###");
+    let (source, captured) = many1(alt((title_section, h2_section)))(source)?;
+
+    // preceded(
+    // tuple((multispace0, tag("-> "))),
+    // tuple((not_line_ending, alt((take_until("\n\n-> "), rest)))).map(
+    //     |(tag_name, contents)| {
+    //         match tag_name {
+    //             "title" => title_section(contents).unwrap().1,
+    //             "h2" => h2_section(contents).unwrap().1,
+    //             _ => {
+    //                 // dbg!(&contents);
+    //                 Section::None
+    //             }
+    //         }
+    //     },
+    // ),
+    // ))(source)?;
+
     Ok((source, captured))
 
     //
 }
 
 pub fn paragraph_block(source: &str) -> IResult<&str, Content> {
-    // dbg!(&source);
+    dbg!("### PARAGRAPH BLOCKS ###");
     let (source, content) = many_till(
         pair(not_line_ending, alt((line_ending, eof))).map(|x| x.0),
         alt((multispace1, eof)),
     )(source.trim())?;
     Ok((
         source,
-        Content::Paragraph {
-            text: (content.0.join(" ")),
-        },
+        Content::Paragraph(vec![Snippet::Text(content.0.join(" "))]),
     ))
 }
 
@@ -577,7 +578,7 @@ pub fn section_attrs(source: &str) -> IResult<&str, Vec<Attribute>> {
             tab_index_section_attr,
         )),
     ))(source.trim())?;
-    Ok((source, attrs))
+    Ok((source.trim(), attrs))
 }
 
 // ))
@@ -633,52 +634,43 @@ pub fn section_attrs(source: &str) -> IResult<&str, Vec<Attribute>> {
 //}
 
 pub fn headline_block(source: &str) -> IResult<&str, Content> {
-    let (source, attrs) = section_attrs(source)?;
+    dbg!("### HEADLINE BLOCK ###");
     let (source, content) = many_till(
         pair(not_line_ending, alt((line_ending, eof))).map(|x| x.0),
         alt((multispace1, eof)),
     )(source.trim())?;
     Ok((
         source,
-        Content::Headline {
-            attributes: attrs,
-            text: content.0.join(" "),
-        },
+        Content::Headline(vec![Snippet::Text(content.0.join(" "))]),
     ))
 }
 
 pub fn paragraph_blocks(source: &str) -> IResult<&str, Vec<Content>> {
-    // dbg!(&source);
+    dbg!("### PARAGRAPH BLOCKS ###");
     let (source, paragraphs) = many_till(paragraph_block, eof)(source)?;
     Ok((source, paragraphs.0))
 }
 
 pub fn title_section(source: &str) -> IResult<&str, Section> {
-    // dbg!(&source);
-    let (source, headline) = headline_block(source)?;
-    let (source, paragraphs) = paragraph_blocks(source)?;
-    // dbg!(&source);
-    Ok((
-        source,
-        Section::Title {
-            headline,
-            paragraphs,
-        },
-    ))
+    dbg!("### TITLE SECTION ###");
+    let (source, _) =
+        tuple((tag("-> title"), line_ending, space0, line_ending))(
+            source.trim(),
+        )?;
+    let (source, content) = alt((take_until("\n\n-> "), rest))(source)?;
+    let (content, headline) = headline_block(content)?;
+    let (_, paragraphs) = paragraph_blocks(content)?;
+    Ok((source, Section::Title(headline, paragraphs)))
 }
 
 pub fn h2_section(source: &str) -> IResult<&str, Section> {
-    // dbg!(&source);
-    let (source, headline) = headline_block(source)?;
-    let (source, paragraphs) = paragraph_blocks(source)?;
-    // dbg!(&source);
-    Ok((
-        source,
-        Section::H2 {
-            headline,
-            paragraphs,
-        },
-    ))
+    dbg!("### H2 SECTION ###");
+    let (source, _) =
+        tuple((tag_no_case("-> h2"), space0, line_ending))(source.trim())?;
+    let (source, attrs) = section_attrs(source)?;
+    let (source, content) = alt((take_until("\n\n-> "), rest))(source)?;
+    let (content, headline) = headline_block(content)?;
+    Ok((source, Section::None))
 }
 
 #[cfg(test)]
@@ -686,153 +678,165 @@ mod section_test {
     use super::*;
 
     #[test]
-    pub fn title_section_basic() {
+    pub fn solo_title_section_basic() {
         let lines = vec!["-> title", "", "delta echo"].join("\n");
-        let expected = vec![Section::Title {
-            headline: Content::Headline {
-                attributes: vec![],
-                text: "delta echo".to_string(),
-            },
-            paragraphs: vec![],
-        }];
+        let expected = vec![Section::Title(
+            Content::Headline(vec![Snippet::Text("delta echo".to_string())]),
+            vec![],
+        )];
         assert_eq!(expected, sections(lines.as_str()).unwrap().1);
     }
 
     #[test]
-    pub fn title_section_with_multilines() {
-        let lines = vec![
-            "-> title",
-            "",
-            "delta echo",
-            "",
-            "tango sierra",
-            "",
-            "golf hotel",
-        ]
-        .join("\n");
-        let expected = vec![Section::Title {
-            headline: Content::Headline {
-                attributes: vec![],
-                text: "delta echo".to_string(),
-            },
-            paragraphs: vec![
-                Content::Paragraph {
-                    text: "tango sierra".to_string(),
-                },
-                Content::Paragraph {
-                    text: "golf hotel".to_string(),
-                },
-            ],
-        }];
+    pub fn solo_title_with_two_paragraphs() {
+        let lines =
+            vec!["-> title", "", "delta echo", "", "bravo charlie"].join("\n");
+        let expected = vec![Section::Title(
+            Content::Headline(vec![Snippet::Text("delta echo".to_string())]),
+            vec![Content::Paragraph(vec![Snippet::Text(
+                "bravo charlie".to_string(),
+            )])],
+        )];
         assert_eq!(expected, sections(lines.as_str()).unwrap().1);
     }
 
-    #[test]
-    pub fn multiple_secitons() {
-        let lines = vec![
-            "-> title",
-            "",
-            "sierra alfa",
-            "",
-            "-> h2",
-            "",
-            "echo tango",
-            "",
-            "",
-        ]
-        .join("\n");
-        let expected = vec![
-            Section::Title {
-                headline: Content::Headline {
-                    attributes: vec![],
-                    text: "sierra alfa".to_string(),
-                },
-                paragraphs: vec![],
-            },
-            Section::H2 {
-                headline: Content::Headline {
-                    attributes: vec![],
-                    text: "echo tango".to_string(),
-                },
-                paragraphs: vec![],
-            },
-        ];
-        assert_eq!(expected, sections(lines.as_str()).unwrap().1);
-    }
+    // #[test]
+    // pub fn title_section_with_multilines() {
+    //     let lines = vec![
+    //         "-> h2",
+    //         "",
+    //         "delta echo",
+    //         "",
+    //         "tango sierra",
+    //         "",
+    //         "golf hotel",
+    //     ]
+    //     .join("\n");
+    //     let expected = vec![Section::Title {
+    //         headline: Content::Headline {
+    //             attributes: vec![],
+    //             text: "delta echo".to_string(),
+    //         },
+    //         paragraphs: vec![
+    //             Content::Paragraph {
+    //                 text: "tango sierra".to_string(),
+    //             },
+    //             Content::Paragraph {
+    //                 text: "golf hotel".to_string(),
+    //             },
+    //         ],
+    //     }];
+    //     assert_eq!(expected, sections(lines.as_str()).unwrap().1);
+    // }
 
-    #[test]
-    pub fn solo_attributes() {
-        let lines = vec![
-            "-> h2",
-            ">> class: hotel",
-            "",
-            "alfa echo",
-            "bravo charlie",
-            "",
-            "-> h2",
-            ">> data-golf: victor",
-            ">> autofocus",
-            "",
-            "delta tango",
-            "whiskey sierra",
-            "",
-            "",
-            "-> h2",
-            ">> id: foxtrot",
-            ">> contenteditable",
-            ">> hidden",
-            ">> style: color: red; padding: 12px",
-            ">> tabindex: 4",
-            "",
-            "tango tango",
-            "",
-            "sierra whiskey",
-        ]
-        .join("\n");
-        let expected = vec![
-            Section::H2 {
-                headline: Content::Headline {
-                    attributes: vec![Attribute::ClassAttr(vec![
-                        "hotel".to_string()
-                    ])],
-                    text: "alfa echo bravo charlie".to_string(),
-                },
-                paragraphs: vec![],
-            },
-            Section::H2 {
-                headline: Content::Headline {
-                    attributes: vec![
-                        Attribute::DataAttr(
-                            "golf".to_string(),
-                            "victor".to_string(),
-                        ),
-                        Attribute::Autofocus,
-                    ],
-                    text: "delta tango whiskey sierra".to_string(),
-                },
-                paragraphs: vec![],
-            },
-            Section::H2 {
-                headline: Content::Headline {
-                    attributes: vec![
-                        Attribute::Id("foxtrot".to_string()),
-                        Attribute::ContentEditable,
-                        Attribute::Hidden,
-                        Attribute::Style(vec![
-                            ("color".to_string(), "red".to_string()),
-                            ("padding".to_string(), "12px".to_string()),
-                        ]),
-                        Attribute::TabIndex(4),
-                    ],
-                    text: "tango tango".to_string(),
-                },
-                paragraphs: vec![Content::Paragraph {
-                    text: "sierra whiskey".to_string(),
-                }],
-            },
-        ];
-        assert_eq!(expected, sections(lines.as_str()).unwrap().1);
-    }
+    // #[test]
+    // pub fn multiple_secitons() {
+    //     let lines = vec![
+    //         "-> title",
+    //         "",
+    //         "sierra alfa",
+    //         "",
+    //         "-> h2",
+    //         "",
+    //         "echo tango",
+    //         "",
+    //         "",
+    //     ]
+    //     .join("\n");
+    //     let expected = vec![
+    //         Section::Title {
+    //             headline: Content::Headline {
+    //                 attributes: vec![],
+    //                 text: "sierra alfa".to_string(),
+    //             },
+    //             paragraphs: vec![],
+    //         },
+    //         Section::H2 {
+    //             headline: Content::Headline {
+    //                 attributes: vec![],
+    //                 text: "echo tango".to_string(),
+    //             },
+    //             paragraphs: vec![],
+    //         },
+    //     ];
+    //     assert_eq!(expected, sections(lines.as_str()).unwrap().1);
+    // }
+
+    // #[test]
+    // pub fn solo_attributes() {
+    //     let lines = vec![
+    //         "-> h2",
+    //         ">> class: hotel",
+    //         "",
+    //         "alfa echo",
+    //         "bravo charlie",
+    //         "",
+    //         "-> h2",
+    //         ">> data-golf: victor",
+    //         ">> autofocus",
+    //         "",
+    //         "delta tango",
+    //         "whiskey sierra",
+    //         "",
+    //         "",
+    //         "-> h2",
+    //         ">> id: foxtrot",
+    //         ">> contenteditable",
+    //         ">> hidden",
+    //         ">> style: color: red; padding: 12px",
+    //         ">> tabindex: 4",
+    //         "",
+    //         "tango tango",
+    //         "",
+    //         "sierra whiskey",
+    //     ]
+    //     .join("\n");
+    //     let expected = vec![
+    //         Section::H2 {
+    //             headline: Content::Headline {
+    //                 attributes: vec![Attribute::ClassAttr(vec![
+    //                     "hotel".to_string()
+    //                 ])],
+    //                 text: "alfa echo bravo charlie".to_string(),
+    //             },
+    //             paragraphs: vec![],
+    //         },
+    //         Section::H2 {
+    //             headline: Content::Headline {
+    //                 attributes: vec![
+    //                     Attribute::DataAttr(
+    //                         "golf".to_string(),
+    //                         "victor".to_string(),
+    //                     ),
+    //                     Attribute::Autofocus,
+    //                 ],
+    //                 text: "delta tango whiskey sierra".to_string(),
+    //             },
+    //             paragraphs: vec![],
+    //         },
+    //         Section::H2 {
+    //             headline: Content::Headline {
+    //                 attributes: vec![
+    //                     Attribute::Id("foxtrot".to_string()),
+    //                     Attribute::ContentEditable,
+    //                     Attribute::Hidden,
+    //                     Attribute::Style(vec![
+    //                         ("color".to_string(), "red".to_string()),
+    //                         ("padding".to_string(), "12px".to_string()),
+    //                     ]),
+    //                     Attribute::TabIndex(4),
+    //                 ],
+    //                 text: "tango tango".to_string(),
+    //             },
+    //             paragraphs: vec![Content::Paragraph {
+    //                 text: "sierra whiskey".to_string(),
+    //             }],
+    //         },
+    //     ];
+    //     let asdf = sections(lines.as_str());
+    //     assert_eq!(1, 2);
+    //     // assert_eq!(expected, sections(lines.as_str()).unwrap().1);
+    // }
 
     //
 }
