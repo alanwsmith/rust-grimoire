@@ -26,7 +26,10 @@ use nom::Parser;
 
 #[derive(Debug, PartialEq)]
 pub enum Section {
-    H2(Vec<crate::nom_parse_test_v17::Content>),
+    H2 {
+        headline: Content,
+        paragraphs: Vec<Content>,
+    },
     Title {
         headline: Content,
         paragraphs: Vec<Content>,
@@ -437,19 +440,37 @@ pub fn sections(
     source: &str,
 ) -> IResult<&str, Vec<Section>> {
     let (source, captured) = many1(preceded(
-        tag("-> "),
+        tuple((multispace0, tag("-> "))),
         tuple((
             not_line_ending,
             alt((take_until("\n\n-> "), rest)),
         ))
-        .map(
-            |(tag_name, contents)| match tag_name {
+        .map(|(tag_name, contents)| {
+            match tag_name {
                 "title" => {
+                    dbg!(&contents);
+                    // dbg!(&remainder);
+                    // (
+                    //     title_section(contents).unwrap().1,
+                    //     remainder,
+                    // )
                     title_section(contents).unwrap().1
                 }
-                _ => Section::None,
-            },
-        ),
+                "h2" => {
+                    dbg!(&contents);
+                    // dbg!(&remainder);
+                    // (
+                    //     h2_section(contents).unwrap().1,
+                    //     remainder,
+                    // )
+                    h2_section(contents).unwrap().1
+                }
+                _ => {
+                    dbg!(&contents);
+                    Section::None
+                }
+            }
+        }),
     ))(source)?;
     Ok((source, captured))
 
@@ -501,11 +522,27 @@ pub fn paragraph_blocks(
 pub fn title_section(
     source: &str,
 ) -> IResult<&str, Section> {
+    dbg!(&source);
     let (source, headline) = headline_block(source)?;
     let (source, paragraphs) = paragraph_blocks(source)?;
+    dbg!(&source);
     Ok((
         source,
         Section::Title {
+            headline,
+            paragraphs,
+        },
+    ))
+}
+
+pub fn h2_section(source: &str) -> IResult<&str, Section> {
+    dbg!(&source);
+    let (source, headline) = headline_block(source)?;
+    let (source, paragraphs) = paragraph_blocks(source)?;
+    dbg!(&source);
+    Ok((
+        source,
+        Section::H2 {
             headline,
             paragraphs,
         },
@@ -517,7 +554,7 @@ mod section_test {
     use super::*;
 
     #[test]
-    pub fn solo_title_section_basic() {
+    pub fn title_section_basic() {
         let lines =
             vec!["-> title", "", "delta echo"].join("\n");
         let expected = vec![Section::Title {
@@ -533,7 +570,7 @@ mod section_test {
     }
 
     #[test]
-    pub fn solo_title_section_with_multilines() {
+    pub fn title_section_with_multilines() {
         let lines = vec![
             "-> title",
             "",
@@ -557,6 +594,40 @@ mod section_test {
                 },
             ],
         }];
+        assert_eq!(
+            expected,
+            sections(lines.as_str()).unwrap().1
+        );
+    }
+
+    #[test]
+    pub fn solo_multiple_secitons() {
+        let lines = vec![
+            "-> title",
+            "",
+            "sierra alfa",
+            "",
+            "-> h2",
+            "",
+            "echo tango",
+            "",
+            "",
+        ]
+        .join("\n");
+        let expected = vec![
+            Section::Title {
+                headline: Content::Headline {
+                    text: "sierra alfa".to_string(),
+                },
+                paragraphs: vec![],
+            },
+            Section::H2 {
+                headline: Content::Headline {
+                    text: "echo tango".to_string(),
+                },
+                paragraphs: vec![],
+            },
+        ];
         assert_eq!(
             expected,
             sections(lines.as_str()).unwrap().1
