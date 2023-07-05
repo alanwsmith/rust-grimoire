@@ -56,6 +56,7 @@ pub enum Content {
 
 #[derive(Debug, PartialEq)]
 pub enum Attribute {
+    Autofocus,
     ClassAttr(Vec<String>),
     DataAttr(String, String),
     None,
@@ -500,30 +501,36 @@ pub fn section_attrs(source: &str) -> IResult<&str, Vec<Attribute>> {
     dbg!("-------------------------");
     dbg!(&source);
     let (source, attrs) = many0(preceded(
-        tag(">> "),
-        tuple((
-            opt(tag::<&str, &str, nom::error::Error<&str>>("data-")),
-            is_not(":"),
-            tag(": "),
-            not_line_ending,
-        ))
-        .map(|(is_data, key, spacer, value)| match is_data {
-            Some(_) => Attribute::DataAttr(key.to_string(), value.to_string()),
-            None => match key {
-                "class" => Attribute::ClassAttr(
-                    value
-                        .split(" ")
-                        .collect::<Vec<&str>>()
-                        .into_iter()
-                        .map(|s| s.to_string())
-                        .collect(),
-                ),
-                "data-" => {
-                    Attribute::DataAttr("dolf".to_string(), "asdf".to_string())
+        tuple((multispace0, tag(">> "))),
+        alt((
+            tuple((
+                opt(tag::<&str, &str, nom::error::Error<&str>>("data-")),
+                is_not(":"),
+                tag(": "),
+                not_line_ending,
+            ))
+            .map(|(is_data, key, spacer, value)| match is_data {
+                Some(_) => {
+                    Attribute::DataAttr(key.to_string(), value.to_string())
                 }
-                _ => Attribute::None,
-            },
-        }),
+                None => match key {
+                    "class" => Attribute::ClassAttr(
+                        value
+                            .split(" ")
+                            .collect::<Vec<&str>>()
+                            .into_iter()
+                            .map(|s| s.to_string())
+                            .collect(),
+                    ),
+                    "data-" => Attribute::DataAttr(
+                        "dolf".to_string(),
+                        "asdf".to_string(),
+                    ),
+                    _ => Attribute::None,
+                },
+            }),
+            tag("autofocus").map(|_| Attribute::Autofocus),
+        )),
     ))(source.trim())?;
     dbg!(&source);
     Ok((source, attrs))
@@ -668,6 +675,7 @@ mod section_test {
             "",
             "-> h2",
             ">> data-golf: victor",
+            ">> autofocus",
             "",
             "delta tango",
             "whiskey sierra",
@@ -687,10 +695,13 @@ mod section_test {
             },
             Section::H2 {
                 headline: Content::Headline {
-                    attributes: vec![Attribute::DataAttr(
-                        "golf".to_string(),
-                        "victor".to_string(),
-                    )],
+                    attributes: vec![
+                        Attribute::DataAttr(
+                            "golf".to_string(),
+                            "victor".to_string(),
+                        ),
+                        Attribute::Autofocus,
+                    ],
                     text: "delta tango whiskey sierra".to_string(),
                 },
                 paragraphs: vec![],
