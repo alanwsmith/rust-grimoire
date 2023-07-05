@@ -699,14 +699,47 @@ mod section_test {
 
     #[test]
     pub fn solo_title_section_basic() {
-        let lines =
-            vec!["-> title", ">> class: bravo", "delta echo"].join("\n");
+        let lines = vec![
+            "",
+            "",
+            "",
+            "-> title",
+            ">> class: bravo",
+            "",
+            "",
+            "",
+            "delta echo",
+            "alfa charlie",
+            "",
+            "",
+            "",
+            "-> h3",
+            ">> contenteditable",
+            "",
+            "",
+            "",
+            "",
+            "whiskey tango",
+            "foxtrot",
+            "",
+            "",
+            "alfa alfa alfa",
+            "",
+        ]
+        .join("\n");
         let expected = vec![Section::Title {
             attrs: vec![Attr::Class(vec!["bravo".to_string()])],
             headline: Content::Headline(vec![Snippet::Text(
-                "delta echo".to_string(),
+                "delta echo alfa charlie".to_string(),
             )]),
-            paragraphs: vec![],
+            paragraphs: vec![
+                Content::Paragraph(vec![Snippet::Text(
+                    "whiskey tango foxtrot".to_string(),
+                )]),
+                Content::Paragraph(vec![Snippet::Text(
+                    "alfa alfa alfa".to_string(),
+                )]),
+            ],
         }];
         assert_eq!(expected, sections(lines.as_str()).unwrap().1);
     }
