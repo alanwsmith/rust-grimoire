@@ -30,6 +30,12 @@ use nom::sequence::tuple;
 use nom::IResult;
 use nom::Parser;
 
+// NOTE: This is in a broken states, but the
+// overall approach works and is the one
+// that is being copied into what I hope
+// is the first verion (which is really v14)
+// of neopolitan
+
 #[derive(Debug, PartialEq)]
 pub enum Section {
     H1(Content, Vec<Content>),
@@ -698,7 +704,7 @@ mod section_test {
     use super::*;
 
     #[test]
-    pub fn solo_title_section_basic() {
+    pub fn title_section_basic() {
         let lines = vec![
             "",
             "",
