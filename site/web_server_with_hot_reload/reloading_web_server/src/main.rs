@@ -132,11 +132,27 @@ fn watch_files(mut site: Site) -> notify::Result<()> {
                 // println!("{:?}", path);
                 // println!("{:?}", output_path);
                 fs::copy(path, output_path);
+                build_home_page(&site);
             } else {
                 println!("Update the home page with it's process here");
+                build_home_page(&site);
             }
             ()
         });
     }
     Ok(())
+}
+
+pub fn build_home_page(site: &Site) {
+    println!("Building home page");
+    let mut output_string = r#"<!DOCTYPE html><html><body>
+<h1>Home Page</h1><ul>"#
+        .to_string();
+
+    &site.pages.iter().for_each(|page| {
+        dbg!(page);
+        ()
+    });
+    output_string.push_str("</ul></body></html>");
+    fs::write(&site.home_page, output_string);
 }
