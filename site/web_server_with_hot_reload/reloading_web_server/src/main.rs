@@ -58,12 +58,12 @@ fn watch_files(site: Site) -> notify::Result<()> {
         .watcher()
         .watch(&site.output_dir, RecursiveMode::Recursive)?;
     for result in rx {
-        match result {
-            Ok(events) => events.iter().for_each(|event| {
-                println!("- Hard coding home page output");
-            }),
-            Err(_) => {}
-        }
+        //match result {
+        //   Ok(events) => events.iter().for_each(|event| {
+        println!("- Hard coding home page output");
+        //  }),
+        // Err(_) => {}
+        //}
     }
     Ok(())
 }
