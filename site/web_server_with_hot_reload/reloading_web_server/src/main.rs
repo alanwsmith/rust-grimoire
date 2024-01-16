@@ -58,20 +58,6 @@ fn watch_files(mut site: Site, reloader: Reloader) -> notify::Result<()> {
     let walker = WalkDir::new(&site.input_dir).into_iter();
     // let queue: Vec<PathBuf> = vec![];
     site.pages = walker
-        // .filter_entry(|e| {
-        //     dbg!(&e);
-        //     match e.clone().into_path().extension() {
-        //         Some(ext) => {
-        //             dbg!(&ext);
-        //             if ext == "html" {
-        //                 true
-        //             } else {
-        //                 false
-        //             }
-        //         }
-        //         None => false,
-        //     }
-        // })
         .filter_map(|e| match e {
             Ok(d) => Some(d.into_path()),
             Err(err) => None,
