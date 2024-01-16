@@ -94,6 +94,9 @@ fn watch_files(mut site: Site) -> notify::Result<()> {
         true
     }) {}
 
+    println!("- Buiding initila home page");
+    build_home_page(&site);
+
     println!("- Starting file watcher");
     let (tx, rx) = std::sync::mpsc::channel();
     let mut debouncer = new_debouncer(Duration::from_millis(100), tx)?;
@@ -136,6 +139,9 @@ fn watch_files(mut site: Site) -> notify::Result<()> {
                 // println!("{:?}", path);
                 // println!("{:?}", output_path);
                 fs::copy(path, output_path);
+                if !site.pages.contains_key(&path.display().to_string()) {
+                    dbg!("adding page");
+                }
                 build_home_page(&site);
             } else {
                 println!("Update the home page with it's process here");
