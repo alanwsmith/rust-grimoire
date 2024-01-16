@@ -153,9 +153,14 @@ pub fn build_home_page(site: &Site) {
 <h1>Home Page</h1><ul>"#
         .to_string();
     &site.pages.iter().for_each(|page| {
-        output_string.push_str("<li>");
-        output_string.push_str(&page.1.site_path.display().to_string());
-        output_string.push_str("</li>");
+        output_string.push_str(
+            format!(
+                r#"<li><a href="{}">{}</a></li>"#,
+                &page.1.site_path.display().to_string(),
+                &page.1.site_path.display().to_string()
+            )
+            .as_str(),
+        );
         ()
     });
     output_string.push_str("</ul></body></html>");
