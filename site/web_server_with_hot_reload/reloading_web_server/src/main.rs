@@ -14,6 +14,7 @@ use std::process::Command;
 use std::time::Duration;
 use tower_http::services::ServeDir;
 use tower_livereload::LiveReloadLayer;
+use tower_livereload::Reloader;
 use walkdir::{DirEntry, WalkDir};
 // use tracing::{debug, error, info, span, warn, Level};
 
@@ -46,29 +47,36 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         valid_extension: vec!["html".to_string(), "md".to_string(), "neo".to_string()],
         home_page: PathBuf::from("/Users/alan/workshop/rust-playground.alanwsmith.com/site/web_server_with_hot_reload/_site/index.html"),
     };
-    tokio::spawn(async {
-        let _ = watch_files(site);
-    });
-    let _ = run_web_server().await;
+
+    // tokio::spawn(async {
+    //     let _ = watch_files(site);
+    // });
+    let _ = run_web_server(site).await;
+
     Ok(())
 }
 
-async fn run_web_server() -> std::result::Result<(), Box<dyn std::error::Error>> {
+async fn run_web_server(site: Site) -> Result<(), Box<dyn std::error::Error>> {
     println!("- Starting web server");
-    let site_dir = "_site";
+    // TODO: read the site path for this
     let livereload = LiveReloadLayer::new();
     let reloader = livereload.reloader();
     let app = Router::new()
-        .nest_service("/", ServeDir::new(Path::new(site_dir)))
+        .nest_service("/", ServeDir::new(Path::new(&site.output_dir)))
         .layer(livereload);
-    let mut watcher = notify::recommended_watcher(move |_| reloader.reload())?;
-    watcher.watch(Path::new(site_dir), notify::RecursiveMode::Recursive)?;
+    // let mut watcher = notify::recommended_watcher(move |_| reloader.reload())?;
+    //    watcher.watch(Path::new(site_dir), notify::RecursiveMode::Recursive)?;
+    // TODO: put the bind address in the site config
+
+    tokio::spawn(async {
+        let _ = watch_files(site, reloader);
+    });
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3443").await?;
     axum::serve(listener, app).await?;
     Ok(())
 }
 
-fn watch_files(mut site: Site) -> notify::Result<()> {
+fn watch_files(mut site: Site, reloader: Reloader) -> notify::Result<()> {
     println!("- Loading initial files");
     let walker = WalkDir::new(&site.input_dir).into_iter();
     for entry in walker.filter_entry(|e| {
@@ -91,12 +99,14 @@ fn watch_files(mut site: Site) -> notify::Result<()> {
             }
             None => (),
         }
-        // dbg!(e);
         true
     }) {}
 
-    println!("- Buiding initila home page");
-    build_home_page(&site);
+    println!("- Buiding initial site");
+    build_full_site(&site, &reloader);
+
+    // println!("- Buiding initila home page");
+    // build_home_page(&site);
 
     println!("- Starting file watcher");
     let (tx, rx) = std::sync::mpsc::channel();
@@ -196,6 +206,14 @@ fn file_exists(path: &PathBuf) -> bool {
 
 fn build_page(input: &PathBuf, output: &PathBuf) {
     fs::copy(input, output);
+}
+
+fn build_full_site(site: &Site, reloader: &Reloader) {
+    site.pages.iter().for_each(|page| {
+        // dbg!(page);
+        ()
+    });
+    reloader.reload();
 }
 
 // Improvements:
