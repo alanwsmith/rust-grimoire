@@ -56,18 +56,32 @@ async fn run_web_server(site: Site) -> Result<(), Box<dyn std::error::Error>> {
 fn watch_files(mut site: Site, reloader: Reloader) -> notify::Result<()> {
     println!("- Loading initial files");
     let walker = WalkDir::new(&site.input_dir).into_iter();
-    // site.pages =
-    //
+    // let queue: Vec<PathBuf> = vec![];
     site.pages = walker
-        .filter_entry(|e| true)
+        // .filter_entry(|e| {
+        //     dbg!(&e);
+        //     match e.clone().into_path().extension() {
+        //         Some(ext) => {
+        //             dbg!(&ext);
+        //             if ext == "html" {
+        //                 true
+        //             } else {
+        //                 false
+        //             }
+        //         }
+        //         None => false,
+        //     }
+        // })
         .filter_map(|e| match e {
-            Ok(d) => {
-                // dbg!(&d.into_path());
-                Some(d.into_path())
-            }
-            Err(e) => None,
+            Ok(d) => Some(d.into_path()),
+            Err(err) => None,
+        })
+        .filter_map(|path| {
+            dbg!(&path);
+            Some(path)
         })
         .collect();
+
     dbg!(site.pages);
 
     // .map(|entry| entry.unwrap().into_path())
