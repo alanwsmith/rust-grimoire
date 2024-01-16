@@ -65,7 +65,7 @@ fn watch_files(site: Site) -> notify::Result<()> {
     let mut debouncer = new_debouncer(Duration::from_millis(100), tx)?;
     debouncer
         .watcher()
-        .watch(&site.output_dir, RecursiveMode::Recursive)?;
+        .watch(&site.input_dir, RecursiveMode::Recursive)?;
     for result in rx {
         let mut update_paths: BTreeSet<PathBuf> = BTreeSet::new();
         match result {
@@ -90,7 +90,10 @@ fn watch_files(site: Site) -> notify::Result<()> {
             }),
             Err(_) => {}
         }
-        dbg!(update_paths);
+        update_paths.iter().for_each(|path| {
+            dbg!(path);
+            ()
+        });
     }
     Ok(())
 }
