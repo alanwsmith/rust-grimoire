@@ -7,6 +7,7 @@ use notify_debouncer_mini::DebounceEventResult;
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::fs;
+use std::fs::remove_file;
 use std::path::Path;
 use std::path::PathBuf;
 use std::process::Command;
@@ -148,6 +149,11 @@ fn watch_files(mut site: Site) -> notify::Result<()> {
                 }
             } else {
                 site.pages.remove(&path.display().to_string());
+                // remove the page from the output directory if
+                // it exists
+                if file_exists(&output_path) {
+                    let _ = remove_file(output_path);
+                }
                 build_home_page(&site);
             }
         });
@@ -195,3 +201,5 @@ fn file_exists(path: &PathBuf) -> bool {
 // or maybe look at the entire directory
 // each time and remove files that got
 // removed?
+//
+// build full site on startup
