@@ -29,8 +29,12 @@ pub struct Page {}
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let site = Site {
         pages: BTreeMap::new(),
-        input_dir: PathBuf::from("_content"),
-        output_dir: PathBuf::from("_site"),
+        // needs to be full paths for now. the paths that 
+        // come back from the watch are full regardless of
+        // if this is set to relative path and I'm not sure
+        // how to parse that out
+        input_dir: PathBuf::from("/Users/alan/workshop/rust-playground.alanwsmith.com/site/web_server_with_hot_reload/_content"),
+        output_dir: PathBuf::from("/Users/alan/workshop/rust-playground.alanwsmith.com/site/web_server_with_hot_reload/_site"),
         valid_extension: vec!["html".to_string(), "md".to_string(), "neo".to_string()],
     };
     tokio::spawn(async {
@@ -63,11 +67,25 @@ fn watch_files(site: Site) -> notify::Result<()> {
         .watcher()
         .watch(&site.output_dir, RecursiveMode::Recursive)?;
     for result in rx {
-        let mut update_paths: BTreeSet<String> = BTreeSet::new();
+        let mut update_paths: BTreeSet<PathBuf> = BTreeSet::new();
         match result {
             Ok(events) => events.iter().for_each(|event| {
-                dbg!(event.path.extension());
-                // update_paths.insert(event.path.to_string_lossy().to_string());
+                let mut add_it = false;
+                match event.path.extension() {
+                    Some(p) => {
+                        if site
+                            .valid_extension
+                            .contains(&p.to_string_lossy().to_string())
+                        {
+                            add_it = true;
+                        }
+                        ()
+                    }
+                    None => (),
+                }
+                if add_it {
+                    update_paths.insert(event.path.clone());
+                }
                 ()
             }),
             Err(_) => {}
