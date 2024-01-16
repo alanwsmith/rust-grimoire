@@ -128,27 +128,28 @@ fn watch_files(mut site: Site) -> notify::Result<()> {
             Err(_) => {}
         }
         update_paths.iter().for_each(|path| {
-            if file_exists(&path) {
-                dbg!("file exists");
-            } else {
-                dbg!("file removed");
-            }
-
             let output_rel_path = &path.strip_prefix(&site.input_dir).unwrap();
             let mut output_path = site.output_dir.clone();
             output_path.push(&output_rel_path);
-            if &output_path != &site.home_page {
-                fs::copy(path, output_path);
-                let mut site_path = PathBuf::from("/");
-                site_path.push(&path.strip_prefix(&site.input_dir).unwrap().to_path_buf());
-                site.pages
-                    .insert(path.display().to_string(), Page { site_path });
-                build_home_page(&site);
+            if file_exists(&path) {
+                if &output_path != &site.home_page {
+                    // do work here to apply templates, etc...
+                    fs::copy(path, output_path);
+                    // add the page to the list of site pages
+                    // then build the home page
+                    let mut site_path = PathBuf::from("/");
+                    site_path.push(&path.strip_prefix(&site.input_dir).unwrap().to_path_buf());
+                    site.pages
+                        .insert(path.display().to_string(), Page { site_path });
+                    build_home_page(&site);
+                } else {
+                    // the home page changed, rebuild it
+                    build_home_page(&site);
+                }
             } else {
-                println!("Update the home page with it's process here");
+                site.pages.remove(&path.display().to_string());
                 build_home_page(&site);
             }
-            ()
         });
     }
     Ok(())
@@ -186,3 +187,11 @@ fn file_exists(path: &PathBuf) -> bool {
         Err(_) => false,
     }
 }
+
+// Improvements:
+//
+// Clear files that were removed when the
+// process wasn't running on the first run
+// or maybe look at the entire directory
+// each time and remove files that got
+// removed?
