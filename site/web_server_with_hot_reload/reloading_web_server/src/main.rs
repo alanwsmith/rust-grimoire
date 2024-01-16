@@ -76,9 +76,15 @@ fn watch_files(mut site: Site, reloader: Reloader) -> notify::Result<()> {
             Ok(d) => Some(d.into_path()),
             Err(err) => None,
         })
-        .filter_map(|path| {
-            dbg!(&path);
-            Some(path)
+        .filter_map(|path| match path.extension() {
+            Some(ext) => {
+                if ext == "html" {
+                    Some(path)
+                } else {
+                    None
+                }
+            }
+            None => None,
         })
         .collect();
 
