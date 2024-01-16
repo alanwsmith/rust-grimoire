@@ -87,7 +87,7 @@ fn watch_files(mut site: Site) -> notify::Result<()> {
     // let entry = entry.unwrap();
     // println!("{}", entry.path().display());
 
-    dbg!(&site.pages);
+    // dbg!(&site.pages);
 
     println!("- Starting file watcher");
     let (tx, rx) = std::sync::mpsc::channel();
@@ -120,7 +120,18 @@ fn watch_files(mut site: Site) -> notify::Result<()> {
             Err(_) => {}
         }
         update_paths.iter().for_each(|path| {
-            dbg!(path);
+            let output_rel_path = &path.strip_prefix(&site.input_dir).unwrap();
+            // dbg!(&output_rel_path);
+            let mut output_path = site.output_dir.clone();
+            output_path.push(&output_rel_path);
+            // dbg!(&output_path);
+
+            if &output_path != &site.home_page {
+                println!("{:?}", &site.home_page);
+                println!("{:?}", path);
+            } else {
+                println!("Don't update home page it's built separately");
+            }
             ()
         });
     }
