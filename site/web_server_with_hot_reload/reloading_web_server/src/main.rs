@@ -52,16 +52,18 @@ async fn run_web_server() -> std::result::Result<(), Box<dyn std::error::Error>>
 
 fn watch_files(site: Site) -> notify::Result<()> {
     println!("- Starting file watcher");
-    //     let (tx, rx) = std::sync::mpsc::channel();
-    //     let mut debouncer = new_debouncer(Duration::from_millis(300), tx)?;
-    //     debouncer.watcher().watch(RecursiveMode::Recursive)?;
-    //     for result in rx {
-    //         match result {
-    //             Ok(events) => events.iter().for_each(|event| {
-    //                 println!("- Hard coding home page output");
-    //             }),
-    //             Err(_) => {}
-    //         }
-    //     }
+    let (tx, rx) = std::sync::mpsc::channel();
+    let mut debouncer = new_debouncer(Duration::from_millis(3000), tx)?;
+    debouncer
+        .watcher()
+        .watch(&site.output_dir, RecursiveMode::Recursive)?;
+    for result in rx {
+        match result {
+            Ok(events) => events.iter().for_each(|event| {
+                println!("- Hard coding home page output");
+            }),
+            Err(_) => {}
+        }
+    }
     Ok(())
 }
