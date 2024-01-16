@@ -28,7 +28,9 @@ pub struct Site {
 }
 
 #[derive(Debug)]
-pub struct Page {}
+pub struct Page {
+    site_path: PathBuf,
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -75,8 +77,15 @@ fn watch_files(mut site: Site) -> notify::Result<()> {
                     .valid_extension
                     .contains(&ext.to_string_lossy().to_string())
                 {
+                    let mut site_path = PathBuf::from("/");
+                    site_path.push(
+                        e.path()
+                            .strip_prefix(&site.input_dir)
+                            .unwrap()
+                            .to_path_buf(),
+                    );
                     site.pages
-                        .insert(e.path().to_string_lossy().to_string(), Page {});
+                        .insert(e.path().to_string_lossy().to_string(), Page { site_path });
                 }
             }
             None => (),
@@ -84,11 +93,6 @@ fn watch_files(mut site: Site) -> notify::Result<()> {
         // dbg!(e);
         true
     }) {}
-    // !is_hidden(e)) {
-    // let entry = entry.unwrap();
-    // println!("{}", entry.path().display());
-
-    // dbg!(&site.pages);
 
     println!("- Starting file watcher");
     let (tx, rx) = std::sync::mpsc::channel();
@@ -148,8 +152,8 @@ pub fn build_home_page(site: &Site) {
     let mut output_string = r#"<!DOCTYPE html><html><body>
 <h1>Home Page</h1><ul>"#
         .to_string();
-
     &site.pages.iter().for_each(|page| {
+        // let file_name = page.
         dbg!(page);
         ()
     });
