@@ -6,14 +6,15 @@ use notify_debouncer_mini::new_debouncer;
 use notify_debouncer_mini::DebounceEventResult;
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
+use std::fs;
 use std::path::Path;
 use std::path::PathBuf;
 use std::process::Command;
 use std::time::Duration;
 use tower_http::services::ServeDir;
 use tower_livereload::LiveReloadLayer;
-// use tracing::{debug, error, info, span, warn, Level};
 use walkdir::{DirEntry, WalkDir};
+// use tracing::{debug, error, info, span, warn, Level};
 
 #[derive(Debug)]
 pub struct Site {
@@ -127,10 +128,12 @@ fn watch_files(mut site: Site) -> notify::Result<()> {
             // dbg!(&output_path);
 
             if &output_path != &site.home_page {
-                println!("{:?}", &site.home_page);
-                println!("{:?}", path);
+                // println!("{:?}", &site.home_page);
+                // println!("{:?}", path);
+                // println!("{:?}", output_path);
+                fs::copy(path, output_path);
             } else {
-                println!("Don't update home page it's built separately");
+                println!("Update the home page with it's process here");
             }
             ()
         });
