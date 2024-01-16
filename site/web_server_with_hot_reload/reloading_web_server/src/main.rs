@@ -128,15 +128,17 @@ fn watch_files(mut site: Site) -> notify::Result<()> {
             Err(_) => {}
         }
         update_paths.iter().for_each(|path| {
+            if file_exists(&path) {
+                dbg!("file exists");
+            } else {
+                dbg!("file removed");
+            }
+
             let output_rel_path = &path.strip_prefix(&site.input_dir).unwrap();
-            // dbg!(&output_rel_path);
             let mut output_path = site.output_dir.clone();
             output_path.push(&output_rel_path);
-            // dbg!(&output_path);
-
             if &output_path != &site.home_page {
                 fs::copy(path, output_path);
-                // add or update the page
                 let mut site_path = PathBuf::from("/");
                 site_path.push(&path.strip_prefix(&site.input_dir).unwrap().to_path_buf());
                 site.pages
@@ -170,4 +172,17 @@ pub fn build_home_page(site: &Site) {
     });
     output_string.push_str("</ul></body></html>");
     fs::write(&site.home_page, output_string);
+}
+
+fn file_exists(path: &PathBuf) -> bool {
+    match path.try_exists() {
+        Ok(exists) => {
+            if exists == true {
+                true
+            } else {
+                false
+            }
+        }
+        Err(_) => false,
+    }
 }
