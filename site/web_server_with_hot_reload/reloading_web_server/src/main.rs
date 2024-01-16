@@ -61,7 +61,10 @@ fn watch_files(mut site: Site, reloader: Reloader) -> notify::Result<()> {
     site.pages = walker
         .filter_entry(|e| true)
         .filter_map(|e| match e {
-            Ok(d) => Some(PathBuf::from("")),
+            Ok(d) => {
+                // dbg!(&d.into_path());
+                Some(d.into_path())
+            }
             Err(e) => None,
         })
         .collect();
