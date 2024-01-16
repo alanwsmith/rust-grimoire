@@ -135,13 +135,12 @@ fn watch_files(mut site: Site) -> notify::Result<()> {
             // dbg!(&output_path);
 
             if &output_path != &site.home_page {
-                // println!("{:?}", &site.home_page);
-                // println!("{:?}", path);
-                // println!("{:?}", output_path);
                 fs::copy(path, output_path);
-                if !site.pages.contains_key(&path.display().to_string()) {
-                    dbg!("adding page");
-                }
+                // add or update the page
+                let mut site_path = PathBuf::from("/");
+                site_path.push(&path.strip_prefix(&site.input_dir).unwrap().to_path_buf());
+                site.pages
+                    .insert(path.display().to_string(), Page { site_path });
                 build_home_page(&site);
             } else {
                 println!("Update the home page with it's process here");
