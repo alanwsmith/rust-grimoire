@@ -626,6 +626,7 @@ dependencies = [
  "tokio",
  "tower-http",
  "tower-livereload",
+ "walkdir",
 ]
 
 [[package]]

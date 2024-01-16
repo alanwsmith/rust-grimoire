@@ -13,7 +13,9 @@ use std::time::Duration;
 use tower_http::services::ServeDir;
 use tower_livereload::LiveReloadLayer;
 // use tracing::{debug, error, info, span, warn, Level};
+use walkdir::{DirEntry, WalkDir};
 
+#[derive(Debug)]
 pub struct Site {
     pages: BTreeMap<String, Page>,
     input_dir: PathBuf,
@@ -21,8 +23,10 @@ pub struct Site {
     // the valid extensions are to prevent tmp files
     // that end in e.g. `~`` from triggering
     valid_extension: Vec<String>,
+    home_page: PathBuf,
 }
 
+#[derive(Debug)]
 pub struct Page {}
 
 #[tokio::main]
@@ -36,6 +40,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         input_dir: PathBuf::from("/Users/alan/workshop/rust-playground.alanwsmith.com/site/web_server_with_hot_reload/_content"),
         output_dir: PathBuf::from("/Users/alan/workshop/rust-playground.alanwsmith.com/site/web_server_with_hot_reload/_site"),
         valid_extension: vec!["html".to_string(), "md".to_string(), "neo".to_string()],
+        home_page: PathBuf::from("/Users/alan/workshop/rust-playground.alanwsmith.com/site/web_server_with_hot_reload/_site/index.html"),
     };
     tokio::spawn(async {
         let _ = watch_files(site);
@@ -59,7 +64,31 @@ async fn run_web_server() -> std::result::Result<(), Box<dyn std::error::Error>>
     Ok(())
 }
 
-fn watch_files(site: Site) -> notify::Result<()> {
+fn watch_files(mut site: Site) -> notify::Result<()> {
+    println!("- Loading initial files");
+    let walker = WalkDir::new(&site.input_dir).into_iter();
+    for entry in walker.filter_entry(|e| {
+        match e.path().extension() {
+            Some(ext) => {
+                if site
+                    .valid_extension
+                    .contains(&ext.to_string_lossy().to_string())
+                {
+                    site.pages
+                        .insert(e.path().to_string_lossy().to_string(), Page {});
+                }
+            }
+            None => (),
+        }
+        // dbg!(e);
+        true
+    }) {}
+    // !is_hidden(e)) {
+    // let entry = entry.unwrap();
+    // println!("{}", entry.path().display());
+
+    dbg!(&site.pages);
+
     println!("- Starting file watcher");
     let (tx, rx) = std::sync::mpsc::channel();
     let mut debouncer = new_debouncer(Duration::from_millis(100), tx)?;
