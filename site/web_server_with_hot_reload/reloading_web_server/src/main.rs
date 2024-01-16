@@ -5,6 +5,7 @@ use notify::Watcher;
 use notify_debouncer_mini::new_debouncer;
 use notify_debouncer_mini::DebounceEventResult;
 use std::collections::BTreeMap;
+use std::collections::BTreeSet;
 use std::path::Path;
 use std::path::PathBuf;
 use std::process::Command;
@@ -17,6 +18,9 @@ pub struct Site {
     pages: BTreeMap<String, Page>,
     input_dir: PathBuf,
     output_dir: PathBuf,
+    // the valid extensions are to prevent tmp files
+    // that end in e.g. `~`` from triggering
+    valid_extension: Vec<String>,
 }
 
 pub struct Page {}
@@ -27,6 +31,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         pages: BTreeMap::new(),
         input_dir: PathBuf::from("_content"),
         output_dir: PathBuf::from("_site"),
+        valid_extension: vec!["html".to_string(), "md".to_string(), "neo".to_string()],
     };
     tokio::spawn(async {
         let _ = watch_files(site);
@@ -53,17 +58,21 @@ async fn run_web_server() -> std::result::Result<(), Box<dyn std::error::Error>>
 fn watch_files(site: Site) -> notify::Result<()> {
     println!("- Starting file watcher");
     let (tx, rx) = std::sync::mpsc::channel();
-    let mut debouncer = new_debouncer(Duration::from_millis(3000), tx)?;
+    let mut debouncer = new_debouncer(Duration::from_millis(100), tx)?;
     debouncer
         .watcher()
         .watch(&site.output_dir, RecursiveMode::Recursive)?;
     for result in rx {
-        //match result {
-        //   Ok(events) => events.iter().for_each(|event| {
-        println!("- Hard coding home page output");
-        //  }),
-        // Err(_) => {}
-        //}
+        let mut update_paths: BTreeSet<String> = BTreeSet::new();
+        match result {
+            Ok(events) => events.iter().for_each(|event| {
+                dbg!(event.path.extension());
+                // update_paths.insert(event.path.to_string_lossy().to_string());
+                ()
+            }),
+            Err(_) => {}
+        }
+        dbg!(update_paths);
     }
     Ok(())
 }
