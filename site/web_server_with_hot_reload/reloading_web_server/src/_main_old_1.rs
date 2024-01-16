@@ -16,35 +16,56 @@ use tower_http::services::ServeDir;
 use tower_livereload::LiveReloadLayer;
 use tower_livereload::Reloader;
 use walkdir::{DirEntry, WalkDir};
+// use tracing::{debug, error, info, span, warn, Level};
 
 #[derive(Debug)]
 pub struct Site {
-    pages: BTreeSet<PathBuf>,
+    pages: BTreeMap<String, Page>,
+    pages_v2: BTreeMap<PathBuf, Page>,
     input_dir: PathBuf,
     output_dir: PathBuf,
+    // the valid extensions are to prevent tmp files
+    // that end in e.g. `~`` from triggering
+    valid_extension: Vec<String>,
+    home_page: PathBuf,
 }
 
+#[derive(Debug)]
+pub struct Page {
+    site_path: PathBuf,
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("- Starting main");
     let site = Site {
-        pages: BTreeSet::new(),
+        pages: BTreeMap::new(),
+        // needs to be full paths for now. the paths that 
+        // come back from the watch are full regardless of
+        // if this is set to relative path and I'm not sure
+        // how to parse that out
         input_dir: PathBuf::from("/Users/alan/workshop/rust-playground.alanwsmith.com/site/web_server_with_hot_reload/_content"),
         output_dir: PathBuf::from("/Users/alan/workshop/rust-playground.alanwsmith.com/site/web_server_with_hot_reload/_site"),
+        valid_extension: vec!["html".to_string(), "md".to_string(), "neo".to_string()],
+        home_page: PathBuf::from("/Users/alan/workshop/rust-playground.alanwsmith.com/site/web_server_with_hot_reload/_site/index.html"),
     };
+    // tokio::spawn(async {
+    //     let _ = watch_files(site);
+    // });
     let _ = run_web_server(site).await;
     Ok(())
 }
 
-
 async fn run_web_server(site: Site) -> Result<(), Box<dyn std::error::Error>> {
     println!("- Starting web server");
+    // TODO: read the site path for this
     let livereload = LiveReloadLayer::new();
     let reloader = livereload.reloader();
     let app = Router::new()
         .nest_service("/", ServeDir::new(Path::new(&site.output_dir)))
         .layer(livereload);
+    // let mut watcher = notify::recommended_watcher(move |_| reloader.reload())?;
+    //    watcher.watch(Path::new(site_dir), notify::RecursiveMode::Recursive)?;
+    // TODO: put the bind address in the site config
     tokio::spawn(async {
         let _ = watch_files(site, reloader);
     });
@@ -52,7 +73,6 @@ async fn run_web_server(site: Site) -> Result<(), Box<dyn std::error::Error>> {
     axum::serve(listener, app).await?;
     Ok(())
 }
-
 
 fn watch_files(mut site: Site, reloader: Reloader) -> notify::Result<()> {
     println!("- Loading initial files");
