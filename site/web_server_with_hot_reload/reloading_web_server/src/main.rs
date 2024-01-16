@@ -135,7 +135,7 @@ fn watch_files(mut site: Site) -> notify::Result<()> {
             if file_exists(&path) {
                 if &output_path != &site.home_page {
                     // do work here to apply templates, etc...
-                    fs::copy(path, output_path);
+                    build_page(path, &output_path);
                     // add the page to the list of site pages
                     // then build the home page
                     let mut site_path = PathBuf::from("/");
@@ -192,6 +192,10 @@ fn file_exists(path: &PathBuf) -> bool {
         }
         Err(_) => false,
     }
+}
+
+fn build_page(input: &PathBuf, output: &PathBuf) {
+    fs::copy(input, output);
 }
 
 // Improvements:
