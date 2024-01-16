@@ -1,16 +1,14 @@
 use rusqlite::{Connection, Result};
 
-fn table_exists(conn: Connection, table_name: &str) -> Result<bool> {
-    let mut stmt = conn.prepare(
-        "SELECT name FROM sqlite_master 
-        WHERE type='table' AND name=?1",
-    )?;
-    let rows = stmt.query_map([table_name], |_| Ok(()))?;
-    if rows.count() == 1 {
-        Ok(true)
-    } else {
-        Ok(false)
-    }
+// https://docs.rs/rusqlite/0.29.0/rusqlite/struct.Connection.html#method.query_row
+
+fn get_single_row(conn: &Connection, key: &str) -> Result<(String, String)> {
+    conn.query_row("SELECT key, value FROM silo WHERE key = ?1", [key], |row| {
+        Ok((
+            row.get_unwrap::<usize, String>(0).to_string(),
+            row.get_unwrap::<usize, String>(1).to_string(),
+        ))
+    })
 }
 
 #[cfg(test)]
@@ -19,20 +17,16 @@ mod text {
     use rusqlite::Connection;
 
     #[test]
-    fn solo_table_does_not_exist() {
+    fn solo_table_exists() {
         let conn = Connection::open_in_memory().unwrap();
-        let expected = false;
-        let result = table_exists(conn, "alfa").unwrap();
+        conn.execute("CREATE TABLE silo (key TEXT, value TEXT)", ())
+            .unwrap();
+        conn.execute("INSERT INTO silo (key, value) VALUES (?1, ?2)", ["class", "tango"])
+            .unwrap();
+        let expected = ("class".to_string(), "tango".to_string());
+        let result = get_single_row(&conn, "class").unwrap();
         assert_eq!(expected, result);
     }
 
-    #[test]
-    fn solo_table_exists() {
-        let conn = Connection::open_in_memory().unwrap();
-        conn.execute("CREATE TABLE bravo (placeholder TEXT)", ())
-            .unwrap();
-        let expected = true;
-        let result = table_exists(conn, "bravo").unwrap();
-        assert_eq!(expected, result);
-    }
+    //
 }

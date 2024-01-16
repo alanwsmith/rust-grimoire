@@ -19,7 +19,7 @@ mod text {
     use rusqlite::Connection;
 
     #[test]
-    fn solo_table_does_not_exist() {
+    fn check_table_does_not_exist() {
         let conn = Connection::open_in_memory().unwrap();
         let expected = false;
         let result = table_exists(conn, "alfa").unwrap();
@@ -27,7 +27,7 @@ mod text {
     }
 
     #[test]
-    fn solo_table_exists() {
+    fn check_table_exists() {
         let conn = Connection::open_in_memory().unwrap();
         conn.execute("CREATE TABLE bravo (placeholder TEXT)", ())
             .unwrap();
