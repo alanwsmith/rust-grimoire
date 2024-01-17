@@ -75,7 +75,7 @@ fn watch_files(mut site: Site, reloader: Reloader) -> notify::Result<()> {
 
     println!("- Making initial queue");
     let queue: Vec<PathBuf> = site.pages.iter().map(|page| page.clone()).collect();
-    process_queue(queue);
+    process_queue(queue, &site, &reloader);
 
     let (tx, rx) = std::sync::mpsc::channel();
     let mut debouncer = new_debouncer(Duration::from_millis(100), tx)?;
@@ -104,7 +104,7 @@ fn watch_files(mut site: Site, reloader: Reloader) -> notify::Result<()> {
                         None => None,
                     })
                     .collect();
-                process_queue(queue);
+                process_queue(queue, &site, &reloader);
             }
             Err(_) => {}
         }
@@ -112,11 +112,20 @@ fn watch_files(mut site: Site, reloader: Reloader) -> notify::Result<()> {
     Ok(())
 }
 
-fn process_queue(mut queue: Vec<PathBuf>) {
+fn process_queue(mut queue: Vec<PathBuf>, site: &Site, reloader: &Reloader) {
     while queue.len() > 0 {
-        // do the work here
-        dbg!(queue.pop());
+        match queue.pop() {
+            Some(input_path) => {
+                let rel_path = &input_path.strip_prefix(&site.input_dir).unwrap();
+                let mut output_path = site.output_dir.clone();
+                output_path.push(rel_path);
+                fs::copy(input_path, output_path);
+            }
+            None => (),
+        }
     }
+    // reload the browser
+    &reloader.reload();
 }
 
 // println!("- Buiding initial site");
