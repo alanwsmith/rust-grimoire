@@ -17,7 +17,7 @@ use tower_livereload::LiveReloadLayer;
 use tower_livereload::Reloader;
 use walkdir::{DirEntry, WalkDir};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Site {
     pages: BTreeSet<PathBuf>,
     input_dir: PathBuf,
@@ -45,7 +45,7 @@ async fn run_web_server(site: Site) -> Result<(), Box<dyn std::error::Error>> {
     let app = Router::new()
         .nest_service("/", ServeDir::new(Path::new(&site.output_dir)))
         .layer(livereload);
-    tokio::spawn(async {
+    tokio::spawn(async move {
         let _ = watch_files(site, reloader);
     });
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3443").await?;
@@ -75,24 +75,21 @@ fn watch_files(mut site: Site, reloader: Reloader) -> notify::Result<()> {
 
     println!("- Making initial queue");
     let queue: Vec<PathBuf> = site.pages.iter().map(|page| page.clone()).collect();
-    process_queue(queue, &site, &reloader);
+    process_queue(queue, &site);
+    &reloader.reload();
 
-    let (tx, rx) = std::sync::mpsc::channel();
-    let mut debouncer = new_debouncer(Duration::from_millis(100), tx)?;
+    let second_site = site.clone();
 
-    debouncer
-        .watcher()
-        .watch(Path::new(&site.input_dir), RecursiveMode::Recursive)
-        .unwrap();
-
-    for result in rx {
-        match result {
+    let mut debouncer = new_debouncer(
+        Duration::from_millis(100),
+        move |res: DebounceEventResult| match res {
             Ok(events) => {
                 let queue: Vec<PathBuf> = events
                     .iter()
                     .filter_map(|event| match event.path.extension() {
                         Some(ext) => {
-                            if site
+                            if second_site
+                                .clone()
                                 .valid_extensions
                                 .contains(&ext.to_string_lossy().to_string())
                             {
@@ -104,19 +101,57 @@ fn watch_files(mut site: Site, reloader: Reloader) -> notify::Result<()> {
                         None => None,
                     })
                     .collect();
-                process_queue(queue, &site, &reloader);
+                process_queue(queue, &second_site);
+                &reloader.reload();
             }
-            Err(_) => {}
-        }
-    }
+            Err(e) => println!("Error {:?}", e),
+        },
+    )
+    .unwrap();
+
+    // let (tx, rx) = std::sync::mpsc::channel();
+    // let mut debouncer = new_debouncer(Duration::from_millis(100), tx)?;
+
+    debouncer
+        .watcher()
+        .watch(Path::new(&site.input_dir), RecursiveMode::Recursive)
+        .unwrap();
+    while true {}
+    // for result in rx {
+    //     match result {
+    //         Ok(events) => {
+    //             let queue: Vec<PathBuf> = events
+    //                 .iter()
+    //                 .filter_map(|event| match event.path.extension() {
+    //                     Some(ext) => {
+    //                         if site
+    //                             .valid_extensions
+    //                             .contains(&ext.to_string_lossy().to_string())
+    //                         {
+    //                             Some(event.clone().path)
+    //                         } else {
+    //                             None
+    //                         }
+    //                     }
+    //                     None => None,
+    //                 })
+    //                 .collect();
+    //             process_queue(queue, &site);
+    //             reloader.reload();
+    //         }
+    //         Err(_) => {}
+    //     }
+    // }
+
     Ok(())
 }
 
-fn process_queue(mut queue: Vec<PathBuf>, site: &Site, reloader: &Reloader) {
+fn process_queue(mut queue: Vec<PathBuf>, site: &Site) {
     while queue.len() > 0 {
         match queue.pop() {
             Some(input_path) => {
                 let rel_path = &input_path.strip_prefix(&site.input_dir).unwrap();
+                dbg!(&rel_path);
                 let mut output_path = site.output_dir.clone();
                 output_path.push(rel_path);
                 fs::copy(input_path, output_path);
@@ -125,7 +160,6 @@ fn process_queue(mut queue: Vec<PathBuf>, site: &Site, reloader: &Reloader) {
         }
     }
     // reload the browser
-    &reloader.reload();
 }
 
 // println!("- Buiding initial site");
