@@ -1,21 +1,17 @@
-#![allow(warnings)]
-use axum::{response::Html, routing::get, Router};
+use axum::Router;
 use notify::RecursiveMode;
-use notify::Watcher;
 use notify_debouncer_mini::new_debouncer;
 use notify_debouncer_mini::DebounceEventResult;
-use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::fs;
 use std::fs::remove_file;
 use std::path::Path;
 use std::path::PathBuf;
-use std::process::Command;
 use std::time::Duration;
 use tower_http::services::ServeDir;
 use tower_livereload::LiveReloadLayer;
 use tower_livereload::Reloader;
-use walkdir::{DirEntry, WalkDir};
+use walkdir::WalkDir;
 
 #[derive(Debug, Clone)]
 pub struct Site {
