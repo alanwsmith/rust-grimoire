@@ -2,7 +2,6 @@
 use axum::{response::Html, routing::get, Router};
 use notify::RecursiveMode;
 use notify::Watcher;
-// use notify_debouncer_full::{new_debouncer, notify::*, DebounceEventResult};
 use notify_debouncer_mini::new_debouncer;
 use notify_debouncer_mini::DebounceEventResult;
 use std::collections::BTreeMap;
@@ -82,38 +81,36 @@ fn watch_files(mut site: Site, reloader: Reloader) -> notify::Result<()> {
 
     let mut debouncer = new_debouncer(Duration::from_millis(100), tx)?;
 
-    // for result in rx {
-    //     match result {
-    //         Ok(events) => events.iter().for_each(|event| {
-    //             println!("- Hard coding home page output");
-    //         }),
-    //         Err(_) => {}
-    //     }
-    // }
-
-    // let mut debouncer = new_debouncer(
-    //     Duration::from_secs(1),
-    //     None,
-    //     |result: DebounceEventResult| tx,
-    // )?;
-
     debouncer
         .watcher()
-        .watch(Path::new("."), RecursiveMode::Recursive)
+        .watch(Path::new(&site.input_dir), RecursiveMode::Recursive)
         .unwrap();
 
     for result in rx {
         match result {
-            Ok(events) => events.iter().for_each(|event| {
-                println!("- Hard coding home page output");
-            }),
+            Ok(events) => {
+                let queue: Vec<PathBuf> = events
+                    .iter()
+                    .filter_map(|event| match event.path.extension() {
+                        Some(ext) => {
+                            if site
+                                .valid_extensions
+                                .contains(&ext.to_string_lossy().to_string())
+                            {
+                                Some(event.clone().path)
+                            } else {
+                                None
+                            }
+                        }
+
+                        None => None,
+                    })
+                    .collect();
+                dbg!(&queue);
+            }
             Err(_) => {}
         }
     }
-
-    // debouncer
-    //     .cache()
-    //     .add_root(Path::new(&site.input_dir), RecursiveMode::Recursive);
 
     dbg!("HERERERERER");
 
@@ -138,6 +135,7 @@ fn process_queue(mut queue: Vec<PathBuf>) {
 // debouncer
 //     .watcher()
 //     .watch(&site.input_dir, RecursiveMode::Recursive)?;
+//
 // for result in rx {
 //     let mut update_paths: BTreeSet<PathBuf> = BTreeSet::new();
 //     match result {
