@@ -4,7 +4,6 @@ use notify_debouncer_mini::new_debouncer;
 use notify_debouncer_mini::DebounceEventResult;
 use std::collections::BTreeSet;
 use std::fs;
-use std::fs::remove_file;
 use std::path::Path;
 use std::path::PathBuf;
 use std::time::Duration;
@@ -124,9 +123,26 @@ fn process_queue(mut queue: Vec<PathBuf>, site: &Site) {
                 dbg!(&rel_path);
                 let mut output_path = site.output_dir.clone();
                 output_path.push(rel_path);
-                let _ = fs::copy(input_path, output_path);
+                if file_exists(&input_path) {
+                    let _ = fs::copy(input_path, output_path);
+                } else {
+                    let _ = fs::remove_file(output_path);
+                }
             }
             None => (),
         }
+    }
+}
+
+fn file_exists(path: &PathBuf) -> bool {
+    match path.try_exists() {
+        Ok(exists) => {
+            if exists == true {
+                true
+            } else {
+                false
+            }
+        }
+        Err(_) => false,
     }
 }
