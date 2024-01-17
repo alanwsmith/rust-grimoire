@@ -78,7 +78,6 @@ fn watch_files(mut site: Site, reloader: Reloader) -> notify::Result<()> {
     process_queue(queue);
 
     let (tx, rx) = std::sync::mpsc::channel();
-
     let mut debouncer = new_debouncer(Duration::from_millis(100), tx)?;
 
     debouncer
@@ -102,18 +101,14 @@ fn watch_files(mut site: Site, reloader: Reloader) -> notify::Result<()> {
                                 None
                             }
                         }
-
                         None => None,
                     })
                     .collect();
-                dbg!(&queue);
+                process_queue(queue);
             }
             Err(_) => {}
         }
     }
-
-    dbg!("HERERERERER");
-
     Ok(())
 }
 
@@ -122,7 +117,6 @@ fn process_queue(mut queue: Vec<PathBuf>) {
         // do the work here
         dbg!(queue.pop());
     }
-    dbg!(queue);
 }
 
 // println!("- Buiding initial site");
