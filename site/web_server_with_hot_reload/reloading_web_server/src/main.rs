@@ -55,7 +55,7 @@ fn watch_files(mut site: Site, reloader: Reloader) -> notify::Result<()> {
     site.pages = walker
         .filter_map(|e| match e {
             Ok(d) => Some(d.into_path()),
-            Err(err) => None,
+            Err(_) => None,
         })
         .filter_map(|path| match path.extension() {
             Some(ext) => {
@@ -72,7 +72,7 @@ fn watch_files(mut site: Site, reloader: Reloader) -> notify::Result<()> {
     println!("- Making initial queue");
     let queue: Vec<PathBuf> = site.pages.iter().map(|page| page.clone()).collect();
     process_queue(queue, &site);
-    &reloader.reload();
+    let _ = &reloader.reload();
 
     // this feels like a hack, but it was what let me
     // get around problems with the move
@@ -100,7 +100,7 @@ fn watch_files(mut site: Site, reloader: Reloader) -> notify::Result<()> {
                     })
                     .collect();
                 process_queue(queue, &second_site);
-                &reloader.reload();
+                let _ = &reloader.reload();
             }
             Err(e) => println!("Error {:?}", e),
         },
@@ -113,8 +113,7 @@ fn watch_files(mut site: Site, reloader: Reloader) -> notify::Result<()> {
         .unwrap();
     // need an endless loop to keep the debounder from
     // dropping itself
-    while true {}
-    Ok(())
+    loop {}
 }
 
 fn process_queue(mut queue: Vec<PathBuf>, site: &Site) {
@@ -125,7 +124,7 @@ fn process_queue(mut queue: Vec<PathBuf>, site: &Site) {
                 dbg!(&rel_path);
                 let mut output_path = site.output_dir.clone();
                 output_path.push(rel_path);
-                fs::copy(input_path, output_path);
+                let _ = fs::copy(input_path, output_path);
             }
             None => (),
         }
