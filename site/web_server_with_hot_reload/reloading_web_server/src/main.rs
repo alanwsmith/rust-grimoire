@@ -2,9 +2,9 @@
 use axum::{response::Html, routing::get, Router};
 use notify::RecursiveMode;
 use notify::Watcher;
-use notify_debouncer_full::{new_debouncer, notify::*, DebounceEventResult};
-// use notify_debouncer_mini::new_debouncer;
-// use notify_debouncer_mini::DebounceEventResult;
+// use notify_debouncer_full::{new_debouncer, notify::*, DebounceEventResult};
+use notify_debouncer_mini::new_debouncer;
+use notify_debouncer_mini::DebounceEventResult;
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::fs;
@@ -27,7 +27,7 @@ pub struct Site {
 }
 
 #[tokio::main]
-async fn main() -> Result<()> {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("- Starting main");
     let site = Site {
         pages: BTreeSet::new(),
@@ -39,7 +39,7 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-async fn run_web_server(site: Site) -> Result<()> {
+async fn run_web_server(site: Site) -> Result<(), Box<dyn std::error::Error>> {
     println!("- Starting web server");
     let livereload = LiveReloadLayer::new();
     let reloader = livereload.reloader();
@@ -77,6 +77,45 @@ fn watch_files(mut site: Site, reloader: Reloader) -> notify::Result<()> {
     println!("- Making initial queue");
     let queue: Vec<PathBuf> = site.pages.iter().map(|page| page.clone()).collect();
     process_queue(queue);
+
+    let (tx, rx) = std::sync::mpsc::channel();
+
+    let mut debouncer = new_debouncer(Duration::from_millis(100), tx)?;
+
+    // for result in rx {
+    //     match result {
+    //         Ok(events) => events.iter().for_each(|event| {
+    //             println!("- Hard coding home page output");
+    //         }),
+    //         Err(_) => {}
+    //     }
+    // }
+
+    // let mut debouncer = new_debouncer(
+    //     Duration::from_secs(1),
+    //     None,
+    //     |result: DebounceEventResult| tx,
+    // )?;
+
+    debouncer
+        .watcher()
+        .watch(Path::new("."), RecursiveMode::Recursive)
+        .unwrap();
+
+    for result in rx {
+        match result {
+            Ok(events) => events.iter().for_each(|event| {
+                println!("- Hard coding home page output");
+            }),
+            Err(_) => {}
+        }
+    }
+
+    // debouncer
+    //     .cache()
+    //     .add_root(Path::new(&site.input_dir), RecursiveMode::Recursive);
+
+    dbg!("HERERERERER");
 
     Ok(())
 }
