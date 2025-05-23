@@ -49,20 +49,23 @@ impl DirWatcher {
         //     }
         // )?;
 
-        //let send_path = path.clone();
+        let send_path = path.clone();
         let tx_bridge = tx.clone();
         tokio::spawn(async move  {
             let (internal_tx, mut internal_rx) = mpsc::channel::<bool>(1);
-            dbg!("asdf");
-            //move_tx.send(false);
+             let mut debouncer = new_debouncer(
+                 Duration::from_millis(100),
+                 None,
+                 move |result: DebounceEventResult| {
+                     dbg!(result);
+                     internal_tx.send(true);
+                 }
+             ).unwrap();
+        debouncer.watch(send_path, RecursiveMode::Recursive).unwrap();
             while let Some(_) = internal_rx.recv().await {
                 tx_bridge.send(true);
             }
-
-
-        //debouncer.watch(send_path, RecursiveMode::Recursive).unwrap();
             dbg!("asdf2");
-        //catch_file_changes(reloader, rx, &site_config).await;
     });
 
         let dw = DirWatcher {
@@ -77,9 +80,9 @@ async fn main() -> Result<()> {
     let dir_to_watch = PathBuf::from("../");
     let mut dw = DirWatcher::new(&dir_to_watch)?;
 
-    // while let Some(_) = dw.rx.recv().await {
-    //     dbg!("asdf");
-    // }
+    while let Some(_) = dw.rx.recv().await {
+        dbg!("asdf");
+    }
 
     Ok(())
 }
