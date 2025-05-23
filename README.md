@@ -5,7 +5,7 @@ collect snippets of Rust code.
 
 ## Process
 
-- Start `./_run_grimiore_experiments/script.rs`
+- Start `./run_grimiore.bash`
 to auto run files when they change. 
 
 - Make a new experiment by making a new folder 
@@ -17,6 +17,19 @@ for scripts.
 - Add metadata to the script that
 can be picked up by the grimoire 
 processor. 
+
+## Header Stuff
+
+For inside the front matter
+
+```
+---
+[grimoire]
+created = "2025-05-21T17:54:09-04:00"
+updated = "2025-05-21T17:54:09-04:00"
+id = "2x/v3/wp/gu"
+status = "scratch"
+```
 
 
 ## TODO 
