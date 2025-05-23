@@ -30,6 +30,7 @@ use std::path::PathBuf;
 use std::time::Duration;
 use tokio::runtime::Handle;
 use tokio::sync::mpsc;
+use notify::event::ModifyKind;
 
 struct DirWatcher {
     rx: tokio::sync::mpsc::Receiver<Vec<PathBuf>>,
@@ -74,16 +75,15 @@ impl DirWatcher {
                                     EventKind::Access(_) => None,
                                     EventKind::Create(_) => Some(&payload.event.paths),
                                     EventKind::Modify(change) => {
-                                        None
-                                        // match change {
-                                        //     Name => {
-                                        //         Some(&payload.event.paths)
-                                        //     }
-                                        //     Data => {
-                                        //         Some(&payload.event.paths)
-                                        //     }
-                                        //     _ => None
-                                        // }
+                                        match change {
+                                            ModifyKind::Name(_) => {
+                                                Some(&payload.event.paths)
+                                            }
+                                            ModifyKind::Data(_) => {
+                                                Some(&payload.event.paths)
+                                            }
+                                            _ => None
+                                        }
                                     }
                                     EventKind::Other => None,
                                     EventKind::Remove(_) => Some(&payload.event.paths),
