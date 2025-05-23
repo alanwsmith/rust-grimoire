@@ -63,7 +63,7 @@ impl DirWatcher {
             let (internal_tx, mut internal_rx) = mpsc::channel::<Vec<PathBuf>>(2);
             let internal_tx2 = internal_tx.clone();
             let mut debouncer = new_debouncer(
-                Duration::from_millis(300),
+                Duration::from_millis(400),
                 None,
                 move |result: DebounceEventResult| {
                     if let Ok(events) = result {
