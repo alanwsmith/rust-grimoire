@@ -26,6 +26,7 @@ use notify::Event;
 use std::path::PathBuf;
 use rusqlite::Connection;
 use tokio::sync::mpsc;
+use notify::EventKind;
 
 struct DirWatcher {
     rx: tokio::sync::mpsc::Receiver<bool>
@@ -34,30 +35,49 @@ struct DirWatcher {
 impl DirWatcher {
     pub fn new(path: &PathBuf) -> Result<DirWatcher> {
         let (tx, rx) = mpsc::channel::<bool>(1);
-
-        ////let tx_top2 = tx_top.clone();
-        // let mut debouncer = new_debouncer(
-        //     Duration::from_millis(100),
-        //     None,
-        //     move |result: DebounceEventResult| {
-        //         dbg!(result);
-        //         tx2.send(true);
-        //         // match result {
-        //         //     Ok(events) => events.iter().for_each(|event| println!("{event:?}")),
-        //         //     Err(errors) => errors.iter().for_each(|error| println!("{error:?}")),
-        //         // }
-        //     }
-        // )?;
-
         let send_path = path.clone();
         let tx_bridge = tx.clone();
         tokio::spawn(async move  {
             let (internal_tx, mut internal_rx) = mpsc::channel::<bool>(1);
              let mut debouncer = new_debouncer(
-                 Duration::from_millis(100),
+                 Duration::from_millis(300),
                  None,
                  move |result: DebounceEventResult| {
-                     dbg!(result);
+                    if let Ok(events) = result {
+                        let ex: Vec<_> = events.iter().filter_map(|payload|
+                            {
+                                match &payload.event.kind {
+                                    EventKind::Any => {
+                                        None
+                                    }
+                                    EventKind::Access(x) => {
+                                        None
+                                    }
+                                    EventKind::Create(x) => {
+                                        Some(&payload.event.paths)
+                                    }
+                                    EventKind::Modify(x) => {
+                                        None
+                                    },
+                                    EventKind::Other => {
+                                        None
+                                    }
+                                    EventKind::Remove(x) => {
+                                        Some(&payload.event.paths)
+                                    }
+
+                                }
+//                            dbg!(&payload.event.kind);
+                            //dbg!(&payload.event.paths);
+                            //Some(PathBuf::from("sadf"))
+                            }
+                        )
+                            .flatten()
+                            .collect();
+                        dbg!(ex);
+                    }
+
+                     //dbg!(result);
                      internal_tx.send(true);
                  }
              ).unwrap();
@@ -66,8 +86,7 @@ impl DirWatcher {
                 tx_bridge.send(true);
             }
             dbg!("asdf2");
-    });
-
+        });
         let dw = DirWatcher {
             rx,
         };
@@ -79,11 +98,9 @@ impl DirWatcher {
 async fn main() -> Result<()> {
     let dir_to_watch = PathBuf::from("../");
     let mut dw = DirWatcher::new(&dir_to_watch)?;
-
     while let Some(_) = dw.rx.recv().await {
         dbg!("asdf");
     }
-
     Ok(())
 }
 
