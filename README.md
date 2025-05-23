@@ -1,19 +1,22 @@
-# rust-stuff.alanwsmith.com
+# rust-grimoire
 
 A place for me to work on and
 collect snippets of Rust code. 
 
 ## Process
 
-- Start `./scripts/watcher/watch.bash`
+- Start `./_run_grimiore_experiments/script.rs`
 to auto run files when they change. 
 
-- Make new experiments in the 
-`experiments` folder. 
+- Make a new experiment by making a new folder 
+at the root of this project with a
+good name for it. Put a <<path|script.rs>> 
+file in it that is the default location
+for scripts. 
 
-- Each experiment gets its own folder
-with the main code in a file called
-`script.rs`
+- Add metadata to the script that
+can be picked up by the grimoire 
+processor. 
 
 
 ## TODO 
@@ -21,4 +24,5 @@ with the main code in a file called
 - Consolidate snippets into here
 
 - Figure out how to integrate this
-into the grimoire. 
+into the overall grimoire search
+and publication.
