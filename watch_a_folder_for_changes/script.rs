@@ -35,6 +35,23 @@ struct DirWatcher {
 }
 
 impl DirWatcher {
+    fn remove_hidden_and_tmp(path: &PathBuf) -> bool {
+        let check_string = path.display().to_string();
+        if check_string.ends_with("~") {
+            false 
+        } else if let None = path.components().find(|part| { 
+            if let std::path::Component::Normal(x) = part {
+                x.to_str().unwrap().starts_with(".")
+            } else  {
+                false
+            }
+         }) {
+            true
+        } else {
+            false
+        }
+    }
+
     pub fn new(path: &PathBuf) -> Result<DirWatcher> {
         let (tx, rx) = mpsc::channel::<bool>(1);
         let send_path = path.clone();
@@ -77,13 +94,11 @@ impl DirWatcher {
                                     }
 
                                 }
-//                            dbg!(&payload.event.kind);
-                            //dbg!(&payload.event.paths);
-                            //Some(PathBuf::from("sadf"))
                             }
                         )
                             .flatten()
                             .unique()
+                            .filter(|p| DirWatcher::remove_hidden_and_tmp(*p))
                             .collect();
                         dbg!(ex);
                     }
@@ -96,7 +111,6 @@ impl DirWatcher {
             while let Some(_) = internal_rx.recv().await {
                 tx_bridge.send(true);
             }
-            dbg!("asdf2");
         });
         let dw = DirWatcher {
             rx,
