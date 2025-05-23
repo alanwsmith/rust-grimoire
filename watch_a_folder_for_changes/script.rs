@@ -32,7 +32,7 @@ use itertools::Itertools;
 use tokio::runtime::Handle;
 
 struct DirWatcher {
-    rx: tokio::sync::mpsc::Receiver<bool>
+    rx: tokio::sync::mpsc::Receiver<Vec<PathBuf>>
 }
 
 impl DirWatcher {
@@ -54,18 +54,17 @@ impl DirWatcher {
     }
 
     pub fn new(path: &PathBuf) -> Result<DirWatcher> {
-        let (tx, rx) = mpsc::channel::<bool>(1);
+        let (tx, rx) = mpsc::channel::<Vec<PathBuf>>(1);
         let send_path = path.clone();
         let tx_bridge = tx.clone();
         tokio::spawn(async move  {
             let rt = Handle::current();
-            let (internal_tx, mut internal_rx) = mpsc::channel::<bool>(2);
+            let (internal_tx, mut internal_rx) = mpsc::channel::<Vec<PathBuf>>(2);
             let internal_tx2 = internal_tx.clone();
              let mut debouncer = new_debouncer(
                  Duration::from_millis(300),
                  None,
                  move |result: DebounceEventResult| {
-                    internal_tx2.send(true);
                     if let Ok(events) = result {
                         let ex: Vec<_> = events.iter().filter_map(|payload|
                             {
@@ -103,13 +102,14 @@ impl DirWatcher {
                         )
                             .flatten()
                             .unique()
-                            .filter(|p| DirWatcher::remove_hidden_and_tmp(*p))
+                            .map(|p| p.to_path_buf())
+                            .filter(|p| DirWatcher::remove_hidden_and_tmp(p))
                             .collect();
-                        dbg!(ex);
+                        //dbg!(ex);
 
                         let tx3 = internal_tx.clone();
                         rt.spawn(async move {
-                            if let Err(e) = tx3.send(true).await {
+                            if let Err(e) = tx3.send(vec![]).await {
                                 println!("Error sending event result: {:?}", e);
                             }
                         });
@@ -117,26 +117,22 @@ impl DirWatcher {
                      //internal_tx2.send(true);
                     }
                      //dbg!(result);
-                     internal_tx2.send(true);
+                     //internal_tx2.send(true);
                  }
              ).unwrap();
             debouncer.watch(send_path, RecursiveMode::Recursive).unwrap();
             dbg!("start loop");
             let rt2 = Handle::current();
-
             while let Some(_) = internal_rx.recv().await {
                 dbg!("inside hit");
-                tx_bridge.send(true);
+                //tx_bridge.send(true);
                         let tx4 = tx_bridge.clone();
                         rt2.spawn(async move {
-                            if let Err(e) = tx4.send(true).await {
+                            if let Err(e) = tx4.send(vec![]).await {
                                 println!("Error sending event result: {:?}", e);
                             }
                         });
             }
-
-            dbg!("too far");
-
         });
         let dw = DirWatcher {
             rx,
