@@ -29,6 +29,7 @@ use rusqlite::Connection;
 use tokio::sync::mpsc;
 use notify::EventKind;
 use itertools::Itertools;
+use tokio::runtime::Handle;
 
 struct DirWatcher {
     rx: tokio::sync::mpsc::Receiver<bool>
@@ -57,11 +58,14 @@ impl DirWatcher {
         let send_path = path.clone();
         let tx_bridge = tx.clone();
         tokio::spawn(async move  {
-            let (internal_tx, mut internal_rx) = mpsc::channel::<bool>(1);
+            let rt = Handle::current();
+            let (internal_tx, mut internal_rx) = mpsc::channel::<bool>(2);
+            let internal_tx2 = internal_tx.clone();
              let mut debouncer = new_debouncer(
                  Duration::from_millis(300),
                  None,
                  move |result: DebounceEventResult| {
+                    internal_tx2.send(true);
                     if let Ok(events) = result {
                         let ex: Vec<_> = events.iter().filter_map(|payload|
                             {
@@ -76,15 +80,16 @@ impl DirWatcher {
                                         Some(&payload.event.paths)
                                     }
                                     EventKind::Modify(change) => {
-                                        match change {
-                                            Name => {
-                                                Some(&payload.event.paths)
-                                            }
-                                            Data => {
-                                                Some(&payload.event.paths)
-                                            }
-                                            _ => None
-                                        }
+                                        None
+                                        // match change {
+                                        //     Name => {
+                                        //         Some(&payload.event.paths)
+                                        //     }
+                                        //     Data => {
+                                        //         Some(&payload.event.paths)
+                                        //     }
+                                        //     _ => None
+                                        // }
                                     },
                                     EventKind::Other => {
                                         None
@@ -101,16 +106,37 @@ impl DirWatcher {
                             .filter(|p| DirWatcher::remove_hidden_and_tmp(*p))
                             .collect();
                         dbg!(ex);
-                    }
 
+                        let tx3 = internal_tx.clone();
+                        rt.spawn(async move {
+                            if let Err(e) = tx3.send(true).await {
+                                println!("Error sending event result: {:?}", e);
+                            }
+                        });
+
+                     //internal_tx2.send(true);
+                    }
                      //dbg!(result);
-                     internal_tx.send(true);
+                     internal_tx2.send(true);
                  }
              ).unwrap();
-        debouncer.watch(send_path, RecursiveMode::Recursive).unwrap();
+            debouncer.watch(send_path, RecursiveMode::Recursive).unwrap();
+            dbg!("start loop");
+            let rt2 = Handle::current();
+
             while let Some(_) = internal_rx.recv().await {
+                dbg!("inside hit");
                 tx_bridge.send(true);
+                        let tx4 = tx_bridge.clone();
+                        rt2.spawn(async move {
+                            if let Err(e) = tx4.send(true).await {
+                                println!("Error sending event result: {:?}", e);
+                            }
+                        });
             }
+
+            dbg!("too far");
+
         });
         let dw = DirWatcher {
             rx,
@@ -124,7 +150,7 @@ async fn main() -> Result<()> {
     let dir_to_watch = PathBuf::from("../");
     let mut dw = DirWatcher::new(&dir_to_watch)?;
     while let Some(_) = dw.rx.recv().await {
-        dbg!("asdf");
+        dbg!("outside hit");
     }
     Ok(())
 }
