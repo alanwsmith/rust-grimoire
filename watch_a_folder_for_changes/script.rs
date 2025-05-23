@@ -18,35 +18,35 @@ status = "scratch"
 ---
 
 #![allow(unused)]
-use anyhow::Result;
 use anyhow::Error;
-use notify_debouncer_full::*;
-use std::time::Duration;
-use notify::RecursiveMode;
-use notify::Event;
-use std::path::PathBuf;
-use rusqlite::Connection;
-use tokio::sync::mpsc;
-use notify::EventKind;
+use anyhow::Result;
 use itertools::Itertools;
+use notify::Event;
+use notify::EventKind;
+use notify::RecursiveMode;
+use notify_debouncer_full::*;
+use rusqlite::Connection;
+use std::path::PathBuf;
+use std::time::Duration;
 use tokio::runtime::Handle;
+use tokio::sync::mpsc;
 
 struct DirWatcher {
-    rx: tokio::sync::mpsc::Receiver<Vec<PathBuf>>
+    rx: tokio::sync::mpsc::Receiver<Vec<PathBuf>>,
 }
 
 impl DirWatcher {
     fn remove_hidden_and_tmp(path: &PathBuf) -> bool {
         let check_string = path.display().to_string();
         if check_string.ends_with("~") {
-            false 
-        } else if let None = path.components().find(|part| { 
+            false
+        } else if let None = path.components().find(|part| {
             if let std::path::Component::Normal(x) = part {
                 x.to_str().unwrap().starts_with(".")
-            } else  {
+            } else {
                 false
             }
-         }) {
+        }) {
             true
         } else {
             false
@@ -57,27 +57,22 @@ impl DirWatcher {
         let (tx, rx) = mpsc::channel::<Vec<PathBuf>>(1);
         let send_path = path.clone();
         let tx_bridge = tx.clone();
-        tokio::spawn(async move  {
+        tokio::spawn(async move {
             let rt = Handle::current();
             let (internal_tx, mut internal_rx) = mpsc::channel::<Vec<PathBuf>>(2);
             let internal_tx2 = internal_tx.clone();
-             let mut debouncer = new_debouncer(
-                 Duration::from_millis(300),
-                 None,
-                 move |result: DebounceEventResult| {
+            let mut debouncer = new_debouncer(
+                Duration::from_millis(300),
+                None,
+                move |result: DebounceEventResult| {
                     if let Ok(events) = result {
-                        let ex: Vec<_> = events.iter().filter_map(|payload|
-                            {
+                        let paths: Vec<_> = events
+                            .iter()
+                            .filter_map(|payload| {
                                 match &payload.event.kind {
-                                    EventKind::Any => {
-                                        None
-                                    }
-                                    EventKind::Access(_) => {
-                                        None
-                                    }
-                                    EventKind::Create(_) => {
-                                        Some(&payload.event.paths)
-                                    }
+                                    EventKind::Any => None,
+                                    EventKind::Access(_) => None,
+                                    EventKind::Create(_) => Some(&payload.event.paths),
                                     EventKind::Modify(change) => {
                                         None
                                         // match change {
@@ -89,54 +84,43 @@ impl DirWatcher {
                                         //     }
                                         //     _ => None
                                         // }
-                                    },
-                                    EventKind::Other => {
-                                        None
                                     }
-                                    EventKind::Remove(_) => {
-                                        Some(&payload.event.paths)
-                                    }
-
+                                    EventKind::Other => None,
+                                    EventKind::Remove(_) => Some(&payload.event.paths),
                                 }
-                            }
-                        )
+                            })
                             .flatten()
                             .unique()
                             .map(|p| p.to_path_buf())
                             .filter(|p| DirWatcher::remove_hidden_and_tmp(p))
                             .collect();
-                        //dbg!(ex);
-
+                        if paths.len() > 0 {
                         let tx3 = internal_tx.clone();
                         rt.spawn(async move {
-                            if let Err(e) = tx3.send(vec![]).await {
+                            if let Err(e) = tx3.send(paths).await {
                                 println!("Error sending event result: {:?}", e);
                             }
                         });
+                        }
 
-                     //internal_tx2.send(true);
                     }
-                     //dbg!(result);
-                     //internal_tx2.send(true);
-                 }
-             ).unwrap();
-            debouncer.watch(send_path, RecursiveMode::Recursive).unwrap();
-            dbg!("start loop");
+                },
+            )
+            .unwrap();
+            debouncer
+                .watch(send_path, RecursiveMode::Recursive)
+                .unwrap();
             let rt2 = Handle::current();
-            while let Some(_) = internal_rx.recv().await {
-                dbg!("inside hit");
-                //tx_bridge.send(true);
-                        let tx4 = tx_bridge.clone();
-                        rt2.spawn(async move {
-                            if let Err(e) = tx4.send(vec![]).await {
-                                println!("Error sending event result: {:?}", e);
-                            }
-                        });
+            while let Some(paths) = internal_rx.recv().await {
+                let tx4 = tx_bridge.clone();
+                rt2.spawn(async move {
+                    if let Err(e) = tx4.send(paths).await {
+                        println!("Error sending event result: {:?}", e);
+                    }
+                });
             }
         });
-        let dw = DirWatcher {
-            rx,
-        };
+        let dw = DirWatcher { rx };
         Ok(dw)
     }
 }
@@ -145,52 +129,53 @@ impl DirWatcher {
 async fn main() -> Result<()> {
     let dir_to_watch = PathBuf::from("../");
     let mut dw = DirWatcher::new(&dir_to_watch)?;
-    while let Some(_) = dw.rx.recv().await {
-        dbg!("outside hit");
+    while let Some(paths) = dw.rx.recv().await {
+        for path in paths {
+            println!("Caught change with: {}", path.display());
+        }
     }
     Ok(())
 }
 
-    // conn: Connection, 
-    //debouncer: Debouncer<notify::RecommendedWatcher,notify_debouncer_full::RecommendedCache>,
-    //rx: Receiver<Result<bool, Error>>,
-    //tx: Sender<Result<bool, Error>>,
+// conn: Connection,
+//debouncer: Debouncer<notify::RecommendedWatcher,notify_debouncer_full::RecommendedCache>,
+//rx: Receiver<Result<bool, Error>>,
+//tx: Sender<Result<bool, Error>>,
 
-        //let (tx, rx) = mpsc::channel::<Result<bool>>();
+//let (tx, rx) = mpsc::channel::<Result<bool>>();
 
 //        dw.init_db();
 //
-        //let conn = Connection::open_in_memory()?;
+//let conn = Connection::open_in_memory()?;
 
-    // fn init_db(&self)  -> Result<()> {
-    //     println!("Creating hash database");
-    //     let create_table_sql = "CREATE TABLE IF NOT EXISTS
-    //         files (
-    //             path TEXT PRIMARY KEY,
-    //             hash TEXT NOT NULL 
-    //         )";
-    //     self.conn.execute(create_table_sql, ())?;
-    //     Ok(())
-    // }
+// fn init_db(&self)  -> Result<()> {
+//     println!("Creating hash database");
+//     let create_table_sql = "CREATE TABLE IF NOT EXISTS
+//         files (
+//             path TEXT PRIMARY KEY,
+//             hash TEXT NOT NULL
+//         )";
+//     self.conn.execute(create_table_sql, ())?;
+//     Ok(())
+// }
 
-        //debouncer.watch(path, RecursiveMode::Recursive)?;
+//debouncer.watch(path, RecursiveMode::Recursive)?;
 
+// for res in rx {
+//     dbg!("asdf");
+//     // match res {
+//     //     Ok(event) => println!("event: {:?}", event),
+//     //     Err(e) => println!("watch error: {:?}", e),
+//     // }
+// }
 
-        // for res in rx {
-        //     dbg!("asdf");
-        //     // match res {
-        //     //     Ok(event) => println!("event: {:?}", event),
-        //     //     Err(e) => println!("watch error: {:?}", e),
-        //     // }
-        // }
-
-        // for res in dw.rx {
-        //     dbg!("asdf");
-        //     // match res {
-        //     //     Ok(event) => println!("event: {:?}", event),
-        //     //     Err(e) => println!("watch error: {:?}", e),
-        //     // }
-        // }
+// for res in dw.rx {
+//     dbg!("asdf");
+//     // match res {
+//     //     Ok(event) => println!("event: {:?}", event),
+//     //     Err(e) => println!("watch error: {:?}", e),
+//     // }
+// }
 
 // fn watch_folder(path: &PathBuf) -> Result<()> {
 //     println!("Starting watcher");
@@ -212,18 +197,16 @@ async fn main() -> Result<()> {
 //     Ok(())
 // }
 
-
-
-        //let tx2 = tx.clone();
-        // let mut debouncer = new_debouncer(
-        //     Duration::from_millis(100),
-        //     None,
-        //     move |result: DebounceEventResult| {
-        //         dbg!(result);
-        //         tx2.send(Ok(true));
-        //         // match result {
-        //         //     Ok(events) => events.iter().for_each(|event| println!("{event:?}")),
-        //         //     Err(errors) => errors.iter().for_each(|error| println!("{error:?}")),
-        //         // }
-        //     }
-        // )?;
+//let tx2 = tx.clone();
+// let mut debouncer = new_debouncer(
+//     Duration::from_millis(100),
+//     None,
+//     move |result: DebounceEventResult| {
+//         dbg!(result);
+//         tx2.send(Ok(true));
+//         // match result {
+//         //     Ok(events) => events.iter().for_each(|event| println!("{event:?}")),
+//         //     Err(errors) => errors.iter().for_each(|error| println!("{error:?}")),
+//         // }
+//     }
+// )?;
