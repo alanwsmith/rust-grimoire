@@ -3,6 +3,7 @@
 ---
 [dependencies]
 anyhow = "1.0.98"
+itertools = "0.14.0"
 notify = "8.0.0"
 notify-debouncer-full = "0.5.0"
 rusqlite = "0.35.0"
@@ -27,6 +28,7 @@ use std::path::PathBuf;
 use rusqlite::Connection;
 use tokio::sync::mpsc;
 use notify::EventKind;
+use itertools::Itertools;
 
 struct DirWatcher {
     rx: tokio::sync::mpsc::Receiver<bool>
@@ -50,19 +52,27 @@ impl DirWatcher {
                                     EventKind::Any => {
                                         None
                                     }
-                                    EventKind::Access(x) => {
+                                    EventKind::Access(_) => {
                                         None
                                     }
-                                    EventKind::Create(x) => {
+                                    EventKind::Create(_) => {
                                         Some(&payload.event.paths)
                                     }
-                                    EventKind::Modify(x) => {
-                                        None
+                                    EventKind::Modify(change) => {
+                                        match change {
+                                            Name => {
+                                                Some(&payload.event.paths)
+                                            }
+                                            Data => {
+                                                Some(&payload.event.paths)
+                                            }
+                                            _ => None
+                                        }
                                     },
                                     EventKind::Other => {
                                         None
                                     }
-                                    EventKind::Remove(x) => {
+                                    EventKind::Remove(_) => {
                                         Some(&payload.event.paths)
                                     }
 
@@ -73,6 +83,7 @@ impl DirWatcher {
                             }
                         )
                             .flatten()
+                            .unique()
                             .collect();
                         dbg!(ex);
                     }
