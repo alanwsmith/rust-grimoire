@@ -98,29 +98,37 @@ body {{ background-color: black; color: #aaa; }}
                 RendererStatus::AddTemplateError { .. } => true,
                 RendererStatus::AddTemplateDirError { .. } => true,
                 RendererStatus::GetTemplateError { .. } => true,
+                RendererStatus::RenderContentError { .. } => true,
                 _ => false,
             })
             .collect()
     }
 
     pub fn render_content(&mut self, template: &str, context: Value) -> String {
-        let mut output = "".to_string();
         match self.env.get_template(template) {
-            Ok(tmpl) => {
-                output = tmpl.render(context).unwrap();
-                self.log.push(RendererStatus::RenderContentSuccess {
-                    template: template.to_string(),
-                });
-            }
+            Ok(tmpl) => match tmpl.render(context) {
+                Ok(output) => {
+                    self.log.push(RendererStatus::RenderContentSuccess {
+                        template: template.to_string(),
+                    });
+                    output
+                }
+                Err(e) => {
+                    self.log.push(RendererStatus::RenderContentError {
+                        error_text: e.to_string(),
+                        template: template.to_string(),
+                    });
+                    Renderer::error_template(&e.to_string())
+                }
+            },
             Err(e) => {
-                output = Renderer::error_template(&e.to_string());
                 self.log.push(RendererStatus::GetTemplateError {
                     template: template.to_string(),
                     error_text: e.to_string(),
-                })
+                });
+                Renderer::error_template(&e.to_string())
             }
         }
-        output
     }
 }
 
@@ -142,6 +150,10 @@ pub enum RendererStatus {
         path: PathBuf,
     },
     GetTemplateError {
+        template: String,
+        error_text: String,
+    },
+    RenderContentError {
         template: String,
         error_text: String,
     },
@@ -201,10 +213,23 @@ mod test {
     }
 
     #[test]
-    fn solo_render_files_because_template_can_not_load() {
+    fn render_files_because_template_can_not_load() {
         let mut renderer = Renderer::new();
         let context = context!();
         let left = renderer.render_content("missing-template", context);
+        let right = "some-error-stuff".to_string();
+        assert!(renderer.errors().len() == 1);
+        // TODO: Figure out how to test the return easily
+        // assert_eq!(left, right);
+    }
+
+    #[test]
+    fn solo_render_fails_at_output() {
+        let mut renderer = Renderer::new();
+        let context = context!();
+        let template_dir = PathBuf::from("test-dir/3");
+        renderer.add_template_dir(&template_dir);
+        let left = renderer.render_content("nested-data.neoj", context);
         let right = "some-error-stuff".to_string();
         assert!(renderer.errors().len() == 1);
         // TODO: Figure out how to test the return easily
