@@ -97,24 +97,37 @@ body {{ background-color: black; color: #aaa; }}
             })
             .collect()
     }
+
+    pub fn render_content(&mut self, template: &str, context: Value) -> Result<String> {
+        let tmpl = self.env.get_template(template)?;
+        let output = tmpl.render(context)?;
+        self.log.push(RendererStatus::RenderContentSuccess {
+            template: template.to_string(),
+        });
+
+        Ok(output)
+    }
 }
 
 pub enum RendererStatus {
-    TemplateLoadSuccess {
-        path: Option<PathBuf>,
-        name: String,
+    DirectoryLoadError {
+        path: PathBuf,
+        error_text: String,
+    },
+    DirectoryLoadSuccess {
+        path: PathBuf,
+    },
+    RenderContentSuccess {
+        template: String,
     },
     TemplateLoadError {
         path: Option<PathBuf>,
         name: String,
         error_text: String,
     },
-    DirectoryLoadSuccess {
-        path: PathBuf,
-    },
-    DirectoryLoadError {
-        path: PathBuf,
-        error_text: String,
+    TemplateLoadSuccess {
+        path: Option<PathBuf>,
+        name: String,
     },
 }
 
@@ -139,6 +152,7 @@ fn main() -> Result<()> {
 #[cfg(test)]
 mod test {
     use super::*;
+    use pretty_assertions::assert_eq;
 
     #[test]
     fn load_template_without_error() {
@@ -168,6 +182,24 @@ mod test {
         let template_dir = PathBuf::from("invalid_directory");
         renderer.add_template_dir(&template_dir);
         assert!(renderer.errors().len() == 1);
+    }
+
+    #[test]
+    fn basic_content_generation_just_return_template() {
+        let mut renderer = Renderer::new();
+        renderer.add_template("test-alfa", "test-alfa-content");
+        let context = context!();
+        let left = renderer.render_content("test-alfa", context).unwrap();
+        let right = "test-alfa-content".to_string();
+        assert_eq!(left, right);
+    }
+
+    #[test]
+    fn todo_load_invalid_template_in_dir() {
+        let mut renderer = Renderer::new();
+        let template_dir = PathBuf::from("test-dir/2/invalid-templates");
+        renderer.add_template_dir(&template_dir);
+        // assert!(renderer.errors().len() == 1);
     }
 
     // fn get_env() -> Environment<'static> {
