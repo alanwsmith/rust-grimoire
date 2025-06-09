@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 anyhow = "1.0.98"
-minijinja = { version=  "2.10.2", features = ["debug", "custom_syntax", "loader"] }
+minijinja = { version=  "2.10.2", features = ["builtins", "debug", "custom_syntax", "loader"] }
 
 [dev-dependencies]
 pretty_assertions = "1.4.1"
