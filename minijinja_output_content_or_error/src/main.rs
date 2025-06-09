@@ -26,6 +26,7 @@ impl Renderer<'_> {
             log: vec![],
             error_template: None,
         };
+        renderer.env.set_debug(true);
         renderer.env.set_syntax(
             SyntaxConfig::builder()
                 .block_delimiters("[!", "!]")
@@ -46,16 +47,11 @@ impl Renderer<'_> {
                 path: None,
                 name: name.to_string(),
             }),
-            Err(e) => {
-                self.env
-                    .add_template_owned(name.to_string(), self.error_template(&e.to_string()))
-                    .unwrap();
-                self.log.push(RendererStatus::AddTemplateError {
-                    path: None,
-                    name: name.to_string(),
-                    error_text: e.to_string(),
-                })
-            }
+            Err(e) => self.log.push(RendererStatus::AddTemplateError {
+                path: None,
+                name: name.to_string(),
+                error_text: e.display_debug_info().to_string(),
+            }),
         }
     }
 
@@ -102,7 +98,7 @@ impl Renderer<'_> {
 body {{ background-color: black; color: #aaa; }}
 </style>
 </head>
-<body>{}</body>
+<body><pre>{}</pre></body>
 "#,
             error_text
         )
@@ -133,18 +129,18 @@ body {{ background-color: black; color: #aaa; }}
                 }
                 Err(e) => {
                     self.log.push(RendererStatus::RenderContentError {
-                        error_text: e.to_string(),
+                        error_text: e.display_debug_info().to_string(),
                         template: template.to_string(),
                     });
-                    self.error_template(&e.to_string())
+                    self.error_template(&e.display_debug_info().to_string())
                 }
             },
             Err(e) => {
                 self.log.push(RendererStatus::GetTemplateError {
                     template: template.to_string(),
-                    error_text: e.to_string(),
+                    error_text: e.display_debug_info().to_string(),
                 });
-                self.error_template(&e.to_string())
+                self.error_template(&e.display_debug_info().to_string())
             }
         }
     }
