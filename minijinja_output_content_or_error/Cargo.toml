@@ -1,0 +1,8 @@
+[package]
+name = "minijinja_output_content_or_error"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.98"
+minijinja = { version=  "2.10.2", features = ["custom_syntax", "loader"] }

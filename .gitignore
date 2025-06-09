@@ -1,6 +1,7 @@
 # Rename this to .gitignore for 
 # the default set of ignores
 
+target
 node_modules
 
 __pycache__

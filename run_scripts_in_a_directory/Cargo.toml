@@ -1,0 +1,10 @@
+[package]
+name = "run_scripts_in_a_directory"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.98"
+itertools = "0.14.0"
+permissions = "0.5.1"
+walkdir = "2.5.0"

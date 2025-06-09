@@ -1,0 +1,76 @@
+am/pm (lowercase) via funciton:
+pm
+
+
+simple clock via funciton:
+10:37:44pm
+
+
+Format: Year - %Y
+2025
+
+
+RFC 3339
+2025-06-07T22:37:44-04:00
+
+
+RFC 3339 (with mc)
+2025-06-07T22:37:44.520403-04:00
+
+
+RFC 2822
+Sat, 7 Jun 2025 22:37:44 -0400
+
+
+
+Year: 
+%Y: "2023" | %y: "23"
+
+Month:
+%B: "January" | %b "Jan" | %m: "01" | %-m: "1"
+
+Day of Month:
+%d: "02" | %-d: "2"
+
+Day of Week:
+%A: "Monday" | %a: "Mon" | %w "1"
+
+Day of Year:
+%j: "002" | %-j "2"
+
+Hour:
+%H: "14" | %-H: "14" | %I: "02" | %-I: "2"
+(%H is 0 padded if < 10)
+(%-H is not 0 padded if < 10)
+
+Minute:
+%M: "05" | %-M: "5"
+
+Second:
+%S: "06" | %-S: "6"
+
+Microsecond:
+%f: "000012345" | %-f: "12345"
+
+Sunday Based Week Number:
+%U: "01" | %-U: "1"
+
+Monday Based Week Number:
+%W: "01" | %-W: "1"
+
+AM/PM:
+%p: "PM"
+
+Locale DateTime String:
+%c: "Mon Jan  2 14:05:06 2023"
+
+Locale Date String:
+%x: "01/02/23"
+
+Locale Time String:
+%X: "14:05:06"
+
+
+
+
+

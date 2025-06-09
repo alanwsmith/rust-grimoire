@@ -11,7 +11,8 @@ sha2 = "0.10.9"
 tokio = {version = "1.45.0", features = ["rt-multi-thread", "macros", "sync"] }
 ---
 
-
+// TODO: Look at using watchexec
+    // for this instead
 
 use anyhow::Result;
 use itertools::Itertools;
