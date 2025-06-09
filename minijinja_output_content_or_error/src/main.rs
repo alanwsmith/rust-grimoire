@@ -1,7 +1,7 @@
-#![allow(unused)]
 use anyhow::Result;
 use minijinja::syntax::SyntaxConfig;
 use minijinja::{Environment, Value, context, path_loader};
+use std::fs;
 use std::path::PathBuf;
 
 // This is designed to create a log of errors
@@ -16,6 +16,7 @@ use std::path::PathBuf;
 pub struct Renderer<'a> {
     pub env: Environment<'a>,
     pub log: Vec<RendererStatus>,
+    error_template: Option<String>,
 }
 
 impl Renderer<'_> {
@@ -23,6 +24,7 @@ impl Renderer<'_> {
         let mut renderer = Renderer {
             env: Environment::new(),
             log: vec![],
+            error_template: None,
         };
         renderer.env.set_syntax(
             SyntaxConfig::builder()
@@ -46,7 +48,7 @@ impl Renderer<'_> {
             }),
             Err(e) => {
                 self.env
-                    .add_template_owned(name.to_string(), Renderer::error_template(&e.to_string()))
+                    .add_template_owned(name.to_string(), self.error_template(&e.to_string()))
                     .unwrap();
                 self.log.push(RendererStatus::AddTemplateError {
                     path: None,
@@ -74,7 +76,22 @@ impl Renderer<'_> {
         }
     }
 
-    fn error_template(error_text: &str) -> String {
+    pub fn add_template_from_path(&mut self, name: &str, path: &PathBuf) {
+        match fs::read_to_string(path) {
+            Ok(content) => {
+                self.add_template(name, &content);
+            }
+            Err(e) => {
+                self.log.push(RendererStatus::AddTemplateFileError {
+                    name: name.to_string(),
+                    path: path.to_path_buf(),
+                    error_text: format!("Error: {} - on file: {}", e.to_string(), path.display()),
+                });
+            }
+        }
+    }
+
+    fn error_template(&self, error_text: &str) -> String {
         format!(
             r#"<!DOCTYPE html>
 <html lang="en">
@@ -97,6 +114,7 @@ body {{ background-color: black; color: #aaa; }}
             .filter(|item| match item {
                 RendererStatus::AddTemplateError { .. } => true,
                 RendererStatus::AddTemplateDirError { .. } => true,
+                RendererStatus::AddTemplateFileError { .. } => true,
                 RendererStatus::GetTemplateError { .. } => true,
                 RendererStatus::RenderContentError { .. } => true,
                 _ => false,
@@ -104,7 +122,7 @@ body {{ background-color: black; color: #aaa; }}
             .collect()
     }
 
-    pub fn render_content(&mut self, template: &str, context: Value) -> String {
+    pub fn render_content(&mut self, template: &str, context: &Value) -> String {
         match self.env.get_template(template) {
             Ok(tmpl) => match tmpl.render(context) {
                 Ok(output) => {
@@ -118,7 +136,7 @@ body {{ background-color: black; color: #aaa; }}
                         error_text: e.to_string(),
                         template: template.to_string(),
                     });
-                    Renderer::error_template(&e.to_string())
+                    self.error_template(&e.to_string())
                 }
             },
             Err(e) => {
@@ -126,15 +144,24 @@ body {{ background-color: black; color: #aaa; }}
                     template: template.to_string(),
                     error_text: e.to_string(),
                 });
-                Renderer::error_template(&e.to_string())
+                self.error_template(&e.to_string())
             }
         }
+    }
+
+    pub fn set_error_template(&mut self, fmt: &str) {
+        self.error_template = Some(fmt.to_string());
     }
 }
 
 pub enum RendererStatus {
     AddTemplateError {
         path: Option<PathBuf>,
+        name: String,
+        error_text: String,
+    },
+    AddTemplateFileError {
+        path: PathBuf,
         name: String,
         error_text: String,
     },
@@ -207,7 +234,7 @@ mod test {
         let mut renderer = Renderer::new();
         renderer.add_template("test-alfa", "test-alfa-content");
         let context = context!();
-        let left = renderer.render_content("test-alfa", context);
+        let left = renderer.render_content("test-alfa", &context);
         let right = "test-alfa-content".to_string();
         assert_eq!(left, right);
     }
@@ -215,25 +242,42 @@ mod test {
     #[test]
     fn render_files_because_template_can_not_load() {
         let mut renderer = Renderer::new();
+        renderer.set_error_template("{}");
         let context = context!();
-        let left = renderer.render_content("missing-template", context);
-        let right = "some-error-stuff".to_string();
+        let _left = renderer.render_content("missing-template", &context);
+        let _right = "some-error-stuff".to_string();
         assert!(renderer.errors().len() == 1);
         // TODO: Figure out how to test the return easily
         // assert_eq!(left, right);
     }
 
     #[test]
-    fn solo_render_fails_at_output() {
+    fn render_fails_at_output() {
         let mut renderer = Renderer::new();
         let context = context!();
         let template_dir = PathBuf::from("test-dir/3");
         renderer.add_template_dir(&template_dir);
-        let left = renderer.render_content("nested-data.neoj", context);
-        let right = "some-error-stuff".to_string();
+        let _left = renderer.render_content("nested-data.neoj", &context);
+        let _right = "some-error-stuff".to_string();
         assert!(renderer.errors().len() == 1);
         // TODO: Figure out how to test the return easily
         // assert_eq!(left, right);
+    }
+
+    #[test]
+    fn add_template_from_file_success() {
+        let mut renderer = Renderer::new();
+        let path = PathBuf::from("test-dir/4/file-template.neoj");
+        renderer.add_template_from_path("example-from-path", &path);
+        assert!(renderer.errors().len() == 0);
+    }
+
+    #[test]
+    fn add_template_from_file_error() {
+        let mut renderer = Renderer::new();
+        let path = PathBuf::from("no-file.neoj");
+        renderer.add_template_from_path("example-from-path", &path);
+        assert!(renderer.errors().len() == 1);
     }
 
     // TODO: Build context with error output if
