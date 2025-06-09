@@ -8,6 +8,10 @@ use std::path::PathBuf;
 // and output to a file location even if the
 // template has an error (in which case it
 // outputs the error message)
+//
+// [] Always return a string for rendering
+// with various fallbacks if things go
+// wrong at any stage
 
 pub struct Renderer<'a> {
     pub env: Environment<'a>,
@@ -36,7 +40,7 @@ impl Renderer<'_> {
             .env
             .add_template_owned(name.to_string(), content.to_string())
         {
-            Ok(_) => self.log.push(RendererStatus::TemplateLoadSuccess {
+            Ok(_) => self.log.push(RendererStatus::AddTemplateSuccess {
                 path: None,
                 name: name.to_string(),
             }),
@@ -44,7 +48,7 @@ impl Renderer<'_> {
                 self.env
                     .add_template_owned(name.to_string(), Renderer::error_template(&e.to_string()))
                     .unwrap();
-                self.log.push(RendererStatus::TemplateLoadError {
+                self.log.push(RendererStatus::AddTemplateError {
                     path: None,
                     name: name.to_string(),
                     error_text: e.to_string(),
@@ -56,11 +60,11 @@ impl Renderer<'_> {
     pub fn add_template_dir(&mut self, dir: &PathBuf) {
         if dir.is_dir() {
             self.env.set_loader(path_loader(dir));
-            self.log.push(RendererStatus::DirectoryLoadSuccess {
+            self.log.push(RendererStatus::AddTemplateDirSuccess {
                 path: dir.to_path_buf(),
             });
         } else {
-            self.log.push(RendererStatus::DirectoryLoadError {
+            self.log.push(RendererStatus::AddTemplateDirError {
                 path: dir.to_path_buf(),
                 error_text: format!(
                     "Tried to load tempaltes from missing directory: {}",
@@ -91,43 +95,58 @@ body {{ background-color: black; color: #aaa; }}
         self.log
             .iter()
             .filter(|item| match item {
-                RendererStatus::TemplateLoadError { .. } => true,
-                RendererStatus::DirectoryLoadError { .. } => true,
+                RendererStatus::AddTemplateError { .. } => true,
+                RendererStatus::AddTemplateDirError { .. } => true,
+                RendererStatus::GetTemplateError { .. } => true,
                 _ => false,
             })
             .collect()
     }
 
-    pub fn render_content(&mut self, template: &str, context: Value) -> Result<String> {
-        let tmpl = self.env.get_template(template)?;
-        let output = tmpl.render(context)?;
-        self.log.push(RendererStatus::RenderContentSuccess {
-            template: template.to_string(),
-        });
-
-        Ok(output)
+    pub fn render_content(&mut self, template: &str, context: Value) -> String {
+        let mut output = "".to_string();
+        match self.env.get_template(template) {
+            Ok(tmpl) => {
+                output = tmpl.render(context).unwrap();
+                self.log.push(RendererStatus::RenderContentSuccess {
+                    template: template.to_string(),
+                });
+            }
+            Err(e) => {
+                output = Renderer::error_template(&e.to_string());
+                self.log.push(RendererStatus::GetTemplateError {
+                    template: template.to_string(),
+                    error_text: e.to_string(),
+                })
+            }
+        }
+        output
     }
 }
 
 pub enum RendererStatus {
-    DirectoryLoadError {
+    AddTemplateError {
+        path: Option<PathBuf>,
+        name: String,
+        error_text: String,
+    },
+    AddTemplateSuccess {
+        path: Option<PathBuf>,
+        name: String,
+    },
+    AddTemplateDirError {
         path: PathBuf,
         error_text: String,
     },
-    DirectoryLoadSuccess {
+    AddTemplateDirSuccess {
         path: PathBuf,
+    },
+    GetTemplateError {
+        template: String,
+        error_text: String,
     },
     RenderContentSuccess {
         template: String,
-    },
-    TemplateLoadError {
-        path: Option<PathBuf>,
-        name: String,
-        error_text: String,
-    },
-    TemplateLoadSuccess {
-        path: Option<PathBuf>,
-        name: String,
     },
 }
 
@@ -135,19 +154,6 @@ fn main() -> Result<()> {
     println!("Check tests for output");
     Ok(())
 }
-
-// pub fn add_mj_template(env: &mut Environment, name: &str, content: &str) -> Result<()> {
-//     env.add_template_owned(name.to_string(), content.to_string())
-//         .unwrap();
-//     Ok(())
-// }
-
-// pub fn output_content_or_error(env: &Environment, template_name: &str, data: &Value) -> Result<()> {
-//     let template = env.get_template(template_name).unwrap();
-//     let output = template.render(context!(data)).unwrap();
-//     println!("{}", output);
-//     Ok(())
-// }
 
 #[cfg(test)]
 mod test {
@@ -189,10 +195,26 @@ mod test {
         let mut renderer = Renderer::new();
         renderer.add_template("test-alfa", "test-alfa-content");
         let context = context!();
-        let left = renderer.render_content("test-alfa", context).unwrap();
+        let left = renderer.render_content("test-alfa", context);
         let right = "test-alfa-content".to_string();
         assert_eq!(left, right);
     }
+
+    #[test]
+    fn solo_render_files_because_template_can_not_load() {
+        let mut renderer = Renderer::new();
+        let context = context!();
+        let left = renderer.render_content("missing-template", context);
+        let right = "some-error-stuff".to_string();
+        assert!(renderer.errors().len() == 1);
+        // TODO: Figure out how to test the return easily
+        // assert_eq!(left, right);
+    }
+
+    // TODO: Build context with error output if
+    // something freaks out
+
+    /////
 
     #[test]
     fn todo_load_invalid_template_in_dir() {
