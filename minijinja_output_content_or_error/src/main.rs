@@ -1,7 +1,7 @@
 #![allow(unused)]
 use anyhow::Result;
 use minijinja::syntax::SyntaxConfig;
-use minijinja::{Environment, Value, context};
+use minijinja::{Environment, Value, context, path_loader};
 use std::path::PathBuf;
 
 // This is designed to create a log of errors
@@ -53,6 +53,23 @@ impl Renderer<'_> {
         }
     }
 
+    pub fn add_template_dir(&mut self, dir: &PathBuf) {
+        if dir.is_dir() {
+            self.env.set_loader(path_loader(dir));
+            self.log.push(RendererStatus::DirectoryLoadSuccess {
+                path: dir.to_path_buf(),
+            });
+        } else {
+            self.log.push(RendererStatus::DirectoryLoadError {
+                path: dir.to_path_buf(),
+                error_text: format!(
+                    "Tried to load tempaltes from missing directory: {}",
+                    dir.display()
+                ),
+            });
+        }
+    }
+
     fn error_template(error_text: &str) -> String {
         format!(
             r#"<!DOCTYPE html>
@@ -75,6 +92,7 @@ body {{ background-color: black; color: #aaa; }}
             .iter()
             .filter(|item| match item {
                 RendererStatus::TemplateLoadError { .. } => true,
+                RendererStatus::DirectoryLoadError { .. } => true,
                 _ => false,
             })
             .collect()
@@ -89,6 +107,13 @@ pub enum RendererStatus {
     TemplateLoadError {
         path: Option<PathBuf>,
         name: String,
+        error_text: String,
+    },
+    DirectoryLoadSuccess {
+        path: PathBuf,
+    },
+    DirectoryLoadError {
+        path: PathBuf,
         error_text: String,
     },
 }
@@ -123,9 +148,25 @@ mod test {
     }
 
     #[test]
-    fn load_tempalte_with_error() {
+    fn load_template_with_error() {
         let mut renderer = Renderer::new();
         renderer.add_template("example", "[@ asdf");
+        assert!(renderer.errors().len() == 1);
+    }
+
+    #[test]
+    fn load_directory_that_exists() {
+        let mut renderer = Renderer::new();
+        let template_dir = PathBuf::from("test-dir/1/valid-templates");
+        renderer.add_template_dir(&template_dir);
+        assert!(renderer.errors().len() == 0);
+    }
+
+    #[test]
+    fn load_directory_that_does_not_exist() {
+        let mut renderer = Renderer::new();
+        let template_dir = PathBuf::from("invalid_directory");
+        renderer.add_template_dir(&template_dir);
         assert!(renderer.errors().len() == 1);
     }
 
