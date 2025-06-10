@@ -1,4 +1,4 @@
 [workspace]
-members = ["test_runner", "test_runner_macros"]
+members = ["test_directory_runner", "macros_for_test_directory_runner"]
 resolver = "3"
 

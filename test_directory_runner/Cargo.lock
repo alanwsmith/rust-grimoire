@@ -15,6 +15,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "56254986775e3233ffa9c4d7d3faaf6d36a2c09d30b20687e9f88bc8bafc16c8"
 
 [[package]]
+name = "macros_for_test_directory_runner"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+]
+
+[[package]]
 name = "pretty_assertions"
 version = "1.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -25,18 +32,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "test_runner"
+name = "test_directory_runner"
 version = "0.1.0"
 dependencies = [
+ "macros_for_test_directory_runner",
  "pretty_assertions",
- "test_runner_macros",
-]
-
-[[package]]
-name = "test_runner_macros"
-version = "0.1.0"
-dependencies = [
- "anyhow",
 ]
 
 [[package]]
