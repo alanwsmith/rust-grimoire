@@ -1,19 +1,33 @@
+use anyhow::Result;
 use proc_macro::{TokenStream, TokenTree};
 use std::fs;
+// use std::path::PathBuf;
+
+fn get_payloads(path: &str) -> Result<Vec<String>> {
+  Ok(
+    fs::read_dir(path)?
+      .filter_map(|f| {
+        let path_buf = f.unwrap().path().to_path_buf();
+        if let Some(ext) = path_buf.extension() {
+          if ext == "customtest" {
+            return Some(path_buf);
+          }
+        }
+        None
+      })
+      .map(|f| {
+        //let test_name = f.file_stem().unwrap().display();
+        format!("asdf")
+      })
+      .collect::<Vec<String>>(),
+  )
+}
 
 #[proc_macro]
 pub fn test_dir(input: TokenStream) -> TokenStream {
   let tokens: Vec<_> = input.into_iter().collect();
   let path = get_path(tokens);
-
-  // let path = match tokens.as_slice() {
-  //   [TokenTree::Literal(lit)] => {
-  //     unwrap_string_literal(lit)
-  //   }
-  //   _ => panic!(
-  //     "This macro only accepts a single, non-empty string argument"
-  //   ),
-  // };
+  if let Ok(payloads) = get_payloads(&path) {}
 
   if let Ok(dir_list) = fs::read_dir(&path) {
     dir_list
@@ -58,7 +72,6 @@ fn explode_because_could_not_read_dir() {{
   }
 }
 
-// via: https://github.com/Michael-F-Bryan/include_dir/blob/master/macros/src/lib.rs
 fn get_path(tokens: Vec<TokenTree>) -> String {
   match tokens.as_slice() {
     [TokenTree::Literal(lit)] => {
@@ -70,7 +83,6 @@ fn get_path(tokens: Vec<TokenTree>) -> String {
   }
 }
 
-// via: https://github.com/Michael-F-Bryan/include_dir/blob/master/macros/src/lib.rs
 fn unwrap_string_literal(
   lit: &proc_macro::Literal
 ) -> String {
