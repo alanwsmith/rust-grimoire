@@ -17,24 +17,25 @@ impl Backend {
         self.document_map.insert(uri, text);
     }
 
-    // Ok(Some(vec![TextEdit {
-    //     range: Range {
-    //         start: Position {
-    //             line: 0,
-    //             character: 0,
-    //         },
-    //         end: Position {
-    //             line: 0,
-    //             character: 0,
-    //         },
-    //     },
-    //     new_text: "aaaaaaaa".to_string(),
-    // }]))
-
     async fn get_update(&self, params: &DocumentFormattingParams) -> Option<Vec<TextEdit>> {
         let uri = params.text_document.uri.to_string();
         match self.document_map.get(uri.as_str()) {
-            Some(text) => None,
+            Some(new_text) => {
+                let start = Position {
+                    line: 0,
+                    character: 0,
+                };
+                let end = Position {
+                    line: 0,
+                    character: 0,
+                };
+                let range = Range { start, end };
+                let text_edit = TextEdit {
+                    range,
+                    new_text: new_text.to_string(),
+                };
+                Some(vec![text_edit])
+            }
             None => None,
         }
     }
