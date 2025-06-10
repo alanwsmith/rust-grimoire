@@ -1,6 +1,3 @@
-#![allow(unused)]
-use anyhow::Result as AnyResult;
-use anyhow::anyhow;
 use dashmap::DashMap;
 use tower_lsp::jsonrpc::Result;
 use tower_lsp::lsp_types::*;
@@ -34,6 +31,8 @@ impl Backend {
             line: 0,
             character: 0,
         };
+        // TODO: figure out where/how using
+        // `as u32` can got sideways
         let end = Position {
             line: line as u32,
             character: character as u32,
@@ -44,38 +43,6 @@ impl Backend {
             new_text: text.to_string(),
         };
         Some(vec![text_edit])
-
-        // let mut lines: Vec<&str> = new_text.lines().collect();
-        // lines[0] = "asdf";
-        // let updated_text = lines.join("\n");
-
-        // let line_count = lines.
-        //     if let Ok(char_count) =
-        //         <usize as TryInto<u32>>::try_into(lines.last()?.graphemes(true).count())
-        //     {
-        //         let start = Position {
-        //             line: 0,
-        //             character: 0,
-        //         };
-        //         let end = Position {
-        //             line: line_count,
-        //             character: char_count,
-        //         };
-        //         let range = Range { start, end };
-        //         let text_edit = TextEdit {
-        //             range,
-        //             new_text: format!("{}", new_text.to_string()),
-        //         };
-        //         Some(vec![text_edit])
-        //     } else {
-        //         None
-        //     }
-
-        // } else {
-        //     None
-        // }
-
-        // None
     }
 }
 
@@ -122,12 +89,6 @@ impl LanguageServer for Backend {
 
     async fn did_change(&self, params: DidChangeTextDocumentParams) {
         self.on_change(&params).await;
-        // self.client
-        //     .log_message(
-        //         MessageType::INFO,
-        //         format!("{:?}", "GOT CHANGE".to_string()),
-        //     )
-        //     .await;
     }
 }
 

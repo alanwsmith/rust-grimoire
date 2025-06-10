@@ -1,11 +1,12 @@
 [package]
-name = "tower_lsp_did_save"
+name = "grimoire"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-anyhow = "1.0.98"
 dashmap = "6.1.0"
+# TODO, figure out which tokio features are
+# actually needed
 tokio = { version = "1.45.1", features = ["full"] }
 tower-lsp = "0.20.0"
 unicode-segmentation = "1.12.0"
