@@ -2,17 +2,42 @@ use anyhow::Result;
 use proc_macro::{TokenStream, TokenTree};
 use std::{fs, path::PathBuf};
 
+fn get_payload(path: &PathBuf) -> Result<Vec<String>> {
+  let input = fs::read_to_string(path).unwrap();
+  let parts = input
+    .split("_____")
+    .map(|i| i.trim().to_string())
+    .collect();
+  Ok(parts)
+}
+
 fn make_function(path: &PathBuf) -> String {
   let test_name = path.file_stem().unwrap().display();
+  let payload = get_payload(path).unwrap();
   format!(
     r#"
 #[test]
 fn {}() {{
-    let left = test_router("a");
-    let right = true;
+    let left = test_router("{}");
+    let right = {};
     assert_eq!(left, right);
 }}"#,
-    test_name
+    test_name, payload[0], payload[1]
+  )
+}
+
+fn explode(path: &str) -> String {
+  format!(
+    r#"
+#[test]
+fn explode_because_dir_problem() {{
+    assert_eq!(
+        "ERROR with dir:", 
+        {}
+    );
+}}
+    "#,
+    path
   )
 }
 
@@ -40,52 +65,10 @@ pub fn test_dir(input: TokenStream) -> TokenStream {
   let path = get_path(tokens);
   match get_functions(&path) {
     Ok(functions) => functions,
-    Err(_) => "".to_string(),
+    Err(_) => explode(&path),
   }
   .parse()
   .unwrap()
-
-  // if let Ok(dir_list) = fs::read_dir(&path) {
-  //   dir_list
-  //     .filter_map(|f| {
-  //       let path_buf = f.unwrap().path().to_path_buf();
-  //       if let Some(ext) = path_buf.extension() {
-  //         if ext == "customtest" {
-  //           return Some(path_buf);
-  //         }
-  //       }
-  //       None
-  //     })
-  //     .map(|f| {
-  //       let test_name =
-  //         f.file_stem().unwrap().display();
-  //       format!(
-  //         r#"
-  // #[test]
-  // fn {}() {{
-  //   let left = test_router("a");
-  //   let right = true;
-  //   assert_eq!(left, right);
-  // }}"#,
-  //         test_name
-  //       )
-  //     })
-  //     .collect::<Vec<String>>()
-  //     .join("\n")
-  //     .parse()
-  //     .unwrap()
-  // } else {
-  //   format!(
-  //     r#"
-  // #[test]
-  // fn explode_because_could_not_read_dir() {{
-  //   assert_eq!("ERROR reading:", "{}");
-  // }}"#,
-  //     path
-  //   )
-  //   .parse()
-  //   .unwrap()
-  // }
 }
 
 fn get_path(tokens: Vec<TokenTree>) -> String {
@@ -93,9 +76,7 @@ fn get_path(tokens: Vec<TokenTree>) -> String {
     [TokenTree::Literal(lit)] => {
       unwrap_string_literal(&lit)
     }
-    _ => panic!(
-      "This macro only accepts a single, non-empty string argument"
-    ),
+    _ => panic!("Must be single, non-empty string"),
   }
 }
 
@@ -104,9 +85,7 @@ fn unwrap_string_literal(
 ) -> String {
   let mut repr = lit.to_string();
   if !repr.starts_with('"') || !repr.ends_with('"') {
-    panic!(
-      "This macro only accepts a single, non-empty string argument"
-    )
+    panic!("Must be single, non-empty string")
   }
   repr.remove(0);
   repr.pop();
