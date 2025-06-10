@@ -1,43 +1,14 @@
-# rust-grimoire
+# Alan's Rust Grimoire
 
-A place for me to work on and
-collect snippets of Rust code. 
+A place for me to work on and collect 
+snippets of Rust code. 
 
-## Process
+This is the raw material for problem
+solving. It's also the raw material
+for [posts on my blog](https://www.alanwsmith.com)
 
-- Start `./run_grimiore.bash`
-to auto run files when they change. 
+Most things will end up with a write-up
+in a `post.neo` file in the individual
+directories. That's the content for
+the site. 
 
-- Make a new experiment by making a new folder 
-at the root of this project with a
-good name for it. Put a <<path|script.rs>> 
-file in it that is the default location
-for scripts. 
-
-- Add metadata to the script that
-can be picked up by the grimoire 
-processor. 
-
-## Header Stuff
-
-For inside the front matter
-
-```
----
-[grimoire]
-created = "2025-05-21T17:54:09-04:00"
-updated = "2025-05-21T17:54:09-04:00"
-id = "2x/v3/wp/gu"
-status = "scratch"
-```
-
-
-
-
-## TODO 
-
-- Consolidate snippets into here
-
-- Figure out how to integrate this
-into the overall grimoire search
-and publication.
