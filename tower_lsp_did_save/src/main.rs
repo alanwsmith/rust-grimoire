@@ -1,11 +1,43 @@
+#![allow(unused)]
+use dashmap::DashMap;
 use tower_lsp::jsonrpc::Result;
 use tower_lsp::lsp_types::*;
 use tower_lsp::{Client, LanguageServer, LspService, Server};
 
 #[derive(Debug)]
 struct Backend {
-    documnet: Option<String>,
     client: Client,
+    document_map: DashMap<String, String>,
+}
+
+impl Backend {
+    async fn on_change(&self, params: &DidChangeTextDocumentParams) {
+        let uri = params.text_document.uri.to_string();
+        let text = params.content_changes[0].text.clone();
+        self.document_map.insert(uri, text);
+    }
+
+    // Ok(Some(vec![TextEdit {
+    //     range: Range {
+    //         start: Position {
+    //             line: 0,
+    //             character: 0,
+    //         },
+    //         end: Position {
+    //             line: 0,
+    //             character: 0,
+    //         },
+    //     },
+    //     new_text: "aaaaaaaa".to_string(),
+    // }]))
+
+    async fn get_update(&self, params: &DocumentFormattingParams) -> Option<Vec<TextEdit>> {
+        let uri = params.text_document.uri.to_string();
+        match self.document_map.get(uri.as_str()) {
+            Some(text) => None,
+            None => None,
+        }
+    }
 }
 
 #[tower_lsp::async_trait]
@@ -18,7 +50,6 @@ impl LanguageServer for Backend {
                         work_done_progress: Some(true),
                     },
                 })),
-                // hover_provider: Some(HoverProviderCapability::Simple(true)),
                 completion_provider: Some(CompletionOptions::default()),
                 text_document_sync: Some(TextDocumentSyncCapability::Kind(
                     TextDocumentSyncKind::FULL,
@@ -46,34 +77,16 @@ impl LanguageServer for Backend {
         ])))
     }
 
-    // async fn hover(&self, _: HoverParams) -> Result<Option<Hover>> {
-    //     Ok(Some(Hover {
-    //         contents: HoverContents::Scalar(MarkedString::String("You're hovering!".to_string())),
-    //         range: None,
-    //     }))
-    // }
-
-    async fn formatting(&self, _: DocumentFormattingParams) -> Result<Option<Vec<TextEdit>>> {
-        Ok(Some(vec![TextEdit {
-            range: Range {
-                start: Position {
-                    line: 0,
-                    character: 0,
-                },
-                end: Position {
-                    line: 1,
-                    character: 2,
-                },
-            },
-            new_text: "asdf".to_string(),
-        }]))
+    async fn formatting(&self, params: DocumentFormattingParams) -> Result<Option<Vec<TextEdit>>> {
+        Ok(self.get_update(&params).await)
     }
 
     async fn did_change(&self, params: DidChangeTextDocumentParams) {
+        self.on_change(&params).await;
         self.client
             .log_message(
                 MessageType::WARNING,
-                format!("{:?}", params.content_changes),
+                format!("{:?}", "GOT CHANGE".to_string()),
             )
             .await;
     }
@@ -85,7 +98,7 @@ async fn main() {
     let stdout = tokio::io::stdout();
     let (service, socket) = LspService::new(|client| Backend {
         client,
-        documnet: None,
+        document_map: DashMap::new(),
     });
     Server::new(stdin, stdout, socket).serve(service).await;
 }
