@@ -1,15 +1,110 @@
 -- title
 
-Making a Rust Macro Directory Test Runner
+Making a Rust Directory Test Runner Marco
+
+
+-- warning
+
+This is an early scratch notes draft.
+
+It's not yet complete. 
+
+
+-- p
+
+
+I've got a little format I use for testing
+parsers. It works by putting each test in an
+individual file in a test directory. The test
+runner loops through it, running all the files. 
+
+It works great except. Except for the part 
+where the only thing I get when there's an error
+is the index number of the file from 
+the directory list. Finding the corresponding
+file a pain. 
+
+I wrote this macro to make 
+functions with the filenames so it's
+clear which one is which.
+
+-- comment
+
+This details section is closed by default
+on the web page. I can't do that in this
+README.neo file (yet). Feel free to skip
+past it.
+
+
+-- details/
+
+    -- summary/
+
+    Open For The Full Story
+
+    -- /summary
+
+
+The format I use to test parsers comes in 
+two flavors. "txt":
+
+-- code
+
+txt_____hello_____
+
+{
+  ok: {
+    ast: [
+      {
+        token: "text",
+        string: "hello"
+      }
+    ]
+  }
+}
+
+-- p
+
+And, "json":
+
+
+-- code
+
+json_____
+
+{ text: "  leading whitespace" }
+
+_____
+
+{
+  ok: {
+    ast: [
+      {
+        token: "whitespace",
+        string: "  "
+      }, 
+      {
+        token: "text",
+        string: "leading whitespace"
+      }
+    ]
+  }
+}
+
+-- p
+
+Combined, they let me makes tests in
+all the various ways I need to make sure
+a parser is doing its thing properly. 
+
+
+
+
 
 -- notes
 
-- This is my first run at a macro. I'm dig'n 
-them.
+- This is my first run at a macro. I like it. 
 
-- I've got a custom format set to rust tests
-that let's me send data in different ways
-and get expected success and failure responses. 
 
 - Each test is in its own file. I'd been
 running them with ``rstest`` and a few other
