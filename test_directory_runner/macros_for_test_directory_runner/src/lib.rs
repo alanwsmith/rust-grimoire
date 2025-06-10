@@ -17,39 +17,12 @@ pub fn test_dir(input: TokenStream) -> TokenStream {
   .unwrap()
 }
 
-fn get_payload(path: &PathBuf) -> Result<Vec<String>> {
-  let input = fs::read_to_string(path).unwrap();
-  let parts = input
-    .split("_____")
-    .map(|i| i.trim().to_string())
-    .collect();
-  Ok(parts)
-}
-
-fn make_function(path: &PathBuf) -> String {
-  let test_name = path.file_stem().unwrap().display();
-  let payload = get_payload(path).unwrap();
-  format!(
-    r#"
-#[test]
-fn {}() {{
-    let left = test_router("{}");
-    let right = {};
-    assert_eq!(left, right);
-}}"#,
-    test_name, payload[0], payload[1]
-  )
-}
-
 fn explode(path: &str) -> String {
   format!(
     r#"
 #[test]
 fn explode_because_dir_problem() {{
-    assert_eq!(
-        "ERROR with dir:", 
-        {}
-    );
+    assert_eq!("ERROR with dir:", {});
 }}
     "#,
     path
@@ -70,7 +43,7 @@ fn get_functions(
         }
         None
       })
-      .map(|path| make_function(&path))
+      .map(|path| make_function(&path, &params[1]))
       .collect::<Vec<String>>()
       .join("\n"),
   )
@@ -93,5 +66,32 @@ fn get_params(
         }
       })
       .collect(),
+  )
+}
+
+fn get_payload(path: &PathBuf) -> Result<Vec<String>> {
+  let input = fs::read_to_string(path).unwrap();
+  let parts = input
+    .split("_____")
+    .map(|i| i.trim().to_string())
+    .collect();
+  Ok(parts)
+}
+
+fn make_function(
+  path: &PathBuf,
+  f_name: &str,
+) -> String {
+  let test_name = path.file_stem().unwrap().display();
+  let payload = get_payload(path).unwrap();
+  format!(
+    r#"
+#[test]
+fn {}() {{
+    let left = {}("{}");
+    let right = {};
+    assert_eq!(left, right);
+}}"#,
+    test_name, f_name, payload[0], payload[1]
   )
 }
