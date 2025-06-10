@@ -13,5 +13,8 @@ mod tests {
     widget_test(input)
   }
 
-  test_dir!("test_directory_runner/src/test_cases");
+  test_dir!(
+    "test_directory_runner/src/test_cases",
+    "widget_test"
+  );
 }
