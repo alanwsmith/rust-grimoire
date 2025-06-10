@@ -52,6 +52,9 @@ to handle some of the document saving.
 There's also Ropey, which looks good for making
 large text edits. I'm not at that point yet. 
 
+- TODO: Look at: PositionEncodingKind
+for the character offsets
+
 
 
 -- /notes
