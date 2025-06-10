@@ -1,24 +1,14 @@
-# rust-stuff.alanwsmith.com
+# Alan's Rust Grimoire
 
-A place for me to work on and
-collect snippets of Rust code. 
+A place for me to work on and collect 
+snippets of Rust code. 
 
-## Process
+This is the raw material for problem
+solving. It's also the raw material
+for [posts on my blog](https://www.alanwsmith.com)
 
-- Start `./scripts/watcher/watch.bash`
-to auto run files when they change. 
+Most things will end up with a write-up
+in a `post.neo` file in the individual
+directories. That's the content for
+the site. 
 
-- Make new experiments in the 
-`experiments` folder. 
-
-- Each experiment gets its own folder
-with the main code in a file called
-`script.rs`
-
-
-## TODO 
-
-- Consolidate snippets into here
-
-- Figure out how to integrate this
-into the grimoire. 

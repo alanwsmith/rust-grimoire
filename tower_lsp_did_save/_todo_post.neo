@@ -1,0 +1,91 @@
+-- title
+
+Creating an LSP that does Formatting on Save in Rust
+
+
+-- notes/
+-- title: Scratch Notes
+
+- Uses tower_lsp
+
+- Also look at lsp-types
+
+- Look at: will_save, will_save_wait_until, on_type_formatting
+formatting, folding_range
+
+- Can see logs with:
+
+  -- cli/
+
+  ~/.local/state/nvim/lsp.log
+
+  -- /cli
+
+- You have to keep track of the document yourself. I
+did it by putting a an Option<String> inside
+the Backend. (There's a Client, but I don't see
+anything in it that keeps track of the document
+state)
+
+- It gets picked up via ``did_change()``. That's
+when the client sends text to the server. 
+
+- I'm using this to get the full document for every
+change. Would be better to do just the incremental 
+changes and keep track of them, but this works for now. 
+
+
+-- code/
+-- rust
+
+text_document_sync: Some(TextDocumentSyncCapability::Kind(
+  TextDocumentSyncKind::FULL,
+)),
+
+
+-- /code
+
+- Found some stuff from here: 
+
+https://github.com/IWANABETHATGUY/tower-lsp-boilerplate
+
+The pointed to DashMap which looks like a way
+to handle some of the document saving. 
+
+There's also Ropey, which looks good for making
+large text edits. I'm not at that point yet. 
+
+- TODO: Look at: PositionEncodingKind
+for the character offsets. Not sure if it's
+necessary. 
+
+- Created a [[last character position function|
+/en/2y/ig/f3/zz/]] as its own thing to put tests
+against finding the last character position 
+in the document. 
+
+- Wiring this up would make a good video. 
+
+
+
+-- /notes
+
+
+-- ref
+-- url: https://github.com/alanwsmith/tower-lsp-boilerplate/tree/main
+
+The repo where I learned about DashMap which is
+how I'm storing the full text of the document 
+between the time the client sends it in and
+the time it requests the formatted version. 
+
+
+
+-- page
+-- created: 2025-06-09T20:08:37-04:00
+-- updated: 2025-06-09T20:08:37-04:00
+-- id: 2y/if/kc/jt
+-- template: post
+-- status: scratch
+
+

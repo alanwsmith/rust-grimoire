@@ -1,0 +1,1 @@
+/Users/alan/workshop/rust-grimoire/run_scripts_in_a_directory/test-dirs/1

@@ -1,0 +1,26 @@
+-- title
+
+Get the Last Character Position of a String in Rust
+
+-- notes
+
+- Part of what I'm working on for the Neopoligen
+Template LSP. 
+
+- use unicode_segmentation::UnicodeSegmentation
+for dealing with unicode stuff. 
+
+- Adds a newline at the end of the text that
+gets checked because ``.lines()`` chomps it. 
+
+
+
+
+-- page
+-- created: 2025-06-09T23:49:54-04:00
+-- updated: 2025-06-09T23:49:54-04:00
+-- id: 2y/ig/f3/zz
+-- template: post
+-- status: scratch
+
+

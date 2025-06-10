@@ -1,0 +1,12 @@
+[package]
+name = "copy_file_list_from_to"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.98"
+
+[dev-dependencies]
+itertools = "0.14.0"
+walkdir = "2.5.0"
+

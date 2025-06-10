@@ -1,0 +1,41 @@
+-- title
+
+Making a Rust Macro Directory Test Runner
+
+-- notes
+
+- I've got a custom format set to rust tests
+that let's me send data in different ways
+and get expected success and failure responses. 
+
+- Each test is in its own file. I'd been
+running them with ``rstest`` and a few other
+methods. The problem is they would all have
+errors like ``case 32 failed``. I'd have to
+figure out which file was 32. 
+
+- Sure, I could have named the files with 
+the numbers. That's always a pain. 
+
+- Wrote this macro that takes a directory,
+reads the files in it, splits them into
+their parts, and sends them to the test
+harness. 
+
+- Probably there's already a crate that
+does this. I didn't look hard beyond
+rstest and test_case. 
+
+- // get_path() and unwrap_string_literal() are via: 
+https://github.com/Michael-F-Bryan/include_dir/blob/master/macros/src/lib.rs
+
+
+-- page
+-- created: 2025-06-10T12:22:19-04:00
+-- updated: 2025-06-10T12:22:19-04:00
+-- id: 2y/k9/ks/vo
+-- template: post
+-- status: scratch
+-- tag: rust
+
+
