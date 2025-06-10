@@ -4,6 +4,9 @@ Making a Rust Macro Directory Test Runner
 
 -- notes
 
+- This is my first run at a macro. I'm dig'n 
+them.
+
 - I've got a custom format set to rust tests
 that let's me send data in different ways
 and get expected success and failure responses. 
@@ -24,7 +27,8 @@ harness.
 
 - Probably there's already a crate that
 does this. I didn't look hard beyond
-rstest and test_case. 
+rstest, test_case, and include_dir. 
+
 
 
 -- ref

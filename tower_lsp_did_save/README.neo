@@ -2,6 +2,15 @@
 
 Creating an LSP that does Formatting on Save in Rust
 
+-- warning
+
+The tower_lsp create hasn't been touched in a couple
+years. I've been warned that there are unfixed bugs. 
+
+It's working for me for now, but I'm going to be
+looking at rust analyzers lsp going forwar. 
+
+
 
 -- notes/
 -- title: Scratch Notes
