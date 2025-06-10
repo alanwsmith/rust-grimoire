@@ -14,7 +14,8 @@ struct Backend {
 }
 
 fn update_text(text: &str) -> Option<String> {
-    None
+    let lines: Vec<_> = text.lines().map(|l| format!(".{}", l)).collect();
+    Some(lines.join("\n"))
 }
 
 impl Backend {
@@ -26,62 +27,55 @@ impl Backend {
 
     async fn get_update(&self, params: &DocumentFormattingParams) -> Option<Vec<TextEdit>> {
         let uri = params.text_document.uri.to_string();
-        match self.document_map.get(uri.as_str()) {
-            Some(initial_text) => {
-                let text = update_text(&initial_text)?;
+        let initial_text = self.document_map.get(uri.as_str())?;
+        let text = update_text(&initial_text)?;
+        let (line, character) = last_position(&text)?;
+        let start = Position {
+            line: 0,
+            character: 0,
+        };
+        let end = Position {
+            line: line as u32,
+            character: character as u32,
+        };
+        let range = Range { start, end };
+        let text_edit = TextEdit {
+            range,
+            new_text: text.to_string(),
+        };
+        Some(vec![text_edit])
 
-                if let Ok((line, character)) = last_position(&text) {
-                    let start = Position {
-                        line: 0,
-                        character: 0,
-                    };
-                    let end = Position {
-                        line: 0,
-                        character: 0,
-                    };
-                    let range = Range { start, end };
-                    let text_edit = TextEdit {
-                        range,
-                        new_text: text.to_string(),
-                    };
-                    Some(vec![text_edit])
-                // let mut lines: Vec<&str> = new_text.lines().collect();
-                // lines[0] = "asdf";
-                // let updated_text = lines.join("\n");
+        // let mut lines: Vec<&str> = new_text.lines().collect();
+        // lines[0] = "asdf";
+        // let updated_text = lines.join("\n");
 
-                // let line_count = lines.
-                //     if let Ok(char_count) =
-                //         <usize as TryInto<u32>>::try_into(lines.last()?.graphemes(true).count())
-                //     {
-                //         let start = Position {
-                //             line: 0,
-                //             character: 0,
-                //         };
-                //         let end = Position {
-                //             line: line_count,
-                //             character: char_count,
-                //         };
-                //         let range = Range { start, end };
-                //         let text_edit = TextEdit {
-                //             range,
-                //             new_text: format!("{}", new_text.to_string()),
-                //         };
-                //         Some(vec![text_edit])
-                //     } else {
-                //         None
-                //     }
+        // let line_count = lines.
+        //     if let Ok(char_count) =
+        //         <usize as TryInto<u32>>::try_into(lines.last()?.graphemes(true).count())
+        //     {
+        //         let start = Position {
+        //             line: 0,
+        //             character: 0,
+        //         };
+        //         let end = Position {
+        //             line: line_count,
+        //             character: char_count,
+        //         };
+        //         let range = Range { start, end };
+        //         let text_edit = TextEdit {
+        //             range,
+        //             new_text: format!("{}", new_text.to_string()),
+        //         };
+        //         Some(vec![text_edit])
+        //     } else {
+        //         None
+        //     }
 
-                // } else {
-                //     None
-                // }
+        // } else {
+        //     None
+        // }
 
-                // None
-                } else {
-                    None
-                }
-            }
-            None => None,
-        }
+        // None
     }
 }
 
@@ -148,17 +142,16 @@ async fn main() {
     Server::new(stdin, stdout, socket).serve(service).await;
 }
 
-fn last_position(text: &str) -> AnyResult<(usize, usize)> {
+fn last_position(text: &str) -> Option<(usize, usize)> {
     // Add a newline because .lines removes it.
     let check_text = format!("{}\n", text);
     let lines: Vec<&str> = check_text.lines().collect();
     let line_count = lines.len() - 1;
     let last_char = lines
         .iter()
-        .last()
-        .ok_or(anyhow!("could not get last line"))?
+        .last()?
         .graphemes(true)
         .collect::<Vec<&str>>()
         .len();
-    Ok((line_count, last_char))
+    Some((line_count, last_char))
 }
