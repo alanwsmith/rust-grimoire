@@ -4,6 +4,9 @@ use std::path::PathBuf;
 use tracing::metadata::LevelFilter;
 use tracing::{Level, Subscriber, event, instrument};
 use tracing_appender::non_blocking::WorkerGuard;
+use tracing_appender::rolling::{
+  RollingFileAppender, Rotation,
+};
 use tracing_subscriber::fmt::{self, Layer};
 use tracing_subscriber::layer::Layered;
 use tracing_subscriber::{Registry, prelude::*};
@@ -111,9 +114,13 @@ impl Logger {
       match (&self.file_dir, &self.file_level) {
         (Some(dir), Some(level)) => {
           let file_appender =
-            tracing_appender::rolling::never(
-              dir, "log.log",
-            );
+            RollingFileAppender::builder()
+              .rotation(Rotation::DAILY)
+              .filename_prefix("log")
+              .filename_suffix("log")
+              .max_log_files(2)
+              .build(dir)
+              .expect("could not make file appender");
           let (file_writer, log_guard) =
             tracing_appender::non_blocking(
               file_appender,
