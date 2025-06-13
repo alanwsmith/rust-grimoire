@@ -11,8 +11,8 @@ use tracing_subscriber::{Registry, prelude::*};
 #[derive(Debug)]
 pub struct Logger {
   pub guard: Option<WorkerGuard>,
-  stdout: bool,
-  stderr: bool,
+  stdout: Option<LevelFilter>,
+  stderr: Option<LevelFilter>,
   output_dir: Option<PathBuf>,
 }
 
@@ -33,8 +33,8 @@ impl Logger {
   pub fn new() -> Self {
     Self {
       guard: None,
-      stdout: false,
-      stderr: false,
+      stdout: None,
+      stderr: None,
       output_dir: None,
     }
     //    Self { guard: None }
@@ -68,42 +68,84 @@ impl Logger {
   pub fn setup() -> Self {
     Self {
       guard: None,
-      stdout: false,
-      stderr: false,
+      stdout: None,
+      stderr: None,
       output_dir: None,
     }
   }
 
-  pub fn with_stdout(self) -> Self {
+  pub fn with_stdout(
+    self,
+    level: LevelFilter,
+  ) -> Self {
     Self {
-      stdout: true,
+      stdout: Some(level),
       ..self
     }
   }
 
   pub fn init(self) -> Self {
-    let stdout_layer = if self.stdout {
-      let format = tracing_subscriber::fmt::format()
-        .without_time()
-        .with_target(false)
-        .with_thread_ids(false)
-        .with_thread_names(false)
-        .with_ansi(false)
-        .with_line_number(false)
-        .with_file(false);
-      let layer = fmt::Layer::default()
-        .event_format(format)
-        .with_writer(std::io::stdout)
-        .with_filter(LevelFilter::INFO);
-
-      Some(layer)
-    } else {
-      None
+    let stdout_layer = match self.stdout {
+      Some(level) => {
+        let format = tracing_subscriber::fmt::format()
+          .without_time()
+          .with_target(false)
+          .with_thread_ids(false)
+          .with_thread_names(false)
+          .with_ansi(false)
+          .with_line_number(false)
+          .with_file(false);
+        let layer = fmt::Layer::default()
+          .event_format(format)
+          .with_writer(std::io::stdout)
+          .with_filter(level);
+        Some(layer)
+      }
+      None => None,
     };
 
     let subscriber =
       tracing_subscriber::Registry::default()
         .with(stdout_layer);
+
+    tracing::subscriber::set_global_default(subscriber)
+      .expect("unable to set global subscriber");
+
+    // let stdout_layer = if self.stdout {
+    //   let format = tracing_subscriber::fmt::format()
+    //     .without_time()
+    //     .with_target(false)
+    //     .with_thread_ids(false)
+    //     .with_thread_names(false)
+    //     .with_ansi(false)
+    //     .with_line_number(false)
+    //     .with_file(false);
+    //   let layer = fmt::Layer::default()
+    //     .event_format(format)
+    //     .with_writer(std::io::stdout)
+    //     .with_filter(LevelFilter::INFO);
+    //   Some(layer)
+    // } else {
+    //   None
+    // };
+
+    // let stderr_layer = if self.stderr {
+    //   let format = tracing_subscriber::fmt::format()
+    //     .without_time()
+    //     .with_target(false)
+    //     .with_thread_ids(false)
+    //     .with_thread_names(false)
+    //     .with_ansi(false)
+    //     .with_line_number(false)
+    //     .with_file(false);
+    //   let layer = fmt::Layer::default()
+    //     .event_format(format)
+    //     .with_writer(std::io::stdout)
+    //     .with_filter(LevelFilter::INFO);
+    //   Some(layer)
+    // } else {
+    //   None
+    // };
 
     // let stdout_format =
     //   tracing_subscriber::fmt::format()
@@ -135,9 +177,6 @@ impl Logger {
     //   subscriber
     // };
 
-    tracing::subscriber::set_global_default(subscriber)
-      .expect("unable to set global subscriber");
-
     Self { ..self }
   }
 }
@@ -151,8 +190,9 @@ impl Default for Logger {
 fn main() {
   //  let logger_guard = Logger::new();
 
-  let logger_guard =
-    Logger::setup().with_stdout().init();
+  let logger_guard = Logger::setup()
+    .with_stdout(LevelFilter::INFO)
+    .init();
 
   // let logger_guard = Logger::setup().init();
   event!(Level::INFO, "IN MAIN");
