@@ -1,0 +1,118 @@
+-- title
+
+Rust Analyzer LSP Basic Test
+
+-- notes
+
+- Originally did tower_lsp. It hasn't been updated in a 
+couple years though. I got pointed to rust analyzer's
+lsp which this example is about. 
+
+- Note that logging is only sent to STDERR. Sending 
+it to STDOUT would freak out the client since
+that's what it's connected to. 
+
+
+-- h2
+
+Neovim Setup
+
+-- code/
+-- lua
+
+-- LSP rust-grimoire testing
+vim.lsp.config['rust_analyzer_lsp'] = {
+cmd = { 
+  '/Users/alan/workshop/rust-grimoire/rust_analyzer_lsp_format_document/target/debug/rust_analyzer_lsp_format_document' 
+  },
+  filetypes = {'lsptest', 'lsptest'},
+}
+vim.lsp.enable('rust_analyzer_lsp')
+vim.filetype.add({
+  extension = {
+    lsptest = 'lsptest',
+  }
+})
+
+-- /code
+
+That sets up so that ``.lsptest`` files map to the
+test LSP server with a direct path to the 
+binary that's active when doing ``cargo run``
+
+It seems like I had to restart Neovim twice to 
+see it after updating the config. Probably
+I just did something weird, but give it a
+couple chances. 
+
+You can check to make sure things are connected
+by opening a file with a ``.lsptest`` extension,
+dropping some content in it, saving it, and
+then running:
+
+-- code/
+
+:LspInfo
+
+-- /code
+
+You should see something that looks like this:
+
+-- code/
+
+==============================================================================
+vim.lsp:                                     require("vim.lsp.health").check()
+
+- LSP log level : WARN
+- Log path: /Users/alan/.local/state/nvim/lsp.log
+- WARNING Log size: 232115 KB
+
+vim.lsp: Active Clients ~
+- rust_analyzer_lsp (id: 1)
+  - Version: ? (no serverInfo.version response)
+  - Root directory: nil
+  - Command: { "/Users/alan/workshop/rust-grimoire/rust_analyzer_lsp_format_document/target/debug/rust_analyzer_lsp_format_document" }
+  - Settings: {}
+  - Attached buffers: 1
+
+vim.lsp: Enabled Configurations ~
+- rust_analyzer_lsp:
+  - cmd: { "/Users/alan/workshop/rust-grimoire/rust_analyzer_lsp_format_document/target/debug/rust_analyzer_lsp_format_document" }
+  - filetypes: lsptest, lsptest
+
+
+vim.lsp: File Watcher ~
+- file watching "(workspace/didChangeWatchedFiles)" disabled on all clients
+
+vim.lsp: Position Encodings ~
+- No buffers contain mixed position encodings
+
+
+-- /code
+
+
+The important part is the ``vim.lsp: Active Clients``
+section. You'll see your stuff in there
+if everything is wired up properly. 
+
+If it didn't work you'll see
+
+-- code/
+
+vim.lsp: Active Clients ~
+- No active clients
+
+-- /code
+
+You'll have to bughunt at that point. 
+
+
+
+-- page
+-- created: 2025-06-13T09:18:42-04:00
+-- updated: 2025-06-13T09:18:42-04:00
+-- id: 2y/sg/mn/sl
+-- template: post
+-- status: scratch
+
+
