@@ -1,46 +1,152 @@
 #![allow(unused)]
+use anyhow::Result;
 use std::path::PathBuf;
+use tracing::metadata::LevelFilter;
 use tracing::{Level, Subscriber, event, instrument};
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::fmt::{self, Layer};
 use tracing_subscriber::layer::Layered;
-use tracing_subscriber::prelude::*;
+use tracing_subscriber::{Registry, prelude::*};
 
-struct Logger {
-  guard: WorkerGuard,
+#[derive(Debug)]
+pub struct Logger {
+  pub guard: Option<WorkerGuard>,
+  stdout: bool,
+  stderr: bool,
+  output_dir: Option<PathBuf>,
 }
 
+// let stdout_format = tracing_subscriber::fmt::format()
+//     .without_time()
+//     .with_target(false)
+//     .with_thread_ids(false)
+//     .with_thread_names(false)
+//     .with_ansi(false)
+//     .with_line_number(false)
+//     .with_file(false);
+// let stdout_layer = fmt::Layer::default()
+//     .event_format(stdout_format)
+//     .with_writer(std::io::stdout)
+//     .with_filter(filter::LevelFilter::INFO);
+
 impl Logger {
-  pub fn new() -> Logger {
-    let log_dir = PathBuf::from("test-output");
-    let log_basename = "example-output.log".to_string();
-    // set_up_logging(&log_dir, &log_basename);
-    let file_appender =
-      tracing_appender::rolling::never(
-        log_dir,
-        log_basename,
-      );
-    let (file_writer, guard) =
-      tracing_appender::non_blocking(file_appender);
-    let file_layer_format =
-      tracing_subscriber::fmt::format().json();
-    let file_layer = fmt::Layer::default()
-      .event_format(file_layer_format)
-      .with_writer(file_writer)
-      .json();
+  pub fn new() -> Self {
+    Self {
+      guard: None,
+      stdout: false,
+      stderr: false,
+      output_dir: None,
+    }
+    //    Self { guard: None }
+    //let log_dir = PathBuf::from("test-output");
+    //let log_basename = "example-output.log".to_string();
+    //// set_up_logging(&log_dir, &log_basename);
+    //let file_appender =
+    //  tracing_appender::rolling::never(
+    //    log_dir,
+    //    log_basename,
+    //  );
+    //let (file_writer, guard) =
+    //  tracing_appender::non_blocking(file_appender);
+    //let file_layer_format =
+    //  tracing_subscriber::fmt::format().json();
+    //let file_layer = fmt::Layer::default()
+    //  .event_format(file_layer_format)
+    //  .with_writer(file_writer)
+    //  .json();
+    //let subscriber =
+    //  tracing_subscriber::Registry::default()
+    //    .with(file_layer);
+    //tracing::subscriber::set_global_default(subscriber)
+    //  .expect("unable to set global subscriber");
+    //// guard
+    //Logger { guard }
+    ////let logger = Logger { guard };
+    ////logger
+  }
+
+  pub fn setup() -> Self {
+    Self {
+      guard: None,
+      stdout: false,
+      stderr: false,
+      output_dir: None,
+    }
+  }
+
+  pub fn with_stdout(self) -> Self {
+    Self {
+      stdout: true,
+      ..self
+    }
+  }
+
+  pub fn init(self) -> Self {
+    let stdout_layer = if self.stdout {
+      Some(fmt::Layer::default())
+    } else {
+      None
+    };
+
     let subscriber =
       tracing_subscriber::Registry::default()
-        .with(file_layer);
+        .with(stdout_layer);
+
+    // let stdout_format =
+    //   tracing_subscriber::fmt::format()
+    //     .without_time()
+    //     .with_target(false)
+    //     .with_thread_ids(false)
+    //     .with_thread_names(false)
+    //     .with_ansi(false)
+    //     .with_line_number(false)
+    //     .with_file(false);
+    // let stdout_layer = fmt::Layer::default();
+
+    //     let stdout_layer = fmt::Layer::default();
+
+    // .event_format(stdout_format)
+    // .with_writer(std::io::stdout)
+    // .with_filter(LevelFilter::INFO);
+
+    // let subscriber =
+    //   tracing_subscriber::Registry::default();
+    // let subscriber = subscriber.with(stdout_layer);
+
+    // let subscriber = AssertionLayer
+    //   .with_subscriber(Registry::default());
+
+    // let subscriber =
+    //   tracing_subscriber::Registry::default();
+    // let subscriber = if self.stdout {
+    //   subscriber.with(stdout_layer)
+    // } else {
+    //   subscriber
+    // };
+
     tracing::subscriber::set_global_default(subscriber)
       .expect("unable to set global subscriber");
-    let logger = Logger { guard };
-    logger
+
+    Self { ..self }
   }
 }
 
-#[instrument]
+impl Default for Logger {
+  fn default() -> Self {
+    Self::new()
+  }
+}
+
 fn main() {
-  let logger_guard = Logger::new();
+  //  let logger_guard = Logger::new();
+
+  let logger_guard =
+    Logger::setup().with_stdout().init();
+  event!(Level::INFO, "IN MAIN");
+
+  //dbg!(logger_guard);
+
+  //  let log_guard = start_logging(false, false, None);
 
   // [x] let file_appender = tracing_appender::rolling::never(
   // [x]   log_root,
@@ -87,34 +193,33 @@ fn main() {
   //   .with(fmt::layer())
   //   .init();
 
-  event!(Level::INFO, "IN MAIN");
-  alfa();
-  bravo();
+  // alfa();
+  // bravo();
   println!("Process complete.");
 }
 
-fn set_up_logging(
-  log_dir: &PathBuf,
-  log_basename: &str,
-) {
-  let file_appender = tracing_appender::rolling::never(
-    log_dir,
-    log_basename,
-  );
-  let (file_writer, _guard) =
-    tracing_appender::non_blocking(file_appender);
-  let file_layer_format =
-    tracing_subscriber::fmt::format().json();
-  let file_layer = fmt::Layer::default()
-    .event_format(file_layer_format)
-    .with_writer(file_writer)
-    .json();
-  let subscriber =
-    tracing_subscriber::Registry::default()
-      .with(file_layer);
-  tracing::subscriber::set_global_default(subscriber)
-    .expect("unable to set global subscriber");
-}
+// fn set_up_logging(
+//   log_dir: &PathBuf,
+//   log_basename: &str,
+// ) {
+//   let file_appender = tracing_appender::rolling::never(
+//     log_dir,
+//     log_basename,
+//   );
+//   let (file_writer, _guard) =
+//     tracing_appender::non_blocking(file_appender);
+//   let file_layer_format =
+//     tracing_subscriber::fmt::format().json();
+//   let file_layer = fmt::Layer::default()
+//     .event_format(file_layer_format)
+//     .with_writer(file_writer)
+//     .json();
+//   let subscriber =
+//     tracing_subscriber::Registry::default()
+//       .with(file_layer);
+//   tracing::subscriber::set_global_default(subscriber)
+//     .expect("unable to set global subscriber");
+// }
 
 fn alfa() {
   event!(Level::INFO, "IN ALFA");
@@ -130,3 +235,31 @@ fn bravo() {
 fn charlie() {
   event!(Level::INFO, "IN CHARLIE");
 }
+
+// fn start_logging(
+//   stdout: bool,
+//   stderr: bool,
+//   dir: Option<PathBuf>,
+// ) -> Result<WorkerGuard> {
+//   let log_dir = PathBuf::from("test-output");
+//   let log_basename = "example-output.log".to_string();
+//   // set_up_logging(&log_dir, &log_basename);
+//   let file_appender = tracing_appender::rolling::never(
+//     log_dir,
+//     log_basename,
+//   );
+//   let (file_writer, guard) =
+//     tracing_appender::non_blocking(file_appender);
+//   let file_layer_format =
+//     tracing_subscriber::fmt::format().json();
+//   let file_layer = fmt::Layer::default()
+//     .event_format(file_layer_format)
+//     .with_writer(file_writer)
+//     .json();
+//   let subscriber =
+//     tracing_subscriber::Registry::default()
+//       .with(file_layer);
+//   tracing::subscriber::set_global_default(subscriber)
+//     .expect("unable to set global subscriber");
+//   Ok(guard)
+// }
