@@ -1,0 +1,31 @@
+This is part of my personal grimoire. 
+
+To wit:
+
+- Stuff will often be broken. Unless
+I've posted a note directly asking for 
+help, I want to keep working on things
+myself to solve them. 
+
+Don't open issues in that case. 
+
+
+- If you see an issue with something
+I've fully written up (i.e. it has
+a README.neo file with it that has
+a ``-- status`` of either ``done``
+or ``published``), feel free to
+open an issue to discuss. 
+
+
+- Don't do any PRs without opening
+an issue and discussing it with me
+first. 
+
+
+- It may be a long time before I respond 
+to an issue. It may also be never.  
+
+
+- I'm not interested in AI generated code. 
+

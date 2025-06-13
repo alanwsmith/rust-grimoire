@@ -2,6 +2,13 @@
 
 Rust Analyzer LSP Basic Test
 
+-- h2
+
+STATUS: Work-In-Progress
+
+This isn't done yet.
+
+
 -- notes
 
 - Originally did tower_lsp. It hasn't been updated in a 
@@ -11,6 +18,12 @@ lsp which this example is about.
 - Note that logging is only sent to STDERR. Sending 
 it to STDOUT would freak out the client since
 that's what it's connected to. 
+
+- The initial code for this example came straight from
+the [[example in the repo|https://github.com/rust-lang/rust-analyzer/blob/master/lib/lsp-server/examples/goto_def.rs]]
+
+It uses Go To Definition. TODO: I updated it to format
+the document. 
 
 
 -- h2
@@ -40,10 +53,13 @@ That sets up so that ``.lsptest`` files map to the
 test LSP server with a direct path to the 
 binary that's active when doing ``cargo run``
 
-It seems like I had to restart Neovim twice to 
-see it after updating the config. Probably
-I just did something weird, but give it a
-couple chances. 
+If you restart your cargo process you'll probably 
+have to restart neovim to reconnect. This got 
+tricky for me when I had files in the same directory
+as the main rust project until I used a ``.ignore``
+file to prevent ``cargo watch -x run`` from restarting
+the process when they changed. 
+
 
 You can check to make sure things are connected
 by opening a file with a ``.lsptest`` extension,
@@ -106,6 +122,65 @@ vim.lsp: Active Clients ~
 
 You'll have to bughunt at that point. 
 
+-- h2
+
+Testing with Neovim
+
+I tried to figure out how to test from the
+command line. 
+
+As far as I can tell there's no built-in or
+straight forward way to do a ``cargo run``
+and then send STDIN to it from another 
+terminal. (Seems you can do it on 
+linux machines with ``/proc/PID/fd/0``
+but there's no ``/proc`` on macs as
+far as I can tell)
+
+So, I'm testing by configuring Neovim
+as described above and just using it. 
+
+
+-- h2
+
+Neovim LSP Logging
+
+Check this for logs:
+
+-- code
+
+:LspLog
+
+
+-- p
+
+NOTE: It looks like Neovim eats STDERR after
+the initial connection. The output from:
+
+-- code
+-- rust
+
+eprintln!("starting generic LSP server");
+
+-- p
+
+shows up, but the output from:
+
+-- code
+-- rust
+
+eprintln!("starting example main loop");
+
+
+-- p
+
+does not. 
+
+
+
+
+
+
 
 
 -- page
@@ -114,5 +189,6 @@ You'll have to bughunt at that point.
 -- id: 2y/sg/mn/sl
 -- template: post
 -- status: scratch
+
 
 
