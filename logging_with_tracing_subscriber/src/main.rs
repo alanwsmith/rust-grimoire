@@ -6,7 +6,7 @@ use tracing::{Level, event, instrument};
 use tracing_subscriber::fmt;
 use tracing_subscriber::prelude::*;
 
-// #[instrument]
+#[instrument]
 fn main() {
   let file_appender = tracing_appender::rolling::never(
     "test-stuff",
@@ -71,6 +71,23 @@ fn main() {
   //   .with(fmt::layer())
   //   .init();
 
-  event!(Level::INFO, "Making log message");
+  event!(Level::INFO, "IN MAIN");
+  alfa();
+  bravo();
   println!("Process complete.");
+}
+
+fn alfa() {
+  event!(Level::INFO, "IN ALFA");
+}
+
+#[instrument]
+fn bravo() {
+  event!(Level::INFO, "IN BRAVO");
+  charlie();
+}
+
+#[instrument]
+fn charlie() {
+  event!(Level::INFO, "IN CHARLIE");
 }
