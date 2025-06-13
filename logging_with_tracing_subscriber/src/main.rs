@@ -83,7 +83,20 @@ impl Logger {
 
   pub fn init(self) -> Self {
     let stdout_layer = if self.stdout {
-      Some(fmt::Layer::default())
+      let format = tracing_subscriber::fmt::format()
+        .without_time()
+        .with_target(false)
+        .with_thread_ids(false)
+        .with_thread_names(false)
+        .with_ansi(false)
+        .with_line_number(false)
+        .with_file(false);
+      let layer = fmt::Layer::default()
+        .event_format(format)
+        .with_writer(std::io::stdout)
+        .with_filter(LevelFilter::INFO);
+
+      Some(layer)
     } else {
       None
     };
@@ -102,9 +115,7 @@ impl Logger {
     //     .with_line_number(false)
     //     .with_file(false);
     // let stdout_layer = fmt::Layer::default();
-
     //     let stdout_layer = fmt::Layer::default();
-
     // .event_format(stdout_format)
     // .with_writer(std::io::stdout)
     // .with_filter(LevelFilter::INFO);
@@ -142,6 +153,8 @@ fn main() {
 
   let logger_guard =
     Logger::setup().with_stdout().init();
+
+  // let logger_guard = Logger::setup().init();
   event!(Level::INFO, "IN MAIN");
 
   //dbg!(logger_guard);
