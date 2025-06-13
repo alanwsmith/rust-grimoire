@@ -1,17 +1,13 @@
-#![allow(unused)]
-use anyhow::Result;
 use std::path::PathBuf;
 use tracing::metadata::LevelFilter;
-use tracing::{Level, Subscriber, event, instrument};
+use tracing::{Level, event, instrument};
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_appender::rolling::{
   RollingFileAppender, Rotation,
 };
-use tracing_subscriber::fmt::{self, Layer};
-use tracing_subscriber::layer::Layered;
-use tracing_subscriber::{Registry, prelude::*};
+use tracing_subscriber::fmt;
+use tracing_subscriber::prelude::*;
 
-#[derive(Debug)]
 pub struct Logger {
   pub guard: Option<WorkerGuard>,
   stdout: Option<LevelFilter>,
