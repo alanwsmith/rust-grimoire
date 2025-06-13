@@ -13,7 +13,8 @@ pub struct Logger {
   pub guard: Option<WorkerGuard>,
   stdout: Option<LevelFilter>,
   stderr: Option<LevelFilter>,
-  output_dir: Option<PathBuf>,
+  file_dir: Option<PathBuf>,
+  file_level: Option<LevelFilter>,
 }
 
 // let stdout_format = tracing_subscriber::fmt::format()
@@ -35,7 +36,8 @@ impl Logger {
       guard: None,
       stdout: None,
       stderr: None,
-      output_dir: None,
+      file_dir: None,
+      file_level: None,
     }
     //    Self { guard: None }
     //let log_dir = PathBuf::from("test-output");
@@ -70,7 +72,8 @@ impl Logger {
       guard: None,
       stdout: None,
       stderr: None,
-      output_dir: None,
+      file_dir: None,
+      file_level: None,
     }
   }
 
@@ -94,7 +97,19 @@ impl Logger {
     }
   }
 
-  pub fn init(self) -> Self {
+  pub fn with_files(
+    self,
+    dir: &PathBuf,
+    level: LevelFilter,
+  ) -> Self {
+    Self {
+      file_dir: Some(dir.to_path_buf()),
+      file_level: Some(level),
+      ..self
+    }
+  }
+
+  pub fn init(mut self) -> Self {
     let stdout_layer = match self.stdout {
       Some(level) => {
         let format = tracing_subscriber::fmt::format()
@@ -133,9 +148,46 @@ impl Logger {
       None => None,
     };
 
+    let file_layer =
+      match (&self.file_dir, &self.file_level) {
+        (Some(dir), Some(level)) => {
+          let file_appender =
+            tracing_appender::rolling::never(
+              dir, "log.log",
+            );
+          let (file_writer, log_guard) =
+            tracing_appender::non_blocking(
+              file_appender,
+            );
+          self.guard = Some(log_guard);
+          let file_layer_format =
+            tracing_subscriber::fmt::format().json();
+          let layer = fmt::Layer::default()
+            .event_format(file_layer_format)
+            .with_writer(file_writer)
+            .json();
+          Some(layer)
+        }
+        _ => None,
+      };
+
+    // [x] let file_appender = tracing_appender::rolling::never(
+    // [x]   log_root,
+    // [x]   log_basename,
+    // [x] );
+    // [x] let (file_writer, _guard) =
+    // [x]   tracing_appender::non_blocking(file_appender);
+    // [x] let file_layer_format =
+    // [x]   tracing_subscriber::fmt::format().json();
+    // [x] let file_layer = fmt::Layer::default()
+    // [x]   .event_format(file_layer_format)
+    // [x]   .with_writer(file_writer)
+    // [x]   .json();
+
     let subscriber =
       tracing_subscriber::Registry::default()
         .with(stdout_layer)
+        .with(file_layer)
         .with(stderr_layer);
 
     tracing::subscriber::set_global_default(subscriber)
@@ -218,11 +270,11 @@ impl Default for Logger {
 }
 
 fn main() {
-  //  let logger_guard = Logger::new();
-
+  let log_dir = PathBuf::from("test-output");
   let logger_guard = Logger::setup()
     .with_stdout(LevelFilter::INFO)
     .with_stderr(LevelFilter::INFO)
+    .with_files(&log_dir, LevelFilter::INFO)
     .init();
 
   // let logger_guard = Logger::setup().init();
