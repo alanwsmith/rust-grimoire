@@ -41,6 +41,58 @@ appear to do anything.
 -- url: https://docs.rs/tracing-appender/latest/tracing_appender/index.html
 
 
+-- pre
+-- title: links to process
+
+https://docs.rs/tracing-appender/latest/tracing_appender/rolling/struct.Builder.html#method.max_log_files
+https://docs.rs/tracing-subscriber/0.3.19/tracing_subscriber/layer/trait.SubscriberExt.html#method.with
+https://docs.rs/tracing-subscriber/0.3.19/tracing_subscriber/index.html
+https://docs.rs/tracing-subscriber/0.3.19/tracing_subscriber/fmt/index.html
+https://docs.rs/tracing-subscriber/0.3.19/tracing_subscriber/fmt/fn.layer.html
+https://docs.rs/tracing-subscriber/0.3.19/tracing_subscriber/fmt/index.html
+https://docs.rs/tracing-subscriber/0.3.19/tracing_subscriber/fmt/format/index.html
+https://docs.rs/tracing-subscriber/0.3.19/tracing_subscriber/layer/index.html
+https://docs.rs/tracing-subscriber/0.3.19/tracing_subscriber/layer/trait.Layer.html
+https://docs.rs/tracing-core/0.1.34/tracing_core/subscriber/trait.Subscriber.html
+https://docs.rs/tracing-subscriber/0.3.19/tracing_subscriber/layer/trait.Layer.html#impl-Layer%3CS%3E-for-Option%3CL%3E
+https://docs.rs/tracing-subscriber/0.3.19/tracing_subscriber/fmt/struct.Layer.html#method.with_level
+https://docs.rs/tracing-subscriber/0.3.19/tracing_subscriber/fmt/fn.init.html
+https://docs.rs/tracing-subscriber/0.3.19/tracing_subscriber/fmt/struct.Subscriber.html
+https://docs.rs/tracing-subscriber/0.3.19/tracing_subscriber/fmt/struct.SubscriberBuilder.html
+https://docs.rs/tracing-subscriber/0.3.19/tracing_subscriber/layer/struct.Layered.html
+https://docs.rs/tracing-subscriber/0.3.19/tracing_subscriber/layer/trait.SubscriberExt.html#method.with
+https://docs.rs/tracing-subscriber/0.3.19/src/tracing_subscriber/registry/sharded.rs.html#135-143
+https://docs.rs/tracing-core/0.1.34/tracing_core/index.html
+https://docs.rs/tracing-core/0.1.34/tracing_core/subscriber/trait.Subscriber.html#tymethod.exit
+https://docs.rs/tracing-subscriber/0.3.19/tracing_subscriber/registry/index.html
+https://docs.rs/tracing-subscriber/0.3.19/tracing_subscriber/registry/struct.Registry.html
+https://docs.rs/tracing-subscriber/0.3.19/src/tracing_subscriber/registry/sharded.rs.html#92-96
+https://docs.rs/tracing-appender/latest/src/tracing_appender/rolling/builder.rs.html#9-14
+https://docs.rs/tracing-subscriber/latest/tracing_subscriber/registry/index.html
+https://docs.rs/tracing-subscriber/latest/tracing_subscriber/registry/struct.Registry.html
+https://docs.rs/tracing-subscriber/latest/tracing_subscriber/layer/trait.SubscriberExt.html#method.with
+https://docs.rs/tracing/0.1.41/tracing/instrument/struct.WithDispatch.html
+https://doc.rust-lang.org/nightly/core/default/trait.Default.html#tymethod.default
+https://docs.rs/tracing-appender/latest/tracing_appender/index.html#non-blocking-rolling-file-appender
+https://docs.rs/tracing-appender/latest/src/tracing_appender/rolling/builder.rs.html#31-267
+https://docs.rs/tracing-appender/latest/tracing_appender/rolling/struct.RollingFileAppender.html
+https://docs.rs/tracing-appender/latest/src/tracing_appender/rolling.rs.html#183-185
+https://docs.rs/tracing-subscriber/latest/tracing_subscriber/layer/struct.Layered.html
+https://docs.rs/tracing/latest/tracing/subscriber/fn.set_global_default.html
+https://docs.rs/tracing/latest/tracing/subscriber/fn.with_default.html
+https://docs.rs/tracing/latest/tracing/subscriber/trait.Subscriber.html
+https://docs.rs/tracing/latest/tracing/subscriber/fn.set_global_default.html
+https://docs.rs/tracing/latest/tracing/struct.Span.html#method.with_subscriber
+https://docs.rs/tracing/latest/tracing/level_filters/struct.LevelFilter.html
+https://docs.rs/tracing/latest/tracing/struct.Level.html
+https://docs.rs/tracing/latest/tracing/subscriber/index.html
+https://github.com/tokio-rs/tracing/tree/main/examples
+
+
+
+
+
+
 
 
 -- page
