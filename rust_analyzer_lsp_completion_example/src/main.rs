@@ -1,12 +1,15 @@
+#![allow(unused)]
 use lsp_server::{
   Connection, ExtractError, Message, Request,
   RequestId, Response,
 };
 use lsp_types::OneOf;
+use lsp_types::request::Completion;
 use lsp_types::{
   GotoDefinitionResponse, InitializeParams,
   ServerCapabilities, request::GotoDefinition,
 };
+use serde::de::DeserializeOwned;
 use serde_json::Value;
 use std::error::Error;
 use std::path::PathBuf;
@@ -23,13 +26,6 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
 
   event!(Level::INFO, "Creating stdio transport");
   let (connection, io_threads) = Connection::stdio();
-
-  // let server_capabilities =
-  //   serde_json::to_value(&ServerCapabilities {
-  //     definition_provider: Some(OneOf::Left(true)),
-  //     ..Default::default()
-  //   })
-  //   .unwrap();
 
   event!(Level::INFO, "Waiting on initilization");
   let initialization_params = match connection
@@ -64,14 +60,43 @@ fn server_capabilities() -> Value {
   .expect("Could not set up server capabilities")
 }
 
+// match cast::<GotoDefinition>(req) {
+//   Ok((id, params)) => {
+//     event!(
+//       Level::INFO,
+//       "Request ID #{id} - Params {params:?}"
+//     );
+//     let result = Some(
+//       GotoDefinitionResponse::Array(Vec::new()),
+//     );
+//     let result =
+//       serde_json::to_value(&result).unwrap();
+//     let resp = Response {
+//       id,
+//       result: Some(result),
+//       error: None,
+//     };
+//     connection
+//       .sender
+//       .send(Message::Response(resp))?;
+//     continue;
+//   }
+//   Err(err @ ExtractError::JsonError { .. }) => {
+//     panic!("{err:?}")
+//   }
+//   Err(ExtractError::MethodMismatch(req)) => req,
+// };
+
+fn handle_completion() {}
+
 fn main_loop(
   connection: Connection,
   params: serde_json::Value,
 ) -> Result<(), Box<dyn Error + Sync + Send>> {
+  event!(Level::INFO, "Starting main loop");
+
   let _params: InitializeParams =
     serde_json::from_value(params).unwrap();
-
-  event!(Level::INFO, "Starting main loop");
 
   for msg in &connection.receiver {
     event!(Level::INFO, "Got message: {msg:?}");
@@ -83,43 +108,88 @@ fn main_loop(
         }
 
         event!(Level::INFO, "Got request: {req:?}");
-
-        match cast::<GotoDefinition>(req) {
-          Ok((id, params)) => {
+        match req.method.as_str() {
+          "textDocument/completion" => {
             event!(
               Level::INFO,
-              "Request ID #{id} - Params {params:?}"
-            );
-            let result = Some(
-              GotoDefinitionResponse::Array(Vec::new()),
-            );
-            let result =
-              serde_json::to_value(&result).unwrap();
-            let resp = Response {
-              id,
-              result: Some(result),
-              error: None,
-            };
-            connection
-              .sender
-              .send(Message::Response(resp))?;
-            continue;
+              "-----------------------------------------------"
+            )
           }
-          Err(err @ ExtractError::JsonError { .. }) => {
-            panic!("{err:?}")
-          }
-          Err(ExtractError::MethodMismatch(req)) => req,
-        };
+          _ => event!(Level::INFO, "HERE I AM"),
+        }
+
+        // let x = match req.extract()
+
+        // event!(
+        //   Level::INFO,
+        //   "method: {0:?}",
+        //   req.extract::<Result<
+        //     RequestId,
+        //     lsp_types::request::Request::Params,
+        //   >>(
+        //     // serde::de::DeserializeOwned
+        //     lsp_types::request::Request::METHOD
+        //   )
+        // );
+
+        //dbg!(req.method);
+
+        // event!(Level::INFO, "Got request: {req:?}");
+        // match req {
+        // }
+
+        // match cast::<Completion>(req) {
+        //   Ok((id, params)) => {
+        //     event!(
+        //       Level::INFO,
+        //       "Completion request ID #{id} - Params {params:?}"
+        //     );
+        //     continue;
+        //   }
+        //   Err(err @ ExtractError::JsonError { .. }) => {
+        //     panic!("{err:?}")
+        //   }
+        //   Err(ExtractError::MethodMismatch(req)) => req,
+        // };
+
+        // match cast::<GotoDefinition>(req) {
+        //   Ok((id, params)) => {
+        //     event!(
+        //       Level::INFO,
+        //       "Request ID #{id} - Params {params:?}"
+        //     );
+        //     let result = Some(
+        //       GotoDefinitionResponse::Array(Vec::new()),
+        //     );
+        //     let result =
+        //       serde_json::to_value(&result).unwrap();
+        //     let resp = Response {
+        //       id,
+        //       result: Some(result),
+        //       error: None,
+        //     };
+        //     connection
+        //       .sender
+        //       .send(Message::Response(resp))?;
+        //     continue;
+        //   }
+        //   Err(err @ ExtractError::JsonError { .. }) => {
+        //     panic!("{err:?}")
+        //   }
+        //   Err(ExtractError::MethodMismatch(req)) => req,
+        // };
 
         // ...
       }
+
       Message::Response(resp) => {
         event!(Level::INFO, "Got response: {resp:?}");
       }
-      Message::Notification(noti) => {
+
+      Message::Notification(notif) => {
         event!(
           Level::INFO,
-          "Got notification: {noti:?}"
+          "Got notification: {notif:?}"
         );
       }
     }
