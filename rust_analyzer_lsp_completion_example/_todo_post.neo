@@ -1,0 +1,23 @@
+-- title
+
+Rust LSP Server Completion Example
+
+-- notes/
+
+- Based of [[this example|https://github.com/rust-lang/rust-analyzer/blob/master/lib/lsp-server/examples/goto_def.rs]]
+but provides complethion which is easier to see
+for testing. 
+
+
+-- /notes
+
+
+
+-- page
+-- created: 2025-06-14T12:10:55-04:00
+-- updated: 2025-06-14T12:10:55-04:00
+-- id: 2y/vq/r2/6g
+-- template: post
+-- status: scratch
+
+
