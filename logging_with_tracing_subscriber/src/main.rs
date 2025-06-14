@@ -7,7 +7,7 @@ use tracing::{Level, event, instrument};
 fn main() {
   let json_dir = PathBuf::from("test-output/json");
   let txt_dir = PathBuf::from("test-output/txt");
-  let _log_guard = Logger::setup()
+  let _log_guards = Logger::setup()
     .with_stdout(LevelFilter::INFO)
     .with_stderr(LevelFilter::INFO)
     .to_json_dir(&json_dir, LevelFilter::INFO)

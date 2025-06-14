@@ -9,7 +9,7 @@ use tracing_subscriber::fmt;
 use tracing_subscriber::prelude::*;
 
 pub struct Logger {
-  pub guard: Option<WorkerGuard>,
+  pub guards: Vec<WorkerGuard>,
   stdout: Option<LevelFilter>,
   stderr: Option<LevelFilter>,
   json_dir: Option<PathBuf>,
@@ -21,7 +21,7 @@ pub struct Logger {
 impl Logger {
   pub fn new() -> Self {
     Self {
-      guard: None,
+      guards: vec![],
       stdout: None,
       stderr: None,
       json_dir: None,
@@ -33,7 +33,7 @@ impl Logger {
 
   pub fn setup() -> Self {
     Self {
-      guard: None,
+      guards: vec![],
       stdout: None,
       stderr: None,
       json_dir: None,
@@ -87,7 +87,7 @@ impl Logger {
     }
   }
 
-  pub fn init(mut self) -> Option<WorkerGuard> {
+  pub fn init(mut self) -> Vec<WorkerGuard> {
     let json_dir_layer =
       match (&self.json_dir, &self.json_level) {
         (Some(dir), Some(level)) => {
@@ -103,7 +103,7 @@ impl Logger {
             tracing_appender::non_blocking(
               file_appender,
             );
-          self.guard = Some(log_guard);
+          self.guards.push(log_guard);
           let file_layer_format =
             tracing_subscriber::fmt::format().json();
           let layer = fmt::Layer::default()
@@ -161,8 +161,7 @@ impl Logger {
             tracing_appender::non_blocking(
               file_appender,
             );
-          self.guard = Some(log_guard);
-
+          self.guards.push(log_guard);
           let file_layer_format = MiniFormat;
 
           // let file_layer_format =
@@ -194,7 +193,7 @@ impl Logger {
     tracing::subscriber::set_global_default(subscriber)
       .expect("unable to set global subscriber");
 
-    self.guard
+    self.guards
   }
 }
 
