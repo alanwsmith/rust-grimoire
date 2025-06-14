@@ -13,23 +13,23 @@ fn main() {
     .to_json_dir(&json_dir, LevelFilter::INFO)
     .to_txt_dir(&txt_dir, LevelFilter::INFO)
     .init();
-  event!(Level::INFO, "IN MAIN");
+  event!(Level::INFO, "In main");
   alfa();
   bravo();
-  println!("Process complete.");
+  println!("process complete.");
 }
 
 fn alfa() {
-  event!(Level::INFO, "IN ALFA");
+  event!(Level::INFO, "In alfa");
 }
 
 #[instrument]
 fn bravo() {
-  event!(Level::INFO, "IN BRAVO");
+  event!(Level::INFO, "In bravo");
   charlie();
 }
 
 #[instrument]
 fn charlie() {
-  event!(Level::INFO, "IN CHARLIE");
+  event!(Level::INFO, "In charlie");
 }

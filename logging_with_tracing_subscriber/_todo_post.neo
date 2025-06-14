@@ -28,20 +28,25 @@ write logs to STDOUT/STRERR in the terminal. Outputting
 to the TXT dir lets you ``tail -`` a log file while
 still getting a full set of JSON logs in that directory. 
 
+- Using ``#[instrument]`` doesn't change anything in the 
+MiniFormat formats. It does it the JSON formats where
+it shows you more about the path to a thing with 
+the functions it goes through. 
+
 - original format setup was:
 
 
 -- code/
 -- rust
 
-        let format = tracing_subscriber::fmt::format()
-          .without_time()
-          .with_target(false)
-          .with_thread_ids(false)
-          .with_thread_names(false)
-          .with_ansi(false)
-          .with_line_number(false)
-          .with_file(false);
+let format = tracing_subscriber::fmt::format()
+  .without_time()
+  .with_target(false)
+  .with_thread_ids(false)
+  .with_thread_names(false)
+  .with_ansi(false)
+  .with_line_number(false)
+  .with_file(false);
 
 -- /code
 

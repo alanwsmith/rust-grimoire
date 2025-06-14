@@ -16,7 +16,6 @@ impl<S, N> FormatEvent<S, N> for MiniFormat
 where
   S: Subscriber + for<'a> LookupSpan<'a>,
   N: for<'a> FormatFields<'a> + 'static,
-  // T: FormatTime,
 {
   fn format_event(
     &self,
@@ -24,155 +23,17 @@ where
     mut writer: Writer<'_>,
     event: &Event<'_>,
   ) -> fmt::Result {
-    // TODO: Figure these out with the different
-    // tracing-log to see what's up with them
-    //#[cfg(feature = "tracing-log")]
-    // let normalized_meta = event.normalized_metadata();
-    ////#[cfg(feature = "tracing-log")]
-    //let meta = normalized_meta
-    //  .as_ref()
-    //  .unwrap_or_else(|| event.metadata());
-    // // #[cfg(not(feature = "tracing-log"))]
     let meta = event.metadata();
-
-    //let fmt_level = FmtLevel::new(meta.level());
     write!(writer, "{} ", meta.level())?;
-
     let _ = SystemTime.format_time(&mut writer);
-
     if let Some(line_number) = meta.line() {
       write!(writer, " Line: {}", line_number,)?;
     }
-
     if let Some(filename) = meta.file() {
       write!(writer, " {}", filename)?;
     }
-
-    writeln!(writer, "")?;
-
-    // write!(writer, "{}", event.parent());
-
-    //     FmtCtx::new(&ctx, event.parent())
-    // dbg!(&event);
-
-    //    self.format_timestamp(&mut writer)?;
-
-    // if self.display_level {
-    //   let fmt_level = {
-    //     #[cfg(feature = "ansi")]
-    //     {
-    //       FmtLevel::new(
-    //         meta.level(),
-    //         writer.has_ansi_escapes(),
-    //       )
-    //     }
-    //     #[cfg(not(feature = "ansi"))]
-    //     {
-    //       FmtLevel::new(meta.level())
-    //     }
-    //   };
-    //   write!(writer, "{} ", fmt_level)?;
-    // }
-    //
-
-    // if self.display_thread_name {
-    //   let current_thread = std::thread::current();
-    //   match current_thread.name() {
-    //     Some(name) => {
-    //       write!(
-    //         writer,
-    //         "{} ",
-    //         FmtThreadName::new(name)
-    //       )?;
-    //     }
-    //     // fall-back to thread id when name is absent and ids are not enabled
-    //     None if !self.display_thread_id => {
-    //       write!(
-    //         writer,
-    //         "{:0>2?} ",
-    //         current_thread.id()
-    //       )?;
-    //     }
-    //     _ => {}
-    //   }
-    // }
-
-    // if self.display_thread_id {
-    //   write!(
-    //     writer,
-    //     "{:0>2?} ",
-    //     std::thread::current().id()
-    //   )?;
-    // }
-
-    // let fmt_ctx = {
-    //   #[cfg(feature = "ansi")]
-    //   {
-    //     FmtCtx::new(
-    //       ctx,
-    //       event.parent(),
-    //       writer.has_ansi_escapes(),
-    //     )
-    //   }
-    //   #[cfg(not(feature = "ansi"))]
-    //   {
-    //     FmtCtx::new(&ctx, event.parent())
-    //   }
-    // };
-
-    // write!(writer, "{}", fmt_ctx)?;
-
-    // let dimmed = writer.dimmed();
-
-    // let mut needs_space = false;
-
-    // if self.display_target {
-    //   write!(
-    //     writer,
-    //     "{}{}",
-    //     dimmed.paint(meta.target()),
-    //     dimmed.paint(":")
-    //   )?;
-    //   needs_space = true;
-    // }
-
-    // write!(writer, " {}", meta.target())?;
-
-    // if self.display_filename {
-    //   if let Some(filename) = meta.file() {
-    //     if self.display_target {
-    //       writer.write_char(' ')?;
-    //     }
-    //     write!(
-    //       writer,
-    //       "{}{}",
-    //       dimmed.paint(filename),
-    //       dimmed.paint(":")
-    //     )?;
-    //     needs_space = true;
-    //   }
-    // }
-
-    // if self.display_line_number {
-    //   if let Some(line_number) = meta.line() {
-    //     write!(
-    //       writer,
-    //       "{}{}{}{}",
-    //       dimmed.prefix(),
-    //       line_number,
-    //       dimmed.suffix(),
-    //       dimmed.paint(":")
-    //     )?;
-    //     needs_space = true;
-    //   }
-    // }
-
-    // if needs_space {
-    //   writer.write_char(' ')?;
-    // }
-
+    writeln!(writer)?;
     ctx.format_fields(writer.by_ref(), event)?;
-
     for span in ctx
       .event_scope()
       .into_iter()

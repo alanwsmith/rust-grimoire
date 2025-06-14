@@ -1,12 +1,27 @@
-use crate::logger_custom_format::MiniFormat;
+use std::fmt::Display;
+use std::fmt::Formatter;
+use std::fmt::Result;
+use std::fmt::Write;
 use std::path::PathBuf;
+use tracing::Event;
+use tracing::Subscriber;
 use tracing::metadata::LevelFilter;
+use tracing::span;
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_appender::rolling::{
   RollingFileAppender, Rotation,
 };
 use tracing_subscriber::fmt;
+use tracing_subscriber::fmt::FmtContext;
+use tracing_subscriber::fmt::FormatEvent;
+use tracing_subscriber::fmt::FormatFields;
+use tracing_subscriber::fmt::FormattedFields;
+use tracing_subscriber::fmt::format::Writer;
+use tracing_subscriber::fmt::time::FormatTime;
+use tracing_subscriber::fmt::time::SystemTime;
 use tracing_subscriber::prelude::*;
+use tracing_subscriber::registry::LookupSpan;
+use tracing_subscriber::registry::Scope;
 
 pub struct Logger {
   pub guards: Vec<WorkerGuard>,
@@ -118,14 +133,7 @@ impl Logger {
 
     let stderr_layer = match self.stderr {
       Some(level) => {
-        let format = tracing_subscriber::fmt::format()
-          // .without_time()
-          .with_target(false)
-          .with_thread_ids(false)
-          .with_thread_names(false)
-          .with_ansi(false)
-          .with_line_number(false)
-          .with_file(false);
+        let format = MiniFormat;
         let layer = fmt::Layer::default()
           .event_format(format)
           .with_writer(std::io::stderr)
@@ -164,16 +172,6 @@ impl Logger {
           self.guards.push(log_guard);
           let file_layer_format = MiniFormat;
 
-          // let file_layer_format =
-          //   tracing_subscriber::fmt::format()
-          //     .without_time()
-          //     .with_target(false)
-          //     .with_thread_ids(false)
-          //     .with_thread_names(false)
-          //     .with_ansi(false)
-          //     .with_line_number(false)
-          //     .with_file(false);
-
           let layer = fmt::Layer::default()
             .event_format(file_layer_format)
             .with_writer(file_writer)
@@ -200,5 +198,181 @@ impl Logger {
 impl Default for Logger {
   fn default() -> Self {
     Self::new()
+  }
+}
+
+pub struct MiniFormat;
+impl<S, N> FormatEvent<S, N> for MiniFormat
+where
+  S: Subscriber + for<'a> LookupSpan<'a>,
+  N: for<'a> FormatFields<'a> + 'static,
+{
+  fn format_event(
+    &self,
+    ctx: &FmtContext<'_, S, N>,
+    mut writer: Writer<'_>,
+    event: &Event<'_>,
+  ) -> Result {
+    let meta = event.metadata();
+    write!(writer, "{} ", meta.level())?;
+    let _ = SystemTime.format_time(&mut writer);
+    writeln!(writer)?;
+    if let Some(line_number) = meta.line() {
+      write!(writer, "Line: {}", line_number,)?;
+    }
+    let fmt_ctx = { FmtCtx::new(&ctx, event.parent()) };
+    write!(writer, " {}", fmt_ctx)?;
+    if let Some(filename) = meta.file() {
+      write!(writer, " {}", filename)?;
+    }
+    writeln!(writer)?;
+    ctx.format_fields(writer.by_ref(), event)?;
+    for span in ctx
+      .event_scope()
+      .into_iter()
+      .flat_map(Scope::from_root)
+    {
+      let exts = span.extensions();
+      if let Some(fields) =
+        exts.get::<FormattedFields<N>>()
+      {
+        if !fields.is_empty() {
+          write!(writer, " {}", &fields.fields)?;
+        }
+      }
+    }
+    writeln!(writer)?;
+    Ok(())
+  }
+}
+
+pub struct MiniFormatNoTime;
+impl<S, N> FormatEvent<S, N> for MiniFormatNoTime
+where
+  S: Subscriber + for<'a> LookupSpan<'a>,
+  N: for<'a> FormatFields<'a> + 'static,
+{
+  fn format_event(
+    &self,
+    ctx: &FmtContext<'_, S, N>,
+    mut writer: Writer<'_>,
+    event: &Event<'_>,
+  ) -> Result {
+    let meta = event.metadata();
+    write!(writer, "{}", meta.level())?;
+    if let Some(line_number) = meta.line() {
+      write!(writer, " Line: {}", line_number,)?;
+    }
+    let fmt_ctx = { FmtCtx::new(&ctx, event.parent()) };
+    write!(writer, " {}", fmt_ctx)?;
+    if let Some(filename) = meta.file() {
+      write!(writer, "{}", filename)?;
+    }
+    writeln!(writer)?;
+    ctx.format_fields(writer.by_ref(), event)?;
+    for span in ctx
+      .event_scope()
+      .into_iter()
+      .flat_map(Scope::from_root)
+    {
+      let exts = span.extensions();
+      if let Some(fields) =
+        exts.get::<FormattedFields<N>>()
+      {
+        if !fields.is_empty() {
+          write!(writer, " {}", &fields.fields)?;
+        }
+      }
+    }
+    writeln!(writer)?;
+    Ok(())
+  }
+}
+
+struct FmtCtx<'a, S, N> {
+  ctx: &'a FmtContext<'a, S, N>,
+  span: Option<&'a span::Id>,
+}
+
+impl<'a, S, N: 'a> FmtCtx<'a, S, N>
+where
+  S: Subscriber + for<'lookup> LookupSpan<'lookup>,
+  N: for<'writer> FormatFields<'writer> + 'static,
+{
+  pub(crate) fn new(
+    ctx: &'a FmtContext<'_, S, N>,
+    span: Option<&'a span::Id>,
+  ) -> Self {
+    Self { ctx, span }
+  }
+
+  fn bold(&self) -> Style {
+    Style::new()
+  }
+}
+
+impl<'a, S, N: 'a> Display for FmtCtx<'a, S, N>
+where
+  S: Subscriber + for<'lookup> LookupSpan<'lookup>,
+  N: for<'writer> FormatFields<'writer> + 'static,
+{
+  fn fmt(
+    &self,
+    f: &mut Formatter<'_>,
+  ) -> Result {
+    let bold = self.bold();
+
+    let mut seen = false;
+
+    let span = self
+      .span
+      .and_then(|id| self.ctx.span(id))
+      .or_else(|| self.ctx.lookup_current());
+
+    let scope = span
+      .into_iter()
+      .flat_map(|span| span.scope().from_root());
+
+    for span in scope {
+      seen = true;
+
+      write!(
+        f,
+        "{}:",
+        bold.paint(span.metadata().name())
+      )?;
+    }
+
+    if seen {
+      f.write_char(' ')?;
+    }
+
+    Ok(())
+  }
+}
+
+struct Style;
+impl Style {
+  fn new() -> Self {
+    Style
+  }
+
+  fn _bold(self) -> Self {
+    self
+  }
+
+  fn paint(
+    &self,
+    d: impl Display,
+  ) -> impl Display {
+    d
+  }
+
+  fn _prefix(&self) -> impl Display {
+    ""
+  }
+
+  fn _suffix(&self) -> impl Display {
+    ""
   }
 }
