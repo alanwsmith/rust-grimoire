@@ -1,0 +1,76 @@
+-- title
+
+Logging to a File in Rust with tracing
+
+-- notes/
+
+- Does a daily rotation of logs
+
+- Keeps two days of logs. Deletes others
+to keep from filling up disk space
+
+- Dates are based off UTC. That includes
+the dates for the log files names. 
+(e.g. if it's 11pm your time and you're
+in UTC -4:00 the output will go to 
+a log file with tomorrow's date)
+
+- Uses ``.pretty()``, there is also
+``.json()``, and ``.compact()``. 
+
+- The <<path|Cargo.toml>> file has ``json``
+in 
+
+
+-- code/
+-- toml
+
+tracing-subscriber = { version = "0.3.19", features = ["json"] }
+
+-- /code
+
+That's what provides the ``.json()`` output
+ability. You can remove the feature if
+you don't need it. 
+
+
+-- /notes
+
+
+-- todo
+
+- talk about the guard. if you drop it, the
+logging goes away
+
+- cover ``#[insturment]`` for showing the 
+path of the functions calls. 
+
+- cover .filename_prefix()
+
+- cover .with_ansi(false)
+
+- cover using ``tail -f`` to follow
+the log (noting when it switches days)
+you'll need to restart pointing at
+the new file
+
+- show different formats
+
+- make example for custom formatter
+
+- make example of going to std out
+
+- point out that you have to use the
+crate name since the function is
+in its own file
+
+
+
+-- page
+-- created: 2025-06-14T11:26:43-04:00
+-- updated: 2025-06-14T11:26:43-04:00
+-- id: 2y/vl/tr/ru
+-- template: post
+-- status: scratch
+
+
