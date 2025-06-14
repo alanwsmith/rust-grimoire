@@ -28,14 +28,14 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
   event!(Level::DEBUG, "");
   event!(Level::INFO, "Starting LSP Server");
   let (connection, io_threads) = Connection::stdio();
-  event!(Level::DEBUG, "Running the server");
+  event!(Level::DEBUG, "Defining server capabilities");
   let server_capabilities =
     serde_json::to_value(&ServerCapabilities {
       definition_provider: Some(OneOf::Left(true)),
       ..Default::default()
     })
     .unwrap();
-  event!(Level::DEBUG, "Set initilaztion parmas");
+  event!(Level::DEBUG, "Waiting to initialize");
   let initialization_params =
     match connection.initialize(server_capabilities) {
       Ok(it) => it,
@@ -48,7 +48,6 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     };
   main_loop(connection, initialization_params)?;
   io_threads.join()?;
-
   event!(Level::INFO, "Shutting down LSP server");
   Ok(())
 }
@@ -59,15 +58,16 @@ fn main_loop(
 ) -> Result<(), Box<dyn Error + Sync + Send>> {
   let _params: InitializeParams =
     serde_json::from_value(params).unwrap();
-  // eprintln!("starting example main loop");
+  event!(Level::INFO, "Starting main event loop");
   for msg in &connection.receiver {
-    // eprintln!("got msg: {msg:?}");
+    event!(Level::INFO, "got message: {msg:?}");
     match msg {
       Message::Request(req) => {
         if connection.handle_shutdown(&req)? {
+          event!(Level::INFO, "got shutdown request");
           return Ok(());
         }
-        // eprintln!("got request: {req:?}");
+        event!(Level::INFO, "got request: {req:?}");
         match cast::<GotoDefinition>(req) {
           Ok((id, params)) => {
             // eprintln!(
@@ -96,10 +96,13 @@ fn main_loop(
         // ...
       }
       Message::Response(resp) => {
-        // eprintln!("got response: {resp:?}");
+        event!(Level::DEBUG, "got response: {resp:?}");
       }
-      Message::Notification(not) => {
-        // eprintln!("got notification: {not:?}");
+      Message::Notification(noti) => {
+        event!(
+          Level::DEBUG,
+          "got notification: {noti:?}"
+        );
       }
     }
   }
