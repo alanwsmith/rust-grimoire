@@ -6,10 +6,14 @@ use lsp_server::{
 use lsp_types::request::Completion;
 use lsp_types::{
   CompletionItem, CompletionList, OneOf,
+  TextDocumentSyncKind,
 };
 use lsp_types::{
   GotoDefinitionResponse, InitializeParams,
   ServerCapabilities, request::GotoDefinition,
+};
+use rust_analyzer_lsp_completion_example::mem_docs::{
+  self, *,
 };
 use serde::de::DeserializeOwned;
 use serde_json::Value;
@@ -52,6 +56,11 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
 fn server_capabilities() -> Value {
   event!(Level::INFO, "Defining server capabilities");
   serde_json::to_value(&ServerCapabilities {
+    text_document_sync: Some(
+      lsp_types::TextDocumentSyncCapability::Kind(
+        TextDocumentSyncKind::FULL,
+      ),
+    ),
     completion_provider: Some(
       lsp_types::CompletionOptions {
         ..Default::default()
@@ -114,13 +123,15 @@ fn main_loop(
   connection: Connection,
   params: serde_json::Value,
 ) -> Result<(), Box<dyn Error + Sync + Send>> {
+  let mem_docs = mem_docs::MemDocs::default();
+
   event!(Level::INFO, "Starting main loop");
 
   let _params: InitializeParams =
     serde_json::from_value(params).unwrap();
 
   for msg in &connection.receiver {
-    event!(Level::INFO, "Got message: {msg:?}");
+    // event!(Level::INFO, "Got message: {msg:?}");
 
     match msg {
       Message::Request(req) => {
@@ -222,10 +233,11 @@ fn main_loop(
       }
 
       Message::Notification(notif) => {
-        event!(
-          Level::INFO,
-          "Got notification: {notif:?}"
-        );
+
+        // event!(
+        //   Level::INFO,
+        //   "Got notification: {notif:?}"
+        // );
       }
     }
   }

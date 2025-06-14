@@ -8,6 +8,14 @@ Rust LSP Server Completion Example
 but provides complethion which is easier to see
 for testing. 
 
+- Look at ``handle_did_change_text_document`` in 
+<<path|crates/rust-analyzer/src/handlers/notifications.rs>> for
+an example of how they work with text documents. 
+
+See also: pub(crate) mem_docs: MemDocs,
+
+
+
 
 -- /notes
 
