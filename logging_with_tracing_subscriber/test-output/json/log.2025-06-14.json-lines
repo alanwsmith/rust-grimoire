@@ -1,0 +1,4 @@
+{"timestamp":"2025-06-14T14:20:54.419317Z","level":"INFO","fields":{"message":"In main"},"target":"logging_with_tracing_subscriber"}
+{"timestamp":"2025-06-14T14:20:54.419407Z","level":"INFO","fields":{"message":"In alfa"},"target":"logging_with_tracing_subscriber"}
+{"timestamp":"2025-06-14T14:20:54.419476Z","level":"INFO","fields":{"message":"In bravo"},"target":"logging_with_tracing_subscriber","span":{"name":"bravo"},"spans":[{"name":"bravo"}]}
+{"timestamp":"2025-06-14T14:20:54.419532Z","level":"INFO","fields":{"message":"In charlie"},"target":"logging_with_tracing_subscriber","span":{"name":"charlie"},"spans":[{"name":"bravo"},{"name":"charlie"}]}

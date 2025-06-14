@@ -110,7 +110,7 @@ impl Logger {
             RollingFileAppender::builder()
               .rotation(Rotation::DAILY)
               .filename_prefix("log")
-              .filename_suffix("log")
+              .filename_suffix("json-lines")
               .max_log_files(2)
               .build(dir)
               .expect("could not make file appender");
