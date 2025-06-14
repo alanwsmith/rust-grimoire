@@ -13,6 +13,7 @@ fn main() {
     .to_json_dir(&json_dir, LevelFilter::INFO)
     .to_txt_dir(&txt_dir, LevelFilter::INFO)
     .init();
+
   event!(Level::INFO, "In main");
   alfa();
   bravo();
