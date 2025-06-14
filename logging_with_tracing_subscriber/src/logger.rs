@@ -68,7 +68,7 @@ impl Logger {
     }
   }
 
-  pub fn init(mut self) -> Self {
+  pub fn init(mut self) -> Option<WorkerGuard> {
     let stdout_layer = match self.stdout {
       Some(level) => {
         let format = tracing_subscriber::fmt::format()
@@ -87,6 +87,7 @@ impl Logger {
       }
       None => None,
     };
+
     let stderr_layer = match self.stderr {
       Some(level) => {
         let format = tracing_subscriber::fmt::format()
@@ -105,6 +106,7 @@ impl Logger {
       }
       None => None,
     };
+
     let file_layer =
       match (&self.file_dir, &self.file_level) {
         (Some(dir), Some(level)) => {
@@ -132,14 +134,17 @@ impl Logger {
         }
         _ => None,
       };
+
     let subscriber =
       tracing_subscriber::Registry::default()
         .with(stdout_layer)
         .with(file_layer)
         .with(stderr_layer);
+
     tracing::subscriber::set_global_default(subscriber)
       .expect("unable to set global subscriber");
-    Self { ..self }
+
+    self.guard
   }
 }
 

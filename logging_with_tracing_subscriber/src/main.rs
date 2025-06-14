@@ -5,7 +5,7 @@ use tracing::{Level, event, instrument};
 
 fn main() {
   let log_dir = PathBuf::from("test-output");
-  Logger::setup()
+  let _log_guard = Logger::setup()
     .with_stdout(LevelFilter::INFO)
     .with_stderr(LevelFilter::INFO)
     .with_files(&log_dir, LevelFilter::INFO)
