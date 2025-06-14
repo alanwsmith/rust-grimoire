@@ -3,8 +3,10 @@ use lsp_server::{
   Connection, ExtractError, Message, Request,
   RequestId, Response,
 };
-use lsp_types::OneOf;
 use lsp_types::request::Completion;
+use lsp_types::{
+  CompletionItem, CompletionList, OneOf,
+};
 use lsp_types::{
   GotoDefinitionResponse, InitializeParams,
   ServerCapabilities, request::GotoDefinition,
@@ -87,7 +89,26 @@ fn server_capabilities() -> Value {
 //   Err(ExtractError::MethodMismatch(req)) => req,
 // };
 
-fn handle_completion() {}
+fn handle_completion(
+  req: &Request
+) -> Option<Response> {
+  event!(Level::INFO, "handling completion");
+  let complection_item = CompletionItem::new_simple(
+    "ping".to_string(),
+    "this is the ping".to_string(),
+  );
+  let completion_list = CompletionList {
+    is_incomplete: false,
+    items: vec![complection_item],
+  };
+  Some(Response {
+    id: req.id.clone(),
+    result: Some(
+      serde_json::to_value(completion_list).unwrap(),
+    ),
+    error: None,
+  })
+}
 
 fn main_loop(
   connection: Connection,
@@ -108,14 +129,28 @@ fn main_loop(
         }
 
         event!(Level::INFO, "Got request: {req:?}");
-        match req.method.as_str() {
+        let response = match req.method.as_str() {
           "textDocument/completion" => {
+            handle_completion(&req)
+          }
+          _ => {
             event!(
               Level::INFO,
-              "-----------------------------------------------"
-            )
+              "Unhandled request type"
+            );
+            None
           }
-          _ => event!(Level::INFO, "HERE I AM"),
+        };
+
+        match response {
+          Some(r) => {
+            event!(Level::INFO, "--- SENDING ---");
+            connection
+              .sender
+              .send(Message::Response(r))?;
+            continue;
+          }
+          None => (),
         }
 
         // let x = match req.extract()
@@ -219,7 +254,7 @@ pub fn init_logger(log_dir: &PathBuf) -> WorkerGuard {
   let layer = tracing_subscriber::fmt::Layer::default()
     .with_ansi(false)
     .with_writer(writer)
-    .compact();
+    .pretty();
   let subscriber =
     tracing_subscriber::Registry::default().with(layer);
   tracing::subscriber::set_global_default(subscriber)
