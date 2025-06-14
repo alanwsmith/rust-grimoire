@@ -2,3 +2,37 @@
 {"timestamp":"2025-06-14T14:21:38.854758Z","level":"DEBUG","fields":{"message":"Running the server"},"target":"rust_analyzer_lsp_format_document"}
 {"timestamp":"2025-06-14T14:22:03.318529Z","level":"INFO","fields":{"message":"Starting LSP Server"},"target":"rust_analyzer_lsp_format_document"}
 {"timestamp":"2025-06-14T14:22:03.318731Z","level":"DEBUG","fields":{"message":"Running the server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:23:50.000158Z","level":"INFO","fields":{"message":"Starting LSP Server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:23:50.000364Z","level":"DEBUG","fields":{"message":"Running the server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:24:09.218120Z","level":"INFO","fields":{"message":"Starting LSP Server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:24:09.218330Z","level":"DEBUG","fields":{"message":"Running the server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:24:34.315530Z","level":"INFO","fields":{"message":"Starting LSP Server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:24:34.315740Z","level":"DEBUG","fields":{"message":"Running the server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:24:39.127583Z","level":"INFO","fields":{"message":"Starting LSP Server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:24:39.127787Z","level":"DEBUG","fields":{"message":"Running the server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:24:41.042065Z","level":"INFO","fields":{"message":"Starting LSP Server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:24:41.042318Z","level":"DEBUG","fields":{"message":"Running the server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:24:51.720863Z","level":"INFO","fields":{"message":"Starting LSP Server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:24:51.721091Z","level":"DEBUG","fields":{"message":"Running the server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:25:01.864836Z","level":"INFO","fields":{"message":"Starting LSP Server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:25:01.865047Z","level":"DEBUG","fields":{"message":"Running the server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:25:12.693860Z","level":"INFO","fields":{"message":"Starting LSP Server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:25:12.694066Z","level":"DEBUG","fields":{"message":"Running the server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:25:58.081587Z","level":"INFO","fields":{"message":"Starting LSP Server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:25:58.081797Z","level":"DEBUG","fields":{"message":"Running the server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:26:19.300161Z","level":"INFO","fields":{"message":"Starting LSP Server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:26:19.300371Z","level":"DEBUG","fields":{"message":"Running the server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:26:19.300655Z","level":"DEBUG","fields":{"message":"Getting params"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:26:48.730443Z","level":"INFO","fields":{"message":"Starting LSP Server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:26:48.730663Z","level":"DEBUG","fields":{"message":"Running the server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:26:48.730899Z","level":"DEBUG","fields":{"message":"Set initilaztion parmas"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:29:27.020542Z","level":"INFO","fields":{"message":"Starting LSP Server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:29:27.020747Z","level":"DEBUG","fields":{"message":"Running the server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:29:27.020988Z","level":"DEBUG","fields":{"message":"Set initilaztion parmas"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:29:37.062006Z","level":"INFO","fields":{"message":"Starting LSP Server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:29:37.062216Z","level":"DEBUG","fields":{"message":"Running the server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:29:37.062444Z","level":"DEBUG","fields":{"message":"Set initilaztion parmas"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:30:18.215640Z","level":"DEBUG","fields":{"message":""},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:30:18.215733Z","level":"INFO","fields":{"message":"Starting LSP Server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:30:18.215881Z","level":"DEBUG","fields":{"message":"Running the server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:30:18.216120Z","level":"DEBUG","fields":{"message":"Set initilaztion parmas"},"target":"rust_analyzer_lsp_format_document"}

@@ -214,19 +214,19 @@ where
     event: &Event<'_>,
   ) -> Result {
     let meta = event.metadata();
-    writeln!(writer)?;
-    write!(writer, "{}-", meta.level())?;
-    let _ = SystemTime.format_time(&mut writer);
-    writeln!(writer)?;
-    if let Some(filename) = meta.file() {
-      write!(writer, "{}", filename)?;
-    }
-    if let Some(line_number) = meta.line() {
-      write!(writer, " Line: {}", line_number,)?;
-    }
-    let fmt_ctx = { FmtCtx::new(&ctx, event.parent()) };
-    write!(writer, " {}", fmt_ctx)?;
-    writeln!(writer)?;
+    //    writeln!(writer)?;
+    //   write!(writer, "{}-", meta.level())?;
+    //  let _ = SystemTime.format_time(&mut writer);
+    // writeln!(writer)?;
+    // if let Some(filename) = meta.file() {
+    //   write!(writer, "{}", filename)?;
+    // }
+    // if let Some(line_number) = meta.line() {
+    //   write!(writer, " Line: {}", line_number,)?;
+    // }
+    // let fmt_ctx = { FmtCtx::new(&ctx, event.parent()) };
+    // write!(writer, " {}", fmt_ctx)?;
+    // writeln!(writer)?;
     ctx.format_fields(writer.by_ref(), event)?;
     for span in ctx
       .event_scope()

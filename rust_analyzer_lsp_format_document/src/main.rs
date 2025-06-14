@@ -1,4 +1,4 @@
-#![allow(clippy::print_stderr)]
+#![allow(unused)]
 use lsp_server::{
   Connection, ExtractError, Message, Request,
   RequestId, Response,
@@ -25,6 +25,7 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
       LevelFilter::DEBUG,
     )
     .init();
+  event!(Level::DEBUG, "");
   event!(Level::INFO, "Starting LSP Server");
   let (connection, io_threads) = Connection::stdio();
   event!(Level::DEBUG, "Running the server");
@@ -34,6 +35,7 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
       ..Default::default()
     })
     .unwrap();
+  event!(Level::DEBUG, "Set initilaztion parmas");
   let initialization_params =
     match connection.initialize(server_capabilities) {
       Ok(it) => it,
@@ -47,8 +49,7 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
   main_loop(connection, initialization_params)?;
   io_threads.join()?;
 
-  // Shut down gracefully.
-  // eprintln!("shutting down server");
+  event!(Level::INFO, "Shutting down LSP server");
   Ok(())
 }
 

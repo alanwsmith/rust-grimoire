@@ -9,10 +9,12 @@ lsp-server = "0.7.8"
 lsp-types = "0.97.0"
 serde = "1.0.219"
 serde_json = "1.0.140"
+
+# TODO: Remove tracing when things are working
+# to keep the example more refined
 tracing = "0.1.41"
 tracing-appender = "0.2.3"
 tracing-subscriber = { version = "0.3.19", features = ["fmt", "json", "registry", "std"]}
-# TODO: Remove tracing when things are working
 
 
 
