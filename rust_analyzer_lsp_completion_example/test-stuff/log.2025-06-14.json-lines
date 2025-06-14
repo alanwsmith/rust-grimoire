@@ -1,0 +1,10 @@
+{"timestamp":"2025-06-14T16:08:03.912018Z","level":"DEBUG","fields":{"message":""},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T16:08:03.912095Z","level":"INFO","fields":{"message":"Starting LSP Server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T16:08:03.912572Z","level":"DEBUG","fields":{"message":"Defining server capabilities"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T16:08:03.913213Z","level":"DEBUG","fields":{"message":"Waiting to initialize"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T16:08:03.914185Z","level":"INFO","fields":{"message":"Starting main event loop"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T16:08:08.502707Z","level":"INFO","fields":{"message":"got message: Notification(Notification { method: \"textDocument/didSave\", params: Object {\"textDocument\": Object {\"uri\": String(\"file:///Users/alan/workshop/rust-grimoire/rust_analyzer_lsp_completion_example/test-file.lsptest\")}} })"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T16:08:08.502905Z","level":"DEBUG","fields":{"message":"got notification: Notification { method: \"textDocument/didSave\", params: Object {\"textDocument\": Object {\"uri\": String(\"file:///Users/alan/workshop/rust-grimoire/rust_analyzer_lsp_completion_example/test-file.lsptest\")}} }"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T16:08:31.764666Z","level":"INFO","fields":{"message":"got message: Request(Request { id: RequestId(I32(2)), method: \"shutdown\", params: Null })"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T16:08:31.764895Z","level":"INFO","fields":{"message":"got shutdown request"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T16:08:31.764991Z","level":"INFO","fields":{"message":"Shutting down LSP server"},"target":"rust_analyzer_lsp_format_document"}
