@@ -39,7 +39,10 @@ where
     write!(writer, "{} ", meta.level())?;
 
     let _ = SystemTime.format_time(&mut writer);
-    writeln!(writer);
+    writeln!(writer, "");
+    // write!(writer, "{}", event.parent());
+
+    //     FmtCtx::new(&ctx, event.parent())
     // dbg!(&event);
 
     //    self.format_timestamp(&mut writer)?;
@@ -177,7 +180,27 @@ where
     //   }
     // }
 
-    write!(writer, "HERHEHRHEHRHERHEHRHRHE")?;
+    ctx.format_fields(writer.by_ref(), event)?;
+
+    for span in ctx
+      .event_scope()
+      .into_iter()
+      .flat_map(Scope::from_root)
+    {
+      let exts = span.extensions();
+
+      if let Some(fields) =
+        exts.get::<FormattedFields<N>>()
+      {
+        if !fields.is_empty() {
+          write!(writer, " {}", &fields.fields)?;
+        }
+      }
+    }
+
+    //dbg!(&event);
+    //write!(writer, "{}", event.message);
+    //    write!(writer, "HERHEHRHEHRHERHEHRHRHE")?;
     writeln!(writer)
   }
 }
