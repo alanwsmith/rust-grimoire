@@ -13,7 +13,7 @@ to std out.
 
 
 
--- notes
+-- notes/
 
 - Adding ``#[instrument]`` to ``main`` doesn't
 appear to do anything. 
@@ -27,6 +27,26 @@ is to assist with things like LSP servers where you can't
 write logs to STDOUT/STRERR in the terminal. Outputting 
 to the TXT dir lets you ``tail -`` a log file while
 still getting a full set of JSON logs in that directory. 
+
+- original format setup was:
+
+
+-- code/
+-- rust
+
+        let format = tracing_subscriber::fmt::format()
+          .without_time()
+          .with_target(false)
+          .with_thread_ids(false)
+          .with_thread_names(false)
+          .with_ansi(false)
+          .with_line_number(false)
+          .with_file(false);
+
+-- /code
+
+
+Moved over to using the custon MiniFormat
 
 
 

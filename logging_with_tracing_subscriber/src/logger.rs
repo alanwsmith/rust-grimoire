@@ -1,3 +1,4 @@
+use crate::logger_custom_format::MiniFormat;
 use std::path::PathBuf;
 use tracing::metadata::LevelFilter;
 use tracing_appender::non_blocking::WorkerGuard;
@@ -136,16 +137,8 @@ impl Logger {
 
     let stdout_layer = match self.stdout {
       Some(level) => {
-        let format = tracing_subscriber::fmt::format()
-          .without_time()
-          .with_target(false)
-          .with_thread_ids(false)
-          .with_thread_names(false)
-          .with_ansi(false)
-          .with_line_number(false)
-          .with_file(false);
         let layer = fmt::Layer::default()
-          .event_format(format)
+          .event_format(MiniFormat)
           .with_writer(std::io::stdout)
           .with_filter(level);
         Some(layer)
@@ -169,15 +162,19 @@ impl Logger {
               file_appender,
             );
           self.guard = Some(log_guard);
-          let file_layer_format =
-            tracing_subscriber::fmt::format()
-              .without_time()
-              .with_target(false)
-              .with_thread_ids(false)
-              .with_thread_names(false)
-              .with_ansi(false)
-              .with_line_number(false)
-              .with_file(false);
+
+          let file_layer_format = MiniFormat;
+
+          // let file_layer_format =
+          //   tracing_subscriber::fmt::format()
+          //     .without_time()
+          //     .with_target(false)
+          //     .with_thread_ids(false)
+          //     .with_thread_names(false)
+          //     .with_ansi(false)
+          //     .with_line_number(false)
+          //     .with_file(false);
+
           let layer = fmt::Layer::default()
             .event_format(file_layer_format)
             .with_writer(file_writer)
