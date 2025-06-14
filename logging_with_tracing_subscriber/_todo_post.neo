@@ -22,6 +22,11 @@ appear to do anything.
 but it's seen as an anti-pattern. I'm sticking
 with UTC. 
 
+- File output to both a JSON and a TXT directory. This
+is to assist with things like LSP servers where you can't
+write logs to STDOUT/STRERR in the terminal. Outputting 
+to the TXT dir lets you ``tail -`` a log file while
+still getting a full set of JSON logs in that directory. 
 
 
 

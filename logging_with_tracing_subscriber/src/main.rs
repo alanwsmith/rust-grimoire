@@ -3,12 +3,15 @@ use std::path::PathBuf;
 use tracing::metadata::LevelFilter;
 use tracing::{Level, event, instrument};
 
+#[instrument]
 fn main() {
-  let log_dir = PathBuf::from("test-output");
+  let json_dir = PathBuf::from("test-output/json");
+  let txt_dir = PathBuf::from("test-output/txt");
   let _log_guard = Logger::setup()
     .with_stdout(LevelFilter::INFO)
     .with_stderr(LevelFilter::INFO)
-    .with_files(&log_dir, LevelFilter::INFO)
+    .to_json_dir(&json_dir, LevelFilter::INFO)
+    .to_txt_dir(&txt_dir, LevelFilter::INFO)
     .init();
   event!(Level::INFO, "IN MAIN");
   alfa();
