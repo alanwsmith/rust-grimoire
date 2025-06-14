@@ -214,60 +214,17 @@ where
     event: &Event<'_>,
   ) -> Result {
     let meta = event.metadata();
-    write!(writer, "{} ", meta.level())?;
+    write!(writer, "{}-", meta.level())?;
     let _ = SystemTime.format_time(&mut writer);
     writeln!(writer)?;
-    if let Some(line_number) = meta.line() {
-      write!(writer, "Line: {}", line_number,)?;
-    }
-    let fmt_ctx = { FmtCtx::new(&ctx, event.parent()) };
-    write!(writer, " {}", fmt_ctx)?;
     if let Some(filename) = meta.file() {
-      write!(writer, " {}", filename)?;
+      write!(writer, "{}", filename)?;
     }
-    writeln!(writer)?;
-    ctx.format_fields(writer.by_ref(), event)?;
-    for span in ctx
-      .event_scope()
-      .into_iter()
-      .flat_map(Scope::from_root)
-    {
-      let exts = span.extensions();
-      if let Some(fields) =
-        exts.get::<FormattedFields<N>>()
-      {
-        if !fields.is_empty() {
-          write!(writer, " {}", &fields.fields)?;
-        }
-      }
-    }
-    writeln!(writer)?;
-    Ok(())
-  }
-}
-
-pub struct MiniFormatNoTime;
-impl<S, N> FormatEvent<S, N> for MiniFormatNoTime
-where
-  S: Subscriber + for<'a> LookupSpan<'a>,
-  N: for<'a> FormatFields<'a> + 'static,
-{
-  fn format_event(
-    &self,
-    ctx: &FmtContext<'_, S, N>,
-    mut writer: Writer<'_>,
-    event: &Event<'_>,
-  ) -> Result {
-    let meta = event.metadata();
-    write!(writer, "{}", meta.level())?;
     if let Some(line_number) = meta.line() {
       write!(writer, " Line: {}", line_number,)?;
     }
     let fmt_ctx = { FmtCtx::new(&ctx, event.parent()) };
     write!(writer, " {}", fmt_ctx)?;
-    if let Some(filename) = meta.file() {
-      write!(writer, "{}", filename)?;
-    }
     writeln!(writer)?;
     ctx.format_fields(writer.by_ref(), event)?;
     for span in ctx
