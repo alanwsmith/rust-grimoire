@@ -119,7 +119,7 @@ impl Logger {
     let stderr_layer = match self.stderr {
       Some(level) => {
         let format = tracing_subscriber::fmt::format()
-          .without_time()
+          // .without_time()
           .with_target(false)
           .with_thread_ids(false)
           .with_thread_names(false)

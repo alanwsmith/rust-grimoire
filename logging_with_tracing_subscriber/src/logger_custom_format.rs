@@ -8,6 +8,7 @@ use tracing_subscriber::fmt::FormatFields;
 use tracing_subscriber::fmt::FormattedFields;
 use tracing_subscriber::fmt::format::Writer;
 use tracing_subscriber::fmt::time::FormatTime;
+use tracing_subscriber::fmt::time::SystemTime;
 use tracing_subscriber::registry::LookupSpan;
 use tracing_subscriber::registry::Scope;
 
@@ -19,35 +20,27 @@ where
 {
   fn format_event(
     &self,
-
     ctx: &FmtContext<'_, S, N>,
-
     mut writer: Writer<'_>,
-
     event: &Event<'_>,
   ) -> fmt::Result {
+    // TODO: Figure these out with the different
+    // tracing-log to see what's up with them
     //#[cfg(feature = "tracing-log")]
     // let normalized_meta = event.normalized_metadata();
-
     ////#[cfg(feature = "tracing-log")]
     //let meta = normalized_meta
     //  .as_ref()
     //  .unwrap_or_else(|| event.metadata());
-
     // // #[cfg(not(feature = "tracing-log"))]
-    // let meta = event.metadata();
+    let meta = event.metadata();
 
-    // if the `Format` struct *also* has an ANSI color configuration,
+    //let fmt_level = FmtLevel::new(meta.level());
+    write!(writer, "{} ", meta.level())?;
 
-    // override the writer...the API for configuring ANSI color codes on the
-
-    // `Format` struct is deprecated, but we still need to honor those
-
-    // configurations.
-
-    // if let Some(ansi) = self.ansi {
-    //   writer = writer.with_ansi(ansi);
-    // }
+    let _ = SystemTime.format_time(&mut writer);
+    writeln!(writer);
+    // dbg!(&event);
 
     //    self.format_timestamp(&mut writer)?;
 
@@ -67,6 +60,7 @@ where
     //   };
     //   write!(writer, "{} ", fmt_level)?;
     // }
+    //
 
     // if self.display_thread_name {
     //   let current_thread = std::thread::current();

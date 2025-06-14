@@ -48,6 +48,14 @@ still getting a full set of JSON logs in that directory.
 
 Moved over to using the custon MiniFormat
 
+- Got the core for the MiniFormat by copying the code
+from the ``Format<Compact...`` implementaion from here:
+
+https://docs.rs/tracing-subscriber/latest/src/tracing_subscriber/fmt/format/mod.rs.html#195-207
+
+
+
+
 
 
 -- ref
