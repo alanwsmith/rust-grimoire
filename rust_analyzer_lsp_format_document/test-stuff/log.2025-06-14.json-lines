@@ -1,0 +1,4 @@
+{"timestamp":"2025-06-14T14:21:38.854558Z","level":"INFO","fields":{"message":"Starting LSP Server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:21:38.854758Z","level":"DEBUG","fields":{"message":"Running the server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:22:03.318529Z","level":"INFO","fields":{"message":"Starting LSP Server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:22:03.318731Z","level":"DEBUG","fields":{"message":"Running the server"},"target":"rust_analyzer_lsp_format_document"}

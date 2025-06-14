@@ -1,27 +1,33 @@
 #![allow(clippy::print_stderr)]
-
-use std::error::Error;
-
+use lsp_server::{
+  Connection, ExtractError, Message, Request,
+  RequestId, Response,
+};
 use lsp_types::OneOf;
 use lsp_types::{
   GotoDefinitionResponse, InitializeParams,
   ServerCapabilities, request::GotoDefinition,
 };
-
-use lsp_server::{
-  Connection, ExtractError, Message, Request,
-  RequestId, Response,
-};
+use rust_analyzer_lsp_format_document::logger::Logger;
+use std::error::Error;
+use std::path::PathBuf;
+use tracing::level_filters::LevelFilter;
+use tracing::{Level, event, instrument};
 
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
-  // Note that  we must have our logging only write out to stderr.
-  // eprintln!("starting generic LSP server");
-
-  // Create the transport. Includes the stdio (stdin and stdout) versions but this could
-  // also be implemented to use sockets or HTTP.
+  let _logger_guards = Logger::setup()
+    .to_txt_dir(
+      &PathBuf::from("test-stuff"),
+      LevelFilter::DEBUG,
+    )
+    .to_json_dir(
+      &PathBuf::from("test-stuff"),
+      LevelFilter::DEBUG,
+    )
+    .init();
+  event!(Level::INFO, "Starting LSP Server");
   let (connection, io_threads) = Connection::stdio();
-
-  // Run the server and wait for the two threads to end (typically by trigger LSP Exit event).
+  event!(Level::DEBUG, "Running the server");
   let server_capabilities =
     serde_json::to_value(&ServerCapabilities {
       definition_provider: Some(OneOf::Left(true)),
