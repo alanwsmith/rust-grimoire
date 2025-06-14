@@ -144,7 +144,7 @@ fn main_loop(
 
         match response {
           Some(r) => {
-            event!(Level::INFO, "--- SENDING ---");
+            // event!(Level::INFO, "--- SENDING ---");
             connection
               .sender
               .send(Message::Response(r))?;
