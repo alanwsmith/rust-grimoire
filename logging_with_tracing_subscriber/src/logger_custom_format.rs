@@ -39,7 +39,17 @@ where
     write!(writer, "{} ", meta.level())?;
 
     let _ = SystemTime.format_time(&mut writer);
-    writeln!(writer, "");
+
+    if let Some(line_number) = meta.line() {
+      write!(writer, " Line: {}", line_number,)?;
+    }
+
+    if let Some(filename) = meta.file() {
+      write!(writer, " {}", filename)?;
+    }
+
+    writeln!(writer, "")?;
+
     // write!(writer, "{}", event.parent());
 
     //     FmtCtx::new(&ctx, event.parent())
@@ -126,6 +136,8 @@ where
     //   needs_space = true;
     // }
 
+    // write!(writer, " {}", meta.target())?;
+
     // if self.display_filename {
     //   if let Some(filename) = meta.file() {
     //     if self.display_target {
@@ -159,27 +171,6 @@ where
     //   writer.write_char(' ')?;
     // }
 
-    // ctx.format_fields(writer.by_ref(), event)?;
-
-    // for span in ctx
-    //   .event_scope()
-    //   .into_iter()
-    //   .flat_map(Scope::from_root)
-    // {
-    //   let exts = span.extensions();
-    //   if let Some(fields) =
-    //     exts.get::<FormattedFields<N>>()
-    //   {
-    //     if !fields.is_empty() {
-    //       write!(
-    //         writer,
-    //         " {}",
-    //         dimmed.paint(&fields.fields)
-    //       )?;
-    //     }
-    //   }
-    // }
-
     ctx.format_fields(writer.by_ref(), event)?;
 
     for span in ctx
@@ -188,7 +179,6 @@ where
       .flat_map(Scope::from_root)
     {
       let exts = span.extensions();
-
       if let Some(fields) =
         exts.get::<FormattedFields<N>>()
       {
@@ -197,10 +187,6 @@ where
         }
       }
     }
-
-    //dbg!(&event);
-    //write!(writer, "{}", event.message);
-    //    write!(writer, "HERHEHRHEHRHERHEHRHRHE")?;
     writeln!(writer)
   }
 }
