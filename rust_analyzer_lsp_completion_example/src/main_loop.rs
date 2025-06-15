@@ -1,4 +1,4 @@
-use crate::handlers::completion::completion;
+use crate::handlers::handle_request::handle_request;
 use crate::handlers::text_document_did_change::text_document_did_change;
 use crate::mem_docs::MemDocs;
 use lsp_server::{Connection, Message};
@@ -22,28 +22,7 @@ pub fn main_loop(
         if connection.handle_shutdown(&req)? {
           return Ok(());
         }
-
-        event!(Level::INFO, "Got request: {req:?}");
-        let response = match req.method.as_str() {
-          "textDocument/completion" => completion(&req),
-          _ => {
-            event!(
-              Level::INFO,
-              "Unhandled request type"
-            );
-            None
-          }
-        };
-
-        match response {
-          Some(r) => {
-            connection
-              .sender
-              .send(Message::Response(r))?;
-            continue;
-          }
-          None => (),
-        }
+        handle_request(&req, &connection);
       }
 
       Message::Response(resp) => {
