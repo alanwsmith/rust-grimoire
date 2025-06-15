@@ -3,6 +3,7 @@ use crate::{
   handlers::{
     handle_notification::handle_notification,
     handle_request::handle_request,
+    handle_response::handle_response,
   },
 };
 use lsp_server::{Connection, Message};
@@ -22,19 +23,23 @@ pub fn main_loop(
 
   for msg in &connection.receiver {
     match msg {
-      Message::Request(req) => {
-        if connection.handle_shutdown(&req)? {
+      Message::Request(message) => {
+        if connection.handle_shutdown(&message)? {
           return Ok(());
         }
         handle_request(
-          &req,
+          &message,
           &connection,
           &global_state,
         );
       }
 
-      Message::Response(resp) => {
-        event!(Level::DEBUG, "Got response: {resp:?}");
+      Message::Response(message) => {
+        handle_response(
+          &message,
+          &connection,
+          &global_state,
+        );
       }
 
       Message::Notification(message) => {
