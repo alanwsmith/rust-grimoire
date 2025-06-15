@@ -1,3 +1,4 @@
+use crate::global_state::GlobalState;
 use crate::requests::cast::cast_request;
 use lsp_server::{Request, Response};
 use lsp_types::{
@@ -5,36 +6,39 @@ use lsp_types::{
 };
 use tracing::{Level, event};
 
-use crate::global_state::GlobalState;
-
 pub fn completion(
   message: Request,
   _global_state: &GlobalState,
-) -> Option<Response> {
+) -> Response {
+  let id = message.id.clone();
   match cast_request::<Completion>(message) {
-    _ => (),
+    Ok(params) => {
+      event!(Level::DEBUG, "\n\n{:?}", params);
+      let complection_item = CompletionItem::new_simple(
+        "ping".to_string(),
+        "this is the ping".to_string(),
+      );
+      let completion_list = CompletionList {
+        is_incomplete: false,
+        items: vec![complection_item],
+      };
+      let result = Some(
+        serde_json::to_value(completion_list).unwrap(),
+      );
+      Response {
+        id,
+        result,
+        error: None,
+      }
+    }
+    Err(e) => {
+      event!(Level::ERROR, "\n\n{}", e);
+      Response {
+        id,
+        result: None,
+        // TODO: Figure out what error to send back
+        error: None,
+      }
+    }
   }
-  None
-
-  // event!(
-  //   Level::TRACE,
-  //   "Handle Complestion: {:?}",
-  //   &message
-  // );
-
-  // let complection_item = CompletionItem::new_simple(
-  //   "ping".to_string(),
-  //   "this is the ping".to_string(),
-  // );
-  // let completion_list = CompletionList {
-  //   is_incomplete: true,
-  //   items: vec![complection_item],
-  // };
-  // Some(Response {
-  //   id: message.id.clone(),
-  //   result: Some(
-  //     serde_json::to_value(completion_list).unwrap(),
-  //   ),
-  //   error: None,
-  // })
 }

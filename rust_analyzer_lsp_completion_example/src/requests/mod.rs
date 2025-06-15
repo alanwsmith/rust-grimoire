@@ -18,12 +18,6 @@ pub fn handle_request(
     }
     _ => unknown_request(message),
   };
-
-  match response {
-    Some(r) => {
-      let _ =
-        connection.sender.send(Message::Response(r));
-    }
-    None => (),
-  }
+  let _ =
+    connection.sender.send(Message::Response(response));
 }

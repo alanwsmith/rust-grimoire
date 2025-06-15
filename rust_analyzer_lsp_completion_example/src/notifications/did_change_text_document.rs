@@ -15,7 +15,7 @@ pub fn did_change_text_document(
       event!(
         Level::TRACE,
         "Handle DidChangeTextDocument:\n\n{:?}",
-        params
+        &params
       );
       let uri = params.text_document.uri.to_string();
       let version = params.text_document.version;

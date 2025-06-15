@@ -23,6 +23,14 @@ https://docs.rs/lsp-types/latest/lsp_types/struct.WorkDoneProgressParams.html
 That comes in from https://docs.rs/lsp-types/latest/lsp_types/struct.InitializeParams.html
 which I'm not using at the moment
 
+- If you make a videos, show this page about why you don't
+want to try to build everything yourself:
+
+https://docs.rs/lsp-types/latest/lsp_types/index.html
+
+- CompletionOptions - trigger_characters is how you set up
+to make sure things like "-" create a completion request. 
+
 
 
 -- /notes
