@@ -31,6 +31,7 @@ use tracing_appender::rolling::{
 };
 use tracing_subscriber::prelude::*;
 use rust_analyzer_lsp_completion_example::server_capabilities::*;
+use rust_analyzer_lsp_completion_example::init_logger::*;
 
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
   let _logger_guard = init_logger(&PathBuf::from("."));
@@ -75,26 +76,4 @@ where
   R::Params: serde::de::DeserializeOwned,
 {
   req.extract(R::METHOD)
-}
-
-pub fn init_logger(log_dir: &PathBuf) -> WorkerGuard {
-  let appender = RollingFileAppender::builder()
-    .rotation(Rotation::DAILY)
-    .filename_suffix("log")
-    .max_log_files(2)
-    .build(log_dir)
-    .expect("Could not build tracing appender");
-  let (writer, guard) =
-    tracing_appender::non_blocking(appender);
-  let layer = tracing_subscriber::fmt::Layer::default()
-    .with_ansi(false)
-    .with_writer(writer)
-    .pretty();
-  let subscriber =
-    tracing_subscriber::Registry::default().with(layer);
-  tracing::subscriber::set_global_default(subscriber)
-    .expect(
-      "Could not set tracing subscriber global default",
-    );
-  guard
 }
