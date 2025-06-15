@@ -33,11 +33,17 @@ That's what provides the ``.json()`` output
 ability. You can remove the feature if
 you don't need it. 
 
-
 -- /notes
 
 
+
 -- todo
+
+- make a youtube video of this
+
+- note about using anyhow. you can pick whatever
+you want or just skip doing it as a result 
+if you prefer. 
 
 - talk about the guard. if you drop it, the
 logging goes away

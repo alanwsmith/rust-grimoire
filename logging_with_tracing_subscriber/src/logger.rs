@@ -124,7 +124,7 @@ impl Logger {
           let layer = fmt::Layer::default()
             .event_format(file_layer_format)
             .with_writer(file_writer)
-            .json()
+            .json() // migth be able to remove .json since other format is ready in palce
             .with_filter(*level);
           Some(layer)
         }
