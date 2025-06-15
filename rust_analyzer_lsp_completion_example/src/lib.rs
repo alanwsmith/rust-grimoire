@@ -1,5 +1,6 @@
 pub mod document_data;
 pub mod global_state;
+pub mod helpers;
 pub mod init_logger;
 pub mod main_loop;
 pub mod mem_docs;

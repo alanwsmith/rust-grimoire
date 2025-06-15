@@ -1,7 +1,7 @@
 #[derive(Debug, Clone)]
 pub struct DocumentData {
-  pub(crate) version: i32,
-  pub(crate) data: String,
+  pub version: i32,
+  pub data: String,
 }
 
 impl DocumentData {
