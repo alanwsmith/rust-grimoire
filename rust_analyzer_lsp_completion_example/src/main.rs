@@ -1,35 +1,8 @@
-#![allow(unused)]
-use lsp_server::{
-  Connection, ExtractError, Message, Request,
-  RequestId, Response,
-};
-use lsp_types::notification::{
-  DidChangeTextDocument, Notification,
-};
-use lsp_types::request::Completion;
-use lsp_types::{
-  CompletionItem, CompletionList, OneOf,
-  TextDocumentSyncKind,
-};
-use lsp_types::{
-  GotoDefinitionResponse, InitializeParams,
-  ServerCapabilities, request::GotoDefinition,
-};
-use rust_analyzer_lsp_completion_example::mem_docs::{
-  self, *,
-};
-use rust_analyzer_lsp_completion_example::main_loop::*;
-use serde::de::DeserializeOwned;
-use serde_json::Value;
+use lsp_server::Connection;
 use std::error::Error;
-use std::mem;
 use std::path::PathBuf;
 use tracing::{Level, event};
-use tracing_appender::non_blocking::WorkerGuard;
-use tracing_appender::rolling::{
-  RollingFileAppender, Rotation,
-};
-use tracing_subscriber::prelude::*;
+use rust_analyzer_lsp_completion_example::main_loop::*;
 use rust_analyzer_lsp_completion_example::server_capabilities::*;
 use rust_analyzer_lsp_completion_example::init_logger::*;
 
@@ -48,32 +21,8 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
       return Err(e.into());
     }
   };
-  event!(Level::INFO, "Initilizalized");
   main_loop(connection, initialization_params)?;
   io_threads.join()?;
   event!(Level::INFO, "Shutting down gracefully");
   Ok(())
-}
-
-fn cast_notify<N>(
-  notif: lsp_server::Notification
-) -> Result<
-  N::Params,
-  ExtractError<lsp_server::Notification>,
->
-where
-  N: lsp_types::notification::Notification,
-  N::Params: serde::de::DeserializeOwned,
-{
-  notif.extract(N::METHOD)
-}
-
-fn cast<R>(
-  req: Request
-) -> Result<(RequestId, R::Params), ExtractError<Request>>
-where
-  R: lsp_types::request::Request,
-  R::Params: serde::de::DeserializeOwned,
-{
-  req.extract(R::METHOD)
 }
