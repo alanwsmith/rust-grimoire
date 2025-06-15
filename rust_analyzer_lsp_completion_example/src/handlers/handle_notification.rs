@@ -1,5 +1,6 @@
 use crate::{
-  global_state::GlobalState, handlers::unknown::unknown,
+  global_state::GlobalState,
+  handlers::unknown_notification::unknown_notification,
 };
 use lsp_server::{Connection, Notification};
 
@@ -12,6 +13,6 @@ pub fn handle_notification(
     "textDocument/didChange" => {
       //text_document_did_change(&mut mem_docs, message)
     }
-    _ => unknown(),
+    _ => unknown_notification(&message),
   }
 }
