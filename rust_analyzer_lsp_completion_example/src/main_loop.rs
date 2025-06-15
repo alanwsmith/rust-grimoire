@@ -31,19 +31,11 @@ pub fn main_loop(
       }
 
       Message::Response(message) => {
-        handle_response(
-          &message,
-          &connection,
-          &global_state,
-        );
+        handle_response(&message);
       }
 
       Message::Notification(message) => {
-        handle_notification(
-          &message,
-          &connection,
-          &global_state,
-        );
+        handle_notification(message, &mut global_state);
       }
     }
   }
