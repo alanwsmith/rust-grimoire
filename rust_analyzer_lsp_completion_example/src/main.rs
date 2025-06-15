@@ -3,6 +3,9 @@ use lsp_server::{
   Connection, ExtractError, Message, Request,
   RequestId, Response,
 };
+use lsp_types::notification::{
+  DidChangeTextDocument, Notification,
+};
 use lsp_types::request::Completion;
 use lsp_types::{
   CompletionItem, CompletionList, OneOf,
@@ -233,15 +236,48 @@ fn main_loop(
       }
 
       Message::Notification(notif) => {
-
         // event!(
         //   Level::INFO,
         //   "Got notification: {notif:?}"
         // );
+        match notif.method.as_str() {
+          "textDocument/didChange" => {
+            handle_text_document_did_change(notif)
+
+            //event!(Level::INFO, "got didChange");
+          }
+          _ => {
+            event!(
+              Level::INFO,
+              "{}",
+              notif.method.as_str()
+            );
+          }
+        }
       }
     }
   }
   Ok(())
+}
+
+fn handle_text_document_did_change(
+  notif: lsp_server::Notification
+) {
+  let n = cast_notify::<DidChangeTextDocument>(notif);
+  event!(Level::INFO, "params: {:?}", n);
+}
+
+fn cast_notify<N>(
+  notif: lsp_server::Notification
+) -> Result<
+  N::Params,
+  ExtractError<lsp_server::Notification>,
+>
+where
+  N: lsp_types::notification::Notification,
+  N::Params: serde::de::DeserializeOwned,
+{
+  notif.extract(N::METHOD)
 }
 
 fn cast<R>(
