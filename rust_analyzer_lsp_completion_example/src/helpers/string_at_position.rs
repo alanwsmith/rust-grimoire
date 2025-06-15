@@ -25,10 +25,19 @@ pub fn string_at_position(
     .data;
 
   let lines: Vec<&str> = doc.lines().collect();
-  let characters =
+  let characters: Vec<&str> =
     UnicodeSegmentation::graphemes(lines[line], true)
       .take(character)
-      .collect::<Vec<&str>>();
+      .collect::<Vec<&str>>()
+      .iter()
+      .rev()
+      .take_while(|c| **c != " ")
+      .map(|c| *c)
+      .collect::<Vec<&str>>()
+      .iter()
+      .rev()
+      .map(|c| *c)
+      .collect();
 
   event!(
     Level::DEBUG,
