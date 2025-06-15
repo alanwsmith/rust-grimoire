@@ -8,7 +8,7 @@ use rust_analyzer_lsp_completion_example::init_logger::*;
 
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
   let _logger_guard = init_logger(&PathBuf::from("."));
-  event!(Level::INFO, "Starting generic LSP server");
+  event!(Level::DEBUG, "Starting generic LSP server");
   let (connection, io_threads) = Connection::stdio();
   let initialization_params = match connection
     .initialize(server_capabilities())
@@ -23,6 +23,6 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
   };
   main_loop(connection, initialization_params)?;
   io_threads.join()?;
-  event!(Level::INFO, "Shutting down gracefully");
+  event!(Level::DEBUG, "Shutting down gracefully");
   Ok(())
 }

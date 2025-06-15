@@ -1,6 +1,9 @@
 use crate::{
   global_state::GlobalState,
-  handlers::handle_request::handle_request,
+  handlers::{
+    handle_notification::handle_notification,
+    handle_request::handle_request,
+  },
 };
 use lsp_server::{Connection, Message};
 use lsp_types::InitializeParams;
@@ -11,7 +14,7 @@ pub fn main_loop(
   connection: Connection,
   params: serde_json::Value,
 ) -> Result<(), Box<dyn Error + Sync + Send>> {
-  event!(Level::INFO, "Starting main loop");
+  event!(Level::DEBUG, "Starting main loop");
   let mut global_state = GlobalState::new();
 
   let _params: InitializeParams =
@@ -31,10 +34,16 @@ pub fn main_loop(
       }
 
       Message::Response(resp) => {
-        event!(Level::INFO, "Got response: {resp:?}");
+        event!(Level::DEBUG, "Got response: {resp:?}");
       }
 
-      Message::Notification(notif) => {}
+      Message::Notification(message) => {
+        handle_notification(
+          &message,
+          &connection,
+          &global_state,
+        );
+      }
     }
   }
   Ok(())

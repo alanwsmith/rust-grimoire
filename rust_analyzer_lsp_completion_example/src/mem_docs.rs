@@ -1,12 +1,7 @@
 use crate::document_data::DocumentData;
 use rustc_hash::FxHashMap;
 use std::mem;
-// use vfs::VfsPath;
 
-/// Holds the set of in-memory documents.
-///
-/// For these document, their true contents is maintained by the client. It
-/// might be different from what's on disk.
 #[derive(Default, Clone)]
 pub struct MemDocs {
   mem_docs: FxHashMap<String, DocumentData>,
