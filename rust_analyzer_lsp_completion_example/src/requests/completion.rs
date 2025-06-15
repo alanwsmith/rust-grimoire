@@ -5,7 +5,7 @@ use tracing::{Level, event};
 use crate::global_state::GlobalState;
 
 pub fn completion(
-  req: &Request,
+  message: &Request,
   _global_state: &GlobalState,
 ) -> Option<Response> {
   event!(Level::INFO, "handling completion");
@@ -18,7 +18,7 @@ pub fn completion(
     items: vec![complection_item],
   };
   Some(Response {
-    id: req.id.clone(),
+    id: message.id.clone(),
     result: Some(
       serde_json::to_value(completion_list).unwrap(),
     ),

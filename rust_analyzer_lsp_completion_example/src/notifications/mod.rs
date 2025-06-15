@@ -1,7 +1,7 @@
-use crate::{
-  global_state::GlobalState,
-  handlers::unknown_notification::unknown_notification,
-};
+pub mod unknown;
+
+use crate::global_state::GlobalState;
+use crate::notifications::unknown::unknown_notification;
 use lsp_server::{Connection, Notification};
 
 pub fn handle_notification(

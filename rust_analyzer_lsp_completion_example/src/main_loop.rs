@@ -1,11 +1,7 @@
-use crate::{
-  global_state::GlobalState,
-  handlers::{
-    handle_notification::handle_notification,
-    handle_request::handle_request,
-    handle_response::handle_response,
-  },
-};
+use crate::global_state::GlobalState;
+use crate::notifications::handle_notification;
+use crate::requests::handle_request;
+use crate::responses::handle_response;
 use lsp_server::{Connection, Message};
 use lsp_types::InitializeParams;
 use std::error::Error;
