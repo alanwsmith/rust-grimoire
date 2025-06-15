@@ -20,7 +20,7 @@ pub fn main_loop(
           return Ok(());
         }
         handle_request(
-          &message,
+          message,
           &connection,
           &global_state,
         );

@@ -2,10 +2,10 @@ use lsp_server::{Request, Response};
 use tracing::{Level, event};
 
 pub fn unknown_request(
-  message: &Request
+  message: Request
 ) -> Option<Response> {
   event!(
-    Level::INFO,
+    Level::ERROR,
     "Unknown Request: \n{:?}",
     message
   );

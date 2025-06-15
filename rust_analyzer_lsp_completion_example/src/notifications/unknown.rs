@@ -3,7 +3,7 @@ use tracing::{Level, event};
 
 pub fn unknown_notification(message: &Notification) {
   event!(
-    Level::INFO,
+    Level::ERROR,
     "Unknown Notification\n{:?}",
     message
   );

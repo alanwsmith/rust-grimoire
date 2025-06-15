@@ -3,7 +3,7 @@ use tracing::{Level, event};
 
 pub fn unknown_response(message: &Response) {
   event!(
-    Level::INFO,
+    Level::ERROR,
     "Unknown Response\n{:?}",
     message
   );

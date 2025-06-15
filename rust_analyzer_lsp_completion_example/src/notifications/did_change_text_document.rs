@@ -12,7 +12,11 @@ pub fn did_change_text_document(
 ) {
   match cast_notify::<DidChangeTextDocument>(message) {
     Ok(params) => {
-      event!(Level::DEBUG, "{:?}", params);
+      event!(
+        Level::TRACE,
+        "Handle DidChangeTextDocument:\n\n{:?}",
+        params
+      );
       let uri = params.text_document.uri.to_string();
       let version = params.text_document.version;
       let text =
@@ -20,6 +24,8 @@ pub fn did_change_text_document(
       let doc = DocumentData::new(version, text);
       let _ = global_state.mem_docs.insert(&uri, doc);
     }
-    Err(_e) => (),
+    Err(e) => {
+      event!(Level::ERROR, "{}", e);
+    }
   }
 }
