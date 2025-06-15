@@ -17,6 +17,13 @@ See also: pub(crate) mem_docs: MemDocs,
 - Converted MemDocs from rust analyzer to using
 a string instead of Vfs. 
 
+- Look at this for when work needs to be chopped up
+https://docs.rs/lsp-types/latest/lsp_types/struct.WorkDoneProgressParams.html
+
+That comes in from https://docs.rs/lsp-types/latest/lsp_types/struct.InitializeParams.html
+which I'm not using at the moment
+
+
 
 
 
