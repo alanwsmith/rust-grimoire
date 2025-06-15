@@ -27,7 +27,7 @@ pub fn main_loop(
       }
 
       Message::Response(message) => {
-        handle_response(&message);
+        handle_response(message);
       }
 
       Message::Notification(message) => {
