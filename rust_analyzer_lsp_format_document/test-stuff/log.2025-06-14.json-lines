@@ -130,3 +130,14 @@
 {"timestamp":"2025-06-14T14:48:34.132216Z","level":"DEBUG","fields":{"message":"got notification: Notification { method: \"textDocument/didSave\", params: Object {\"textDocument\": Object {\"uri\": String(\"file:///Users/alan/workshop/rust-grimoire/rust_analyzer_lsp_format_document/test-stuff/alfa.lsptest\")}} }"},"target":"rust_analyzer_lsp_format_document"}
 {"timestamp":"2025-06-14T14:50:06.628174Z","level":"INFO","fields":{"message":"got message: Notification(Notification { method: \"textDocument/didSave\", params: Object {\"textDocument\": Object {\"uri\": String(\"file:///Users/alan/workshop/rust-grimoire/rust_analyzer_lsp_format_document/test-stuff/alfa.lsptest\")}} })"},"target":"rust_analyzer_lsp_format_document"}
 {"timestamp":"2025-06-14T14:50:06.628353Z","level":"DEBUG","fields":{"message":"got notification: Notification { method: \"textDocument/didSave\", params: Object {\"textDocument\": Object {\"uri\": String(\"file:///Users/alan/workshop/rust-grimoire/rust_analyzer_lsp_format_document/test-stuff/alfa.lsptest\")}} }"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:51:01.205642Z","level":"DEBUG","fields":{"message":""},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:51:01.205710Z","level":"INFO","fields":{"message":"Starting LSP Server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:51:01.205873Z","level":"DEBUG","fields":{"message":"Defining server capabilities"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:51:01.206186Z","level":"DEBUG","fields":{"message":"Waiting to initialize"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:53:09.317312Z","level":"DEBUG","fields":{"message":""},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:53:09.317377Z","level":"INFO","fields":{"message":"Starting LSP Server"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:53:09.317534Z","level":"DEBUG","fields":{"message":"Defining server capabilities"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T14:53:09.317898Z","level":"DEBUG","fields":{"message":"Waiting to initialize"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T15:45:50.769409Z","level":"INFO","fields":{"message":"got message: Request(Request { id: RequestId(I32(2)), method: \"shutdown\", params: Null })"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T15:45:50.772004Z","level":"INFO","fields":{"message":"got shutdown request"},"target":"rust_analyzer_lsp_format_document"}
+{"timestamp":"2025-06-14T15:45:50.772402Z","level":"INFO","fields":{"message":"Shutting down LSP server"},"target":"rust_analyzer_lsp_format_document"}

@@ -70,9 +70,10 @@ fn main_loop(
         event!(Level::INFO, "got request: {req:?}");
         match cast::<GotoDefinition>(req) {
           Ok((id, params)) => {
-            // eprintln!(
-            //   "got gotoDefinition request #{id}: {params:?}"
-            // );
+            event!(
+              Level::INFO,
+              "got gotoDefinition: #{id}: {params:?}"
+            );
             let result = Some(
               GotoDefinitionResponse::Array(Vec::new()),
             );
@@ -93,6 +94,7 @@ fn main_loop(
           }
           Err(ExtractError::MethodMismatch(req)) => req,
         };
+
         // ...
       }
       Message::Response(resp) => {
