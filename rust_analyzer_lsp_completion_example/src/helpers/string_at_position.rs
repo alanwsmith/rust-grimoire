@@ -49,5 +49,5 @@ pub fn string_at_position(
     characters.join("")
   );
 
-  Ok("x".to_string())
+  Ok(characters.join("").to_string())
 }

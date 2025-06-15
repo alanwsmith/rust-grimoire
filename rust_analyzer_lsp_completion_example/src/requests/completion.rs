@@ -15,19 +15,15 @@ pub fn completion(
   match cast_request::<Completion>(message) {
     Ok(params) => {
       event!(Level::DEBUG, "\n\n{:?}", &params);
-      let _string = string_at_position(
+      // TODO: Handle this unwrap better
+      let current_string = string_at_position(
         params.1.text_document_position,
         global_state,
-      );
+      )
+      .unwrap();
+      let completion_list =
+        filter_words(&current_string);
 
-      let complection_item = CompletionItem::new_simple(
-        "ping".to_string(),
-        "this is the ping".to_string(),
-      );
-      let completion_list = CompletionList {
-        is_incomplete: true,
-        items: vec![complection_item],
-      };
       let result = Some(
         serde_json::to_value(completion_list).unwrap(),
       );
@@ -47,4 +43,48 @@ pub fn completion(
       }
     }
   }
+}
+
+fn filter_words(input: &str) -> CompletionList {
+  let word_list =
+    vec!["al", "alfa", "bravo", "braavo", "charlie"];
+
+  event!(
+    Level::TRACE,
+    "\n\n==========\n\n{:?}\n\n===========\n\n",
+    input
+  );
+
+  let filtered: Vec<_> = word_list
+    .iter()
+    .filter(|w| w.to_lowercase().starts_with(input))
+    .map(|w| {
+      CompletionItem::new_simple(
+        w.to_string(),
+        format!("This is the {}", w),
+      )
+    })
+    .collect();
+
+  event!(
+    Level::TRACE,
+    "\n\n==========\n\n{:?}\n\n===========\n\n",
+    filtered
+  );
+
+  let completion_list = CompletionList {
+    is_incomplete: filtered.len() > 0,
+    items: filtered,
+  };
+
+  // let complection_item = CompletionItem::new_simple(
+  //   "ping".to_string(),
+  //   "this is the ping".to_string(),
+  // );
+  // let completion_list = CompletionList {
+  //   is_incomplete: true,
+  //   items: vec![complection_item],
+  // };
+
+  completion_list
 }
