@@ -12,9 +12,9 @@ pub fn server_capabilities() -> Value {
           change: Some(
             lsp_types::TextDocumentSyncKind::FULL,
           ),
-          open_close: Some(false),
-          will_save: Some(false),
-          will_save_wait_until: Some(false),
+          open_close: None,
+          will_save: None,
+          will_save_wait_until: None,
           save: None,
         },
       ),
@@ -29,7 +29,3 @@ pub fn server_capabilities() -> Value {
   })
   .expect("Could not set up server capabilities")
 }
-
-// lsp_types::TextDocumentSyncCapability::Kind(
-//   TextDocumentSyncKind::FULL,
-// ),
