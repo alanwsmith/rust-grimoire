@@ -4,10 +4,6 @@ use tracing::{Level, event};
 pub fn unknown_request(
   message: Request
 ) -> Option<Response> {
-  event!(
-    Level::ERROR,
-    "Unknown Request: \n{:?}",
-    message
-  );
+  event!(Level::ERROR, "\n\n{:?}", message);
   None
 }
