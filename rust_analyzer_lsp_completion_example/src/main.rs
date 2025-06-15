@@ -19,7 +19,6 @@ use rust_analyzer_lsp_completion_example::mem_docs::{
   self, *,
 };
 use rust_analyzer_lsp_completion_example::main_loop::*;
-use rust_analyzer_lsp_completion_example::handle_completion::*;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
 use std::error::Error;

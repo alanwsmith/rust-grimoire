@@ -1,5 +1,5 @@
 #![allow(unused)]
-use crate::handle_completion::*;
+use crate::request_handlers::completion::handle_completion;
 use crate::mem_docs::{self, *};
 use crate::notification_handlers::text_document_did_change::*;
 use lsp_server::{

@@ -1,7 +1,7 @@
 #![allow(unused)]
-use crate::handle_completion::*;
 use crate::main_loop::*;
 use crate::mem_docs::{self, *};
+use crate::request_handlers::completion::handle_completion;
 use crate::server_capabilities::*;
 use lsp_server::{
   Connection, ExtractError, Message, Request,

@@ -1,6 +1,5 @@
 #![allow(unused)]
 use crate::casts::*;
-use crate::handle_completion::*;
 use crate::mem_docs::{self, *};
 use lsp_server::{
   Connection, ExtractError, Message, Request,

@@ -1,6 +1,5 @@
 pub mod casts;
 pub mod global_state;
-pub mod handle_completion;
 pub mod main_loop;
 pub mod mem_docs;
 pub mod notification_handlers;
