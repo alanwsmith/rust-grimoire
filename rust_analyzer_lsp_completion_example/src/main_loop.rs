@@ -1,6 +1,6 @@
+use crate::handlers::completion::completion;
 use crate::handlers::text_document_did_change::text_document_did_change;
 use crate::mem_docs::MemDocs;
-use crate::request_handlers::completion::handle_completion;
 use lsp_server::{Connection, Message};
 use lsp_types::InitializeParams;
 use std::error::Error;
@@ -25,9 +25,7 @@ pub fn main_loop(
 
         event!(Level::INFO, "Got request: {req:?}");
         let response = match req.method.as_str() {
-          "textDocument/completion" => {
-            handle_completion(&req)
-          }
+          "textDocument/completion" => completion(&req),
           _ => {
             event!(
               Level::INFO,

@@ -1,5 +1,5 @@
 use crate::casts::*;
-use crate::mem_docs::DocumentData;
+use crate::document_data::DocumentData;
 use crate::mem_docs::MemDocs;
 use lsp_types::notification::DidChangeTextDocument;
 // use tracing::{Level, event};

@@ -1,5 +1,4 @@
-//! In-memory document information.
-
+use crate::document_data::DocumentData;
 use rustc_hash::FxHashMap;
 use std::mem;
 // use vfs::VfsPath;
@@ -67,26 +66,5 @@ impl MemDocs {
 
   pub fn take_changes(&mut self) -> bool {
     mem::replace(&mut self.added_or_removed, false)
-  }
-}
-
-/// Information about a document that the Language Client
-/// knows about.
-/// Its lifetime is driven by the textDocument/didOpen and textDocument/didClose
-/// client notifications.
-#[derive(Debug, Clone)]
-pub struct DocumentData {
-  pub(crate) version: i32,
-  // pub(crate) data: Vec<u8>,
-  pub(crate) data: String,
-}
-
-impl DocumentData {
-  pub fn new(
-    version: i32,
-    //data: Vec<u8>,
-    data: String,
-  ) -> Self {
-    DocumentData { version, data }
   }
 }
