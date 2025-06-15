@@ -2,7 +2,12 @@ use lsp_server::{Request, Response};
 use lsp_types::{CompletionItem, CompletionList};
 use tracing::{Level, event};
 
-pub fn completion(req: &Request) -> Option<Response> {
+use crate::global_state::GlobalState;
+
+pub fn completion(
+  req: &Request,
+  _global_state: &GlobalState,
+) -> Option<Response> {
   event!(Level::INFO, "handling completion");
   let complection_item = CompletionItem::new_simple(
     "ping".to_string(),
