@@ -1,8 +1,0 @@
-#!/bin/bash
-
-cargo watch -c \
-  -x 'test solo -- --nocapture' \
-  -x 'test -- --nocapture' \
-  -x 'run'
-
-

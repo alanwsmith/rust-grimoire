@@ -1,5 +1,5 @@
 [package]
-name = "rust_analyzer_lsp_completion_example"
+name = "rust_analyzer_lsp_example"
 version = "0.1.0"
 edition = "2024"
 

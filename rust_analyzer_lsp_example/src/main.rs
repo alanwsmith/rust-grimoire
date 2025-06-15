@@ -1,10 +1,10 @@
 use lsp_server::Connection;
+use rust_analyzer_lsp_example::init_logger::*;
+use rust_analyzer_lsp_example::main_loop::*;
+use rust_analyzer_lsp_example::server_capabilities::*;
 use std::error::Error;
 use std::path::PathBuf;
 use tracing::{Level, event};
-use rust_analyzer_lsp_completion_example::main_loop::*;
-use rust_analyzer_lsp_completion_example::server_capabilities::*;
-use rust_analyzer_lsp_completion_example::init_logger::*;
 
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
   let _logger_guard = init_logger(&PathBuf::from("."));
