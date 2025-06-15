@@ -21,6 +21,7 @@ use rust_analyzer_lsp_completion_example::mem_docs::{
 use serde::de::DeserializeOwned;
 use serde_json::Value;
 use std::error::Error;
+use std::mem;
 use std::path::PathBuf;
 use tracing::{Level, event};
 use tracing_appender::non_blocking::WorkerGuard;
@@ -110,7 +111,7 @@ fn handle_completion(
     "this is the ping".to_string(),
   );
   let completion_list = CompletionList {
-    is_incomplete: false,
+    is_incomplete: true,
     items: vec![complection_item],
   };
   Some(Response {
@@ -126,7 +127,7 @@ fn main_loop(
   connection: Connection,
   params: serde_json::Value,
 ) -> Result<(), Box<dyn Error + Sync + Send>> {
-  let mem_docs = mem_docs::MemDocs::default();
+  let mut mem_docs = mem_docs::MemDocs::default();
 
   event!(Level::INFO, "Starting main loop");
 
@@ -242,7 +243,10 @@ fn main_loop(
         // );
         match notif.method.as_str() {
           "textDocument/didChange" => {
-            handle_text_document_did_change(notif)
+            handle_text_document_did_change(
+              &mut mem_docs,
+              notif,
+            )
 
             //event!(Level::INFO, "got didChange");
           }
@@ -261,10 +265,21 @@ fn main_loop(
 }
 
 fn handle_text_document_did_change(
-  notif: lsp_server::Notification
+  mem_docs: &mut MemDocs,
+  notif: lsp_server::Notification,
 ) {
-  let n = cast_notify::<DidChangeTextDocument>(notif);
-  event!(Level::INFO, "params: {:?}", n);
+  match cast_notify::<DidChangeTextDocument>(notif) {
+    Ok(params) => {
+      event!(Level::INFO, "{:?}", params);
+      let uri = params.text_document.uri.to_string();
+      let version = params.text_document.version;
+      let text =
+        params.content_changes[0].text.to_string();
+      mem_docs
+        .insert(&uri, DocumentData::new(version, text));
+    }
+    Err(e) => (),
+  }
 }
 
 fn cast_notify<N>(
