@@ -18,6 +18,8 @@ use lsp_types::{
 use rust_analyzer_lsp_completion_example::mem_docs::{
   self, *,
 };
+use rust_analyzer_lsp_completion_example::main_loop::*;
+use rust_analyzer_lsp_completion_example::handle_completion::*;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
 use std::error::Error;
@@ -29,15 +31,12 @@ use tracing_appender::rolling::{
   RollingFileAppender, Rotation,
 };
 use tracing_subscriber::prelude::*;
+use rust_analyzer_lsp_completion_example::server_capabilities::*;
 
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
   let _logger_guard = init_logger(&PathBuf::from("."));
   event!(Level::INFO, "Starting generic LSP server");
-
-  event!(Level::INFO, "Creating stdio transport");
   let (connection, io_threads) = Connection::stdio();
-
-  event!(Level::INFO, "Waiting on initilization");
   let initialization_params = match connection
     .initialize(server_capabilities())
   {
@@ -49,237 +48,11 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
       return Err(e.into());
     }
   };
-
+  event!(Level::INFO, "Initilizalized");
   main_loop(connection, initialization_params)?;
   io_threads.join()?;
-
   event!(Level::INFO, "Shutting down gracefully");
   Ok(())
-}
-
-fn server_capabilities() -> Value {
-  event!(Level::INFO, "Defining server capabilities");
-  serde_json::to_value(&ServerCapabilities {
-    text_document_sync: Some(
-      lsp_types::TextDocumentSyncCapability::Kind(
-        TextDocumentSyncKind::FULL,
-      ),
-    ),
-    completion_provider: Some(
-      lsp_types::CompletionOptions {
-        ..Default::default()
-      },
-    ),
-    ..Default::default()
-  })
-  .expect("Could not set up server capabilities")
-}
-
-// match cast::<GotoDefinition>(req) {
-//   Ok((id, params)) => {
-//     event!(
-//       Level::INFO,
-//       "Request ID #{id} - Params {params:?}"
-//     );
-//     let result = Some(
-//       GotoDefinitionResponse::Array(Vec::new()),
-//     );
-//     let result =
-//       serde_json::to_value(&result).unwrap();
-//     let resp = Response {
-//       id,
-//       result: Some(result),
-//       error: None,
-//     };
-//     connection
-//       .sender
-//       .send(Message::Response(resp))?;
-//     continue;
-//   }
-//   Err(err @ ExtractError::JsonError { .. }) => {
-//     panic!("{err:?}")
-//   }
-//   Err(ExtractError::MethodMismatch(req)) => req,
-// };
-
-fn handle_completion(
-  req: &Request
-) -> Option<Response> {
-  event!(Level::INFO, "handling completion");
-  let complection_item = CompletionItem::new_simple(
-    "ping".to_string(),
-    "this is the ping".to_string(),
-  );
-  let completion_list = CompletionList {
-    is_incomplete: true,
-    items: vec![complection_item],
-  };
-  Some(Response {
-    id: req.id.clone(),
-    result: Some(
-      serde_json::to_value(completion_list).unwrap(),
-    ),
-    error: None,
-  })
-}
-
-fn main_loop(
-  connection: Connection,
-  params: serde_json::Value,
-) -> Result<(), Box<dyn Error + Sync + Send>> {
-  let mut mem_docs = mem_docs::MemDocs::default();
-
-  event!(Level::INFO, "Starting main loop");
-
-  let _params: InitializeParams =
-    serde_json::from_value(params).unwrap();
-
-  for msg in &connection.receiver {
-    // event!(Level::INFO, "Got message: {msg:?}");
-
-    match msg {
-      Message::Request(req) => {
-        if connection.handle_shutdown(&req)? {
-          return Ok(());
-        }
-
-        event!(Level::INFO, "Got request: {req:?}");
-        let response = match req.method.as_str() {
-          "textDocument/completion" => {
-            handle_completion(&req)
-          }
-          _ => {
-            event!(
-              Level::INFO,
-              "Unhandled request type"
-            );
-            None
-          }
-        };
-
-        match response {
-          Some(r) => {
-            // event!(Level::INFO, "--- SENDING ---");
-            connection
-              .sender
-              .send(Message::Response(r))?;
-            continue;
-          }
-          None => (),
-        }
-
-        // let x = match req.extract()
-
-        // event!(
-        //   Level::INFO,
-        //   "method: {0:?}",
-        //   req.extract::<Result<
-        //     RequestId,
-        //     lsp_types::request::Request::Params,
-        //   >>(
-        //     // serde::de::DeserializeOwned
-        //     lsp_types::request::Request::METHOD
-        //   )
-        // );
-
-        //dbg!(req.method);
-
-        // event!(Level::INFO, "Got request: {req:?}");
-        // match req {
-        // }
-
-        // match cast::<Completion>(req) {
-        //   Ok((id, params)) => {
-        //     event!(
-        //       Level::INFO,
-        //       "Completion request ID #{id} - Params {params:?}"
-        //     );
-        //     continue;
-        //   }
-        //   Err(err @ ExtractError::JsonError { .. }) => {
-        //     panic!("{err:?}")
-        //   }
-        //   Err(ExtractError::MethodMismatch(req)) => req,
-        // };
-
-        // match cast::<GotoDefinition>(req) {
-        //   Ok((id, params)) => {
-        //     event!(
-        //       Level::INFO,
-        //       "Request ID #{id} - Params {params:?}"
-        //     );
-        //     let result = Some(
-        //       GotoDefinitionResponse::Array(Vec::new()),
-        //     );
-        //     let result =
-        //       serde_json::to_value(&result).unwrap();
-        //     let resp = Response {
-        //       id,
-        //       result: Some(result),
-        //       error: None,
-        //     };
-        //     connection
-        //       .sender
-        //       .send(Message::Response(resp))?;
-        //     continue;
-        //   }
-        //   Err(err @ ExtractError::JsonError { .. }) => {
-        //     panic!("{err:?}")
-        //   }
-        //   Err(ExtractError::MethodMismatch(req)) => req,
-        // };
-
-        // ...
-      }
-
-      Message::Response(resp) => {
-        event!(Level::INFO, "Got response: {resp:?}");
-      }
-
-      Message::Notification(notif) => {
-        // event!(
-        //   Level::INFO,
-        //   "Got notification: {notif:?}"
-        // );
-        match notif.method.as_str() {
-          "textDocument/didChange" => {
-            handle_text_document_did_change(
-              &mut mem_docs,
-              notif,
-            )
-
-            //event!(Level::INFO, "got didChange");
-          }
-          _ => {
-            event!(
-              Level::INFO,
-              "{}",
-              notif.method.as_str()
-            );
-          }
-        }
-      }
-    }
-  }
-  Ok(())
-}
-
-fn handle_text_document_did_change(
-  mem_docs: &mut MemDocs,
-  notif: lsp_server::Notification,
-) {
-  match cast_notify::<DidChangeTextDocument>(notif) {
-    Ok(params) => {
-      event!(Level::INFO, "{:?}", params);
-      let uri = params.text_document.uri.to_string();
-      let version = params.text_document.version;
-      let text =
-        params.content_changes[0].text.to_string();
-      mem_docs
-        .insert(&uri, DocumentData::new(version, text));
-    }
-    Err(e) => (),
-  }
 }
 
 fn cast_notify<N>(
