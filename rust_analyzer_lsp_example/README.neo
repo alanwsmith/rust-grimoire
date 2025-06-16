@@ -1,18 +1,144 @@
 -- title
 
-Rust LSP Server Completion Example
+Rust LSP Server Scaffolding 
 
-A basic LSP server built powered by the code
-from rust_analyzer. It has two baisc examples:
+-- h2
+
+Introduction
+
+This project sets up the basic scaffolding for 
+an LSP server. The foundation is built off 
+the LSP server from rust_analyzer. 
+
+All you have to do is wire up functions 
+to provide your specific functionality. 
+
+
+-- h2
+
+Overview 
+
+-- list
+
+- Accepts incoming requests, notifications, 
+and responses. 
+
+- Accepts ``textDocument/didChange`` 
+notifications. File content sent from the 
+notifications is stored for later use. 
+
+This is the key feature of the 
+scaffolding. (Requests for things like
+formatting don't include the contents
+of the file. Those features can't
+be implemented without a saved
+copy of the file content.)
+
+- Provides a ``textDocument/completion``
+request example. It uses the stored file
+contents to provide auto complete
+responses. 
+
+- Provides a ``textDocument/formatting``
+example. It uses the stored file
+content to provide a formatted 
+version of the file on request. 
+
+
+-- p
+
+The examples are super basic. The
+auto complete only does a few words. 
+All the formatting does is add dots
+to the start of each line. 
+
+Their goal isn't to provide an example
+of __what__ to do. They're designed
+to show __how__ to do it. 
+
+
+-- h2
+
+Changing Functionality
+
+The auto-completion and formatting functionality
+come from:
+
+<<path|src/requests/completion.rs>>
+
+and
+
+<<path|src/requests/formatting.rs>>
+
+Update those files to adjust the 
+their functionality. 
+
+-- h2
+
+Adding Functionality
+
+To add a feature:
 
 -- olist
 
-1. Code Completion
+1. Find the capabilty you want to add on
+the [[ServerCapabilities|
+https://docs.rs/lsp-types/latest/lsp_types/struct.ServerCapabilities.html]] list. 
 
-2. Document formatting
+
+2. Add the field for the capability to
+those already in <<path|src/server_capabilities.rs>>
+along with its options.
+
+For example, ``color_provider`` whose options
+[[are here|
+https://docs.rs/lsp-types/latest/lsp_types/enum.ColorProviderCapability.html]]
 
 
--- notes/
+3. Look up the correspoding module enum on either
+the:
+
+[[notification page|
+https://docs.rs/lsp-types/latest/lsp_types/notification/index.html]]
+
+or, the
+
+[[request page|
+https://docs.rs/lsp-types/latest/lsp_types/request/index.html]]
+
+
+4. Go to the page for your specific enum and find its 
+``METHOD`` in the __Trait Implementations__ section. 
+
+For example, the ``METHOD`` for ``ColorPresentationRequest``
+is:
+
+textDocument/colorPresentation
+
+on [[this page|
+https://docs.rs/lsp-types/latest/lsp_types/request/enum.ColorPresentationRequest.html]]
+
+
+5. Add the METHOD string as a new match arm
+pointing to a new function in the appropriate
+file for a Notification, Request, or Response:
+
+<<path|src/notifications/mod.rs>>
+
+<<path|src/requests/mod.rs>>
+
+<<path|src/responses/mod.rs>>
+
+
+6. Implement the new function. 
+
+
+-- h2
+
+Notes
+
+
+-- list
 
 - This project is based off [[this example|
 https://github.com/rust-lang/rust-analyzer/blob/master/lib/lsp-server/examples/goto_def.rs]].
@@ -24,14 +150,23 @@ Completion and Formatting instead.
 That caused me issues. I went to a basic hashmap to
 hold the content for the documents. 
 
+- The original code stores file contents in a ``Vec<u8>``. 
+I'm using a string instead. 
+
+- I'm using [[unicode_segmentation|
+https://docs.rs/unicode-segmentation/latest/unicode_segmentation/index.html]]
+to get __graphemes__ to do character counting. That's based
+on some prior work. One TODO is to add tests to verify
+that's the proper approach here. 
+
 - This is set up to send the full contents of the file
-to the LSP server on every chanage. Setting up to 
+to the LSP server on every change. Setting up to 
 send only file changes is out of scope for this example. 
 
 - This example doesn't make use of any of the work in progress
 tokens. They are out of scope for this example. 
 
-- There's ton stuff that's avaialbe with LSPs. For 
+- There's ton stuff that's available with LSP servers. For 
 examples, check out:
 
 [[The Language Server Protocol home page|
@@ -42,18 +177,17 @@ and
 [[The Rust lsp_types crate|
 https://docs.rs/lsp-types/latest/lsp_types/index.html]]
 
-- The example sets up to trigger complections that
-start with "-". The example shows "-- test" which will
-completed from the dahses. It drops the complection
+- The example sets up to trigger completions that
+start with "-". 
+
+The example shows "-- test" which will
+completed from the dashes. It drops the completion
 at the space between "--" and "test". Dealing
 with that is outside the scope of this example.
 
 - This isn't set up for unsaved files. It expects everything
 to have a URI. 
 
-
-
--- /notes
 
 
 
