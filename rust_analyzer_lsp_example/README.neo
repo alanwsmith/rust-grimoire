@@ -2,34 +2,51 @@
 
 Rust LSP Server Completion Example
 
+A basic LSP server built powered by the code
+from rust_analyzer. It has two baisc examples:
+
+-- olist
+
+1. Code Completion
+
+2. Document formatting
+
+
 -- notes/
 
-- Based of [[this example|https://github.com/rust-lang/rust-analyzer/blob/master/lib/lsp-server/examples/goto_def.rs]]
-but provides complethion which is easier to see
-for testing. 
+- This project is based off [[this example|
+https://github.com/rust-lang/rust-analyzer/blob/master/lib/lsp-server/examples/goto_def.rs]].
 
-- Look at ``handle_did_change_text_document`` in 
-<<path|crates/rust-analyzer/src/handlers/notifications.rs>> for
-an example of how they work with text documents. 
+That one only does "GotoDefinition". This one provides
+Completion and Formatting instead. 
 
-See also: pub(crate) mem_docs: MemDocs,
+- The original code uses Vfs for a virtual file system. 
+That caused me issues. I went to a basic hashmap to
+hold the content for the documents. 
 
-- Converted MemDocs from rust analyzer to using
-a string instead of Vfs. 
+- This is set up to send the full contents of the file
+to the LSP server on every chanage. Setting up to 
+send only file changes is out of scope for this example. 
 
-- Look at this for when work needs to be chopped up
-https://docs.rs/lsp-types/latest/lsp_types/struct.WorkDoneProgressParams.html
+- This example doesn't make use of any of the work in progress
+tokens. They are out of scope for this example. 
 
-That comes in from https://docs.rs/lsp-types/latest/lsp_types/struct.InitializeParams.html
-which I'm not using at the moment
+- There's ton stuff that's avaialbe with LSPs. For 
+examples, check out:
 
-- If you make a videos, show this page about why you don't
-want to try to build everything yourself:
+[[The Language Server Protocol home page|
+https://microsoft.github.io/language-server-protocol/]]
 
-https://docs.rs/lsp-types/latest/lsp_types/index.html
+and
 
-- CompletionOptions - trigger_characters is how you set up
-to make sure things like "-" create a completion request. 
+[[The Rust lsp_types crate|
+https://docs.rs/lsp-types/latest/lsp_types/index.html]]
+
+- The example sets up to trigger complections that
+start with "-". The example shows "-- test" which will
+completed from the dahses. It drops the complection
+at the space between "--" and "test". Dealing
+with that is outside the scope of this example.
 
 - This isn't set up for unsaved files. It expects everything
 to have a URI. 
