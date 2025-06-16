@@ -50,8 +50,10 @@ pub fn completion(
 // the `word_list` that matches the current
 // input
 fn filter_words(input: &str) -> CompletionList {
-  let word_list =
-    vec!["-- test", "al", "alfa", "bravo", "braavo", "charlie"];
+  let word_list = vec![
+    "-- test", "al", "alfa", "bravo", "braavo",
+    "charlie",
+  ];
 
   let filtered: Vec<_> = word_list
     .iter()
