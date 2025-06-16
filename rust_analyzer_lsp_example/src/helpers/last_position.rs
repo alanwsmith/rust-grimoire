@@ -1,9 +1,7 @@
 use anyhow::{Result, anyhow};
 use unicode_segmentation::UnicodeSegmentation;
 
-pub fn last_position(
-  text: &str
-) -> Result<(usize, usize)> {
+pub fn last_position(text: &str) -> Result<(u32, u32)> {
   // Add a newline because .lines removes it.
   let check_text = format!("{}\n", text);
   let lines: Vec<&str> = check_text.lines().collect();
@@ -15,5 +13,5 @@ pub fn last_position(
     .graphemes(true)
     .collect::<Vec<&str>>()
     .len();
-  Ok((line_count, last_char))
+  Ok((line_count as u32, last_char as u32))
 }
