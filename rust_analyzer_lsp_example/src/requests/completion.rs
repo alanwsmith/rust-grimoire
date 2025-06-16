@@ -14,7 +14,7 @@ pub fn completion(
   let id = message.id.clone();
   match cast_request::<Completion>(message) {
     Ok(params) => {
-      event!(Level::DEBUG, "\n\n{:?}", &params);
+      event!(Level::TRACE, "{:?}", &params);
       // TODO: Handle this unwrap better
       let current_string = string_at_position(
         params.1.text_document_position,
@@ -34,7 +34,7 @@ pub fn completion(
       }
     }
     Err(e) => {
-      event!(Level::ERROR, "\n\n{}", e);
+      event!(Level::ERROR, "{}", e);
       Response {
         id,
         result: None,
@@ -45,15 +45,13 @@ pub fn completion(
   }
 }
 
+// This is just a simple filter to provide
+// a working example. It sends back any of
+// the `word_list` that matches the current
+// input
 fn filter_words(input: &str) -> CompletionList {
   let word_list =
     vec!["al", "alfa", "bravo", "braavo", "charlie"];
-
-  event!(
-    Level::TRACE,
-    "\n\n==========\n\n{:?}\n\n===========\n\n",
-    input
-  );
 
   let filtered: Vec<_> = word_list
     .iter()
@@ -66,15 +64,8 @@ fn filter_words(input: &str) -> CompletionList {
     })
     .collect();
 
-  event!(
-    Level::TRACE,
-    "\n\n==========\n\n{:?}\n\n===========\n\n",
-    filtered
-  );
-
-  let completion_list = CompletionList {
+  CompletionList {
     is_incomplete: filtered.len() > 0,
     items: filtered,
-  };
-  completion_list
+  }
 }

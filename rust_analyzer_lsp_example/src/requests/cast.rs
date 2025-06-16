@@ -1,5 +1,7 @@
 use lsp_server::{ExtractError, Request, RequestId};
 
+// Convert to a rust struct/enum
+//
 pub fn cast_request<R>(
   req: Request
 ) -> Result<(RequestId, R::Params), ExtractError<Request>>

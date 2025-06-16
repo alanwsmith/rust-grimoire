@@ -2,6 +2,11 @@ use crate::document_data::DocumentData;
 use rustc_hash::FxHashMap;
 use std::mem;
 
+// This is pretty much a straight copy from
+// the rust_analyzer code:
+//
+// https://github.com/rust-lang/rust-analyzer/tree/master/crates/rust-analyzer/src
+
 #[derive(Default, Clone)]
 pub struct MemDocs {
   mem_docs: FxHashMap<String, DocumentData>,

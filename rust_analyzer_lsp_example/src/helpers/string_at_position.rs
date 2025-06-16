@@ -1,8 +1,10 @@
 use crate::global_state::GlobalState;
 use anyhow::{Result, anyhow};
 use lsp_types::TextDocumentPositionParams;
-use tracing::{Level, event};
 use unicode_segmentation::UnicodeSegmentation;
+
+// starts and the given position and finds
+// all preceding characters until a space.
 
 pub fn string_at_position(
   text_document_position_params: TextDocumentPositionParams,
@@ -17,13 +19,11 @@ pub fn string_at_position(
   let character = text_document_position_params
     .position
     .character as usize;
-
   let doc = &global_state
     .mem_docs
     .get(&uri)
     .ok_or(anyhow!("could not get do"))?
     .data;
-
   let lines: Vec<&str> = doc.lines().collect();
   let characters: Vec<&str> =
     UnicodeSegmentation::graphemes(lines[line], true)
@@ -38,16 +38,5 @@ pub fn string_at_position(
       .rev()
       .map(|c| *c)
       .collect();
-
-  event!(
-    Level::DEBUG,
-    "\n----------------------------\n\n{} - {} - {}\n\n{}\n\n{}\n\n---------------------------",
-    line,
-    character,
-    uri.to_string(),
-    lines[line],
-    characters.join("")
-  );
-
   Ok(characters.join("").to_string())
 }

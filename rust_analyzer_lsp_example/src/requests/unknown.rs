@@ -2,7 +2,7 @@ use lsp_server::{Request, Response};
 use tracing::{Level, event};
 
 pub fn unknown_request(message: Request) -> Response {
-  event!(Level::ERROR, "\n\n{:?}", message);
+  event!(Level::ERROR, "{:?}", message);
   Response {
     id: message.id,
     result: None,

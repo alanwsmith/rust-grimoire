@@ -1,6 +1,11 @@
 use anyhow::{Result, anyhow};
 use unicode_segmentation::UnicodeSegmentation;
 
+// Returns the line and character number of the
+// last character in the text input.
+//
+// Uses graphemes to handle unicode stuff.
+
 pub fn last_position(text: &str) -> Result<(u32, u32)> {
   // Add a newline because .lines removes it.
   let check_text = format!("{}\n", text);

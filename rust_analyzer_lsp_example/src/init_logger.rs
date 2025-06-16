@@ -8,7 +8,7 @@ use tracing_subscriber::prelude::*;
 pub fn init_logger(log_dir: &PathBuf) -> WorkerGuard {
   let appender = RollingFileAppender::builder()
     .rotation(Rotation::DAILY)
-    .filename_suffix("log")
+    .filename_suffix("json-lines")
     .max_log_files(2)
     .build(log_dir)
     .expect("Could not build tracing appender");
@@ -17,7 +17,7 @@ pub fn init_logger(log_dir: &PathBuf) -> WorkerGuard {
   let layer = tracing_subscriber::fmt::Layer::default()
     .with_ansi(false)
     .with_writer(writer)
-    .pretty();
+    .json();
   let subscriber =
     tracing_subscriber::Registry::default().with(layer);
   tracing::subscriber::set_global_default(subscriber)

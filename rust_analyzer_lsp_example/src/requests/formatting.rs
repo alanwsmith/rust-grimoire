@@ -14,6 +14,7 @@ pub fn formatting(
   let id = message.id.clone();
   match cast_request::<Formatting>(message) {
     Ok(params) => {
+      event!(Level::TRACE, "{:?}", &params);
       let uri = params.1.text_document.uri.to_string();
       let initial_text =
         &global_state.mem_docs.get(&uri).unwrap().data;
@@ -46,7 +47,7 @@ pub fn formatting(
       }
     }
     Err(e) => {
-      event!(Level::ERROR, "\n\n{}", e);
+      event!(Level::ERROR, "{}", e);
       Response {
         id,
         result: None,
@@ -57,6 +58,9 @@ pub fn formatting(
   }
 }
 
+// This is just a basic function to provide a
+// working example. It adds a "." at the start
+// of any line that doesn't have one.
 fn formatted_text(initial_text: &str) -> String {
   initial_text
     .lines()

@@ -119,6 +119,17 @@ https://docs.rs/lsp-server/latest/lsp_server/struct.Request.html#structfield.met
 https://docs.rs/lsp-server/latest/lsp_server/struct.Request.html#method.extract
 https://docs.rs/lsp-types/latest/lsp_types/struct.ServerCapabilities.html#structfield.document_formatting_provider
 
+https://docs.rs/lsp-types/latest/lsp_types/struct.TextEdit.html
+https://docs.rs/lsp-types/latest/lsp_types/struct.Range.html
+
+
+
+https://docs.rs/lsp-types/latest/lsp_types/struct.Position.html
+https://docs.rs/tracing/latest/tracing/
+
+https://docs.rs/lsp-server/latest/lsp_server/
+
+https://docs.rs/lsp-types/latest/lsp_types/struct.ServerCapabilities.html
 
 
 
