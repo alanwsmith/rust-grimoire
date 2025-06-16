@@ -1,9 +1,11 @@
 pub mod cast;
 pub mod completion;
+pub mod formatting;
 pub mod unknown;
 
 use crate::global_state::GlobalState;
 use crate::requests::completion::completion;
+use crate::requests::formatting::formatting;
 use crate::requests::unknown::unknown_request;
 use lsp_server::{Connection, Message};
 
@@ -15,6 +17,9 @@ pub fn handle_request(
   let response = match message.method.as_str() {
     "textDocument/completion" => {
       completion(message, &global_state)
+    }
+    "textDocument/formatting" => {
+      formatting(message, &global_state)
     }
     _ => unknown_request(message),
   };

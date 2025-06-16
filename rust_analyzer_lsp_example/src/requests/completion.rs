@@ -76,15 +76,5 @@ fn filter_words(input: &str) -> CompletionList {
     is_incomplete: filtered.len() > 0,
     items: filtered,
   };
-
-  // let complection_item = CompletionItem::new_simple(
-  //   "ping".to_string(),
-  //   "this is the ping".to_string(),
-  // );
-  // let completion_list = CompletionList {
-  //   is_incomplete: true,
-  //   items: vec![complection_item],
-  // };
-
   completion_list
 }

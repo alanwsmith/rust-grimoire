@@ -31,9 +31,95 @@ https://docs.rs/lsp-types/latest/lsp_types/index.html
 - CompletionOptions - trigger_characters is how you set up
 to make sure things like "-" create a completion request. 
 
+- This isn't set up for unsaved files. It expects everything
+to have a URI. 
+
 
 
 -- /notes
+
+-- pre
+-- title: References
+
+https://docs.rs/unicode-segmentation/latest/unicode_segmentation/trait.UnicodeSegmentation.html#tymethod.graphemes
+
+https://docs.rs/lsp-types/latest/lsp_types/all.html
+
+https://docs.rs/lsp-types/latest/lsp_types/request/enum.Completion.html
+
+
+https://docs.rs/lsp-types/latest/lsp_types/struct.ServerCapabilities.html#structfield.type_definition_provider
+https://docs.rs/lsp-types/latest/lsp_types/enum.TextDocumentSyncCapability.html
+
+https://docs.rs/lsp-types/latest/lsp_types/struct.CompletionParams.html
+
+https://docs.rs/lsp-types/latest/lsp_types/struct.CompletionParams.html#structfield.context
+
+https://docs.rs/lsp-types/latest/lsp_types/struct.CompletionContext.html
+
+https://docs.rs/lsp-types/latest/lsp_types/struct.CompletionTriggerKind.html
+
+https://docs.rs/lsp-types/latest/lsp_types/struct.WorkDoneProgressParams.html
+
+https://docs.rs/lsp-types/latest/lsp_types/struct.PartialResultParams.html
+
+https://docs.rs/lsp-types/latest/lsp_types/struct.CompletionContext.html
+
+https://docs.rs/lsp-types/latest/lsp_types/struct.TextDocumentPositionParams.html
+https://docs.rs/lsp-types/latest/lsp_types/struct.CompletionContext.html
+https://docs.rs/lsp-types/latest/lsp_types/struct.TextDocumentSyncOptions.html
+https://docs.rs/lsp-types/latest/lsp_types/enum.TextDocumentSyncCapability.html
+https://docs.rs/lsp-types/latest/lsp_types/struct.TextDocumentSyncOptions.html
+https://docs.rs/lsp-types/latest/lsp_types/struct.CompletionOptions.html
+https://docs.rs/lsp-types/latest/lsp_types/struct.InitializeParams.html
+https://docs.rs/lsp-types/latest/lsp_types/struct.WorkDoneProgressParams.html
+https://docs.rs/lsp-types/latest/lsp_types/struct.CompletionItem.html
+https://docs.rs/lsp-types/latest/lsp_types/struct.ServerCapabilities.html#structfield.text_document_sync
+https://docs.rs/lsp-types/latest/lsp_types/enum.TextDocumentSyncCapability.html
+https://docs.rs/lsp-types/latest/lsp_types/enum.TextDocumentSyncCapability.html
+https://docs.rs/lsp-types/latest/lsp_types/enum.TypeDefinitionProviderCapability.html
+https://docs.rs/lsp-types/latest/lsp_types/struct.TextDocumentContentChangeEvent.html
+https://docs.rs/lsp-types/latest/lsp_types/request/trait.Request.html
+https://docs.rs/lsp-types/latest/lsp_types/notification/index.html
+https://docs.rs/lsp-types/latest/lsp_types/notification/enum.DidChangeTextDocument.html
+https://docs.rs/lsp-types/latest/lsp_types/request/trait.Request.html#associatedconstant.METHOD
+
+https://docs.rs/lsp-types/latest/lsp_types/request/trait.Request.html#associatedconstant.METHOD
+https://docs.rs/lsp-types/latest/lsp_types/struct.DidChangeTextDocumentParams.html
+https://docs.rs/lsp-types/latest/lsp_types/struct.TextDocumentContentChangeEvent.html
+https://docs.rs/lsp-types/latest/lsp_types/struct.VersionedTextDocumentIdentifier.html
+https://docs.rs/lsp-types/latest/lsp_types/struct.CompletionList.html
+https://docs.rs/lsp-types/latest/lsp_types/struct.CompletionItem.html
+https://docs.rs/lsp-types/latest/lsp_types/request/enum.Completion.html
+https://docs.rs/lsp-types/latest/lsp_types/request/trait.Request.html#associatedconstant.METHOD
+
+https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/
+
+https://docs.rs/lsp-server/latest/lsp_server/
+https://github.com/rust-lang/rust-analyzer/tree/master/lib/lsp-server/examples
+
+https://docs.rs/lsp-server/latest/lsp_server/enum.Message.html
+https://docs.rs/lsp-server/latest/lsp_server/enum.Message.html#variant.Notification
+
+https://docs.rs/lsp-server/latest/lsp_server/struct.Notification.html
+
+https://docs.rs/lsp-server/latest/lsp_server/enum.Message.html#variant.Response
+
+https://docs.rs/lsp-server/latest/lsp_server/enum.Message.html#variant.Request
+
+https://docs.rs/lsp-server/latest/lsp_server/enum.Message.html#variant.Notification
+https://docs.rs/lsp-server/latest/lsp_server/struct.Notification.html
+https://docs.rs/lsp-server/latest/lsp_server/struct.Notification.html#structfield.params
+
+https://docs.rs/lsp-server/latest/lsp_server/struct.Response.html
+
+https://docs.rs/lsp-server/latest/lsp_server/struct.Request.html
+https://docs.rs/lsp-server/latest/lsp_server/struct.Request.html#method.extract
+https://docs.rs/lsp-server/latest/lsp_server/struct.Request.html#structfield.method
+https://docs.rs/lsp-server/latest/lsp_server/struct.Request.html#method.extract
+https://docs.rs/lsp-types/latest/lsp_types/struct.ServerCapabilities.html#structfield.document_formatting_provider
+
+
 
 
 

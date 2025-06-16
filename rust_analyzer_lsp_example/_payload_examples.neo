@@ -2,6 +2,42 @@
 
 Payload Examples Examples
 
+-- code
+-- title: DocumentFormattingParams 
+
+
+(
+    RequestId(I32(3)), 
+    DocumentFormattingParams { 
+        text_document: TextDocumentIdentifier { 
+            uri: Uri(Uri { 
+                scheme: Some("file"), 
+                authority: Some(Authority { 
+                    userinfo: None, 
+                    host: Host { 
+                        text: "", 
+                        data: RegName("") 
+                    }, 
+                    port: None 
+                }), 
+                path: "/Users/alan/etc/nvim-check.lsptest", 
+                query: None, 
+                fragment: None 
+            }) 
+        }, 
+        options: FormattingOptions { 
+            tab_size: 2, 
+            insert_spaces: true, 
+            properties: {}, 
+            trim_trailing_whitespace: None, 
+            insert_final_newline: None, 
+            trim_final_newlines: None 
+        }, 
+        work_done_progress_params: WorkDoneProgressParams {     
+            work_done_token: None 
+        } 
+    }
+)
 
 
 -- code
