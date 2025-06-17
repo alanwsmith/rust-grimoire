@@ -1,5 +1,3 @@
-use std::num;
-
 use crate::global_state::GlobalState;
 use crate::requests::cast::cast_request;
 use lsp_server::{Request, Response};
@@ -100,25 +98,36 @@ fn highlight_tokens(
   let target = numbers.len() / 5;
   for index in (1..target).rev() {
     let current_line_index = index * 5;
-    let previous_line_index = (index - 1) * 5;
+    let previous_line_index = current_line_index - 5;
     let current_start_index = current_line_index + 1;
-    let previous_start_index = previous_line_index + 1;
+    let previous_start_index = current_start_index - 5;
 
     numbers[current_line_index] = numbers
       [current_line_index]
       - numbers[previous_line_index];
-    // numbers[current_start_index] = numbers
-    //   [current_start_index]
-    //   - numbers[previous_start_index];
 
-    //numbers[position] = numbers[position
+    if numbers[current_line_index] == 0 {
+      numbers[current_start_index] = numbers
+        [current_start_index]
+        - numbers[previous_start_index];
+    }
+
     event!(
       Level::ERROR,
-      "\n\n----------------------{:?} - {:?}\n\n--------------------",
+      "\n\n----------------------{:?} - {:?} - {:?}\n\n--------------------",
       index,
-      numbers[index * 5]
+      numbers[current_line_index],
+      numbers[current_start_index],
     );
   }
+
+  event!(
+    Level::ERROR,
+    "\n\n----------------------{:?} - {:?} - {:?}\n\n--------------------",
+    0,
+    numbers[0],
+    numbers[1],
+  );
 
   // for (i, w) in numbers
   //   .iter_mut()
@@ -137,7 +146,17 @@ fn highlight_tokens(
   //   );
   // }
 
-  let data = vec![];
+  let data = numbers
+    .windows(5)
+    .step_by(5)
+    .map(|w| SemanticToken {
+      delta_line: w[0],
+      delta_start: w[1],
+      length: w[2],
+      token_modifiers_bitset: w[3],
+      token_type: w[4],
+    })
+    .collect();
 
   // let data: Vec<_> = numbers
   //   .iter()
