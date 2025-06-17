@@ -1,4 +1,4 @@
-use logging_with_tracing_subscriber::logger::Logger;
+use multi_output_logging_scaffold_with_custom_format::logger::Logger;
 use std::path::PathBuf;
 use tracing::metadata::LevelFilter;
 use tracing::{Level, event, instrument};
