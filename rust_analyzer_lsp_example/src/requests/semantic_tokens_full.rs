@@ -97,20 +97,45 @@ fn highlight_tokens(
     }
   }
 
-  for (i, w) in numbers
-    .windows(5)
-    .step_by(5)
-    .skip(1)
-    .rev()
-    .enumerate()
-  {
+  let target = numbers.len() / 5;
+  for index in (1..target).rev() {
+    let current_line_index = index * 5;
+    let previous_line_index = (index - 1) * 5;
+    let current_start_index = current_line_index + 1;
+    let previous_start_index = previous_line_index + 1;
+
+    numbers[current_line_index] = numbers
+      [current_line_index]
+      - numbers[previous_line_index];
+    // numbers[current_start_index] = numbers
+    //   [current_start_index]
+    //   - numbers[previous_start_index];
+
+    //numbers[position] = numbers[position
     event!(
       Level::ERROR,
       "\n\n----------------------{:?} - {:?}\n\n--------------------",
-      i,
-      w
+      index,
+      numbers[index * 5]
     );
   }
+
+  // for (i, w) in numbers
+  //   .iter_mut()
+  //   .step_by(5)
+  //   .skip(1)
+  //   .rev()
+  //   .enumerate()
+  // {
+  //   let line_a_index = i * 5;
+  //   numbers[line_a_index] = 2;
+  //   event!(
+  //     Level::ERROR,
+  //     "\n\n----------------------{:?} - {:?}\n\n--------------------",
+  //     i,
+  //     w
+  //   );
+  // }
 
   let data = vec![];
 
