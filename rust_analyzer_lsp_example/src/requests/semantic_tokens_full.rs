@@ -2,14 +2,15 @@ use crate::global_state::GlobalState;
 use crate::requests::cast::cast_request;
 use lsp_server::{Request, Response};
 use lsp_types::{
-  CompletionItem, CompletionList,
+  CompletionItem, CompletionList, SemanticToken,
+  SemanticTokens, SemanticTokensResult,
   request::SemanticTokensFullRequest,
 };
 use tracing::{Level, event};
 
 pub fn semantic_tokens_full(
   message: Request,
-  global_state: &GlobalState,
+  _global_state: &GlobalState,
 ) -> Response {
   let id = message.id.clone();
   match cast_request::<SemanticTokensFullRequest>(
@@ -17,9 +18,25 @@ pub fn semantic_tokens_full(
   ) {
     Ok(params) => {
       event!(Level::TRACE, "{:?}", &params);
+
+      let response =
+        SemanticTokensResult::Tokens(SemanticTokens {
+          // TODO: Verify this is the right ID to send back
+          result_id: Some(id.to_string()),
+          data: vec![SemanticToken {
+            delta_line: 0,
+            delta_start: 1,
+            length: 4,
+            token_modifiers_bitset: 0,
+            token_type: 2,
+          }],
+        });
+
       Response {
         id,
-        result: None,
+        result: Some(
+          serde_json::to_value(response).unwrap(),
+        ),
         error: None,
       }
     }

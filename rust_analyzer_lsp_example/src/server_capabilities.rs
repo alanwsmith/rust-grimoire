@@ -17,6 +17,7 @@ pub fn server_capabilities() -> Value {
         ..Default::default()
       },
     ),
+
     document_formatting_provider: Some(
       lsp_types::OneOf::Left(true),
     ),

@@ -21,12 +21,14 @@ pub fn completion(
         global_state,
       )
       .unwrap();
+
       let completion_list =
         filter_words(&current_string);
 
       let result = Some(
         serde_json::to_value(completion_list).unwrap(),
       );
+
       Response {
         id,
         result,
