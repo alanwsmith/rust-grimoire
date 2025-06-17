@@ -121,14 +121,6 @@ fn highlight_tokens(
     );
   }
 
-  event!(
-    Level::ERROR,
-    "\n\n----------------------{:?} - {:?} - {:?}\n\n--------------------",
-    0,
-    numbers[0],
-    numbers[1],
-  );
-
   // for (i, w) in numbers
   //   .iter_mut()
   //   .step_by(5)
