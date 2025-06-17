@@ -10,6 +10,7 @@ use tracing::{Level, event};
 
 pub fn server_capabilities() -> Value {
   event!(Level::DEBUG, "Defining server capabilities");
+
   serde_json::to_value(&ServerCapabilities {
     completion_provider: Some(
       lsp_types::CompletionOptions {
@@ -22,7 +23,6 @@ pub fn server_capabilities() -> Value {
       lsp_types::OneOf::Left(true),
     ),
 
-    // Semantic tokens are a work in progress
     semantic_tokens_provider: Some(
       SemanticTokensOptions {
         legend: SemanticTokensLegend {
