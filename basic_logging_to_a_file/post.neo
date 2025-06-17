@@ -1,0 +1,106 @@
+-- title
+
+Logging to a File in Rust with tracing
+
+
+-- h2
+
+Quick Head's Up
+
+This file is in the format I use to
+publish to my site. That's why it doesn't
+have syntax highlighting or nice markdown 
+formatting here. 
+
+
+-- notes/
+-- title: Overview
+
+- This example does basic logging to a file. 
+I've also got another example that outputs
+to STDOUT and files at the same time and
+provides for custom formatting. It's
+in the <<path|
+multi_output_logging_scaffold_with_custom_format>>
+directory. 
+
+- Output is written to a daily log file.
+
+- Two days of logs are kept. Others are
+deleted to keep from filling up disk space.
+
+- Dates are based off UTC. That includes
+the dates for the log files names. For example,
+if it's 11pm your time and you're in UTC -4:00 
+the output will go to a log file with tomorrow's 
+date. 
+
+It's possible to use localtime, but there
+be dragons.
+
+- This example uses ``.json()|rust`` for the output. 
+
+The other built in options are:
+
+``.pretty()|rust`` and ``.full()|rust`` and
+``.compact()|rust``. 
+
+- If you switch to another format, you can
+removed the ``json`` from the <<path|Cargo.toml>>
+file in the line:
+
+    -- code/
+    -- toml
+
+    tracing-subscriber = { version = "0.3.19", features = ["json"] }
+
+    -- /code
+
+
+- I'm using ``anyhow`` as my preferred Results/Error
+handler. Other handlers can be substituted in if you
+prefer them.
+
+- The ``init_logger`` function returns a ``guard``.
+It must remain in scope or the logger writing to
+the file.
+
+
+- The ``#[insturment]|rust`` lines set up so the 
+chain of functions shows up as part of the log
+message. For example, you get:
+
+
+    -- code/
+    -- json
+
+    "spans":[{"name":"example_fn_bravo"},{"name":"example_fn_charlie"}
+
+    -- /code
+
+- The files are named with the date and appended
+with the string from  ``.filename_suffix()|rust``
+
+- The ``.with_ansi(false)`` turn off escape sequences
+that make things look nice in terminals but futz up
+log files. 
+
+- I use ``tail -f`` to follow the logs. One minor
+annoyance with that is if the day flips over and
+it starts writing to a new file you have to 
+restart the command pointing to the new location.
+
+
+-- /notes
+
+
+
+
+-- page
+-- created: 2025-06-14T11:26:43-04:00
+-- updated: 2025-06-14T11:26:43-04:00
+-- id: 2y/vl/tr/ru
+-- template: post
+-- status: draft 
+
+

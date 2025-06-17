@@ -1,5 +1,5 @@
 use anyhow::Result;
-use grimoire_example::init_logger::init_logger;
+use basic_logging_to_a_file::init_logger::init_logger;
 use std::path::PathBuf;
 use tracing::{Level, event, instrument};
 

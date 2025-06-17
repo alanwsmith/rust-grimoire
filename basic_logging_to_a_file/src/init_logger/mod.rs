@@ -21,7 +21,7 @@ pub fn init_logger(
   let layer = tracing_subscriber::fmt::Layer::default()
     .with_ansi(false)
     .with_writer(writer)
-    .pretty();
+    .json();
 
   let subscriber =
     tracing_subscriber::Registry::default().with(layer);
