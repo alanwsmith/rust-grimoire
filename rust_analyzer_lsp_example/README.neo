@@ -5,11 +5,16 @@ Rust LSP Server Scaffolding
 
 -- comment
 
-Quick note: 
-
-This README is in the format I use to 
-make pages for my web site. That's why 
+Quick note: This README is in the format I use 
+to make pages for my web site. That's why 
 it doesn't have nice markdown formatting.
+
+
+
+-- todo
+
+Add note about semantic tokens
+
 
 
 
@@ -55,13 +60,19 @@ example. It uses the stored file
 content to provide a formatted 
 version of the file on request. 
 
+- Provides a ``textDocument/semanticTokens/full``
+example. It uses the stored file
+content to provide semantic tokens
+for color highlighting in the editor.
+
 
 -- p
 
 The examples are super basic. The
 auto complete only does a few words. 
 All the formatting does is add dots
-to the start of each line. 
+to the start of each line. The semantic
+tokens only use the word "alfa"
 
 Their goal isn't to provide an example
 of __what__ to do. They're designed
@@ -72,14 +83,15 @@ to show __how__ to do it.
 
 Changing Functionality
 
-The auto-completion and formatting functionality
+The auto-completion, formatting, and
+semantic token functionalities 
 come from:
 
 <<path|src/requests/completion.rs>>
 
-and
-
 <<path|src/requests/formatting.rs>>
+
+<<path|src/requests/semantic_tokens_full.rs>>
 
 Update those files to adjust the 
 their functionality. 
@@ -94,7 +106,8 @@ To add a feature:
 
 1. Find the capabilty you want to add on
 the [[ServerCapabilities|
-https://docs.rs/lsp-types/latest/lsp_types/struct.ServerCapabilities.html]] list. 
+https://docs.rs/lsp-types/latest/lsp_types/struct.ServerCapabilities.html]] 
+list. 
 
 
 2. Add the field for the capability to
@@ -169,13 +182,18 @@ https://docs.rs/unicode-segmentation/latest/unicode_segmentation/index.html]]
 to get __graphemes__ to do character counting. That's based
 on some prior work. 
 
-There's an explicit encoding setup to look at:
+There's an explicit encoding setup to look at.
 https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocuments
 
+TODO: is to check that out to see about using it
+instead of the graphemes. 
 
 - This is set up to send the full contents of the file
 to the LSP server on every change. Setting up to 
 send only file changes is out of scope for this example. 
+
+The [[lsp_textdocument crate|https://docs.rs/lsp-textdocument/0.4.2/lsp_textdocument/]] 
+looks like a good place to start for that. 
 
 - This example doesn't make use of any of the work in progress
 tokens. They are out of scope for this example. 
@@ -202,6 +220,12 @@ with that is outside the scope of this example.
 - This isn't set up for unsaved files. It expects everything
 to have a URI. 
 
+- I'm including the full set of Semantic tokens and token
+modifiers for reference. Details about how to create tokens
+are available [[in the spec|
+https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_semanticTokens]]
+
+
 
 
 -- h2
@@ -213,8 +237,6 @@ TODO
 - Look at position_encoding
 
 - Figure out: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentSymbol
-
-- semantic_tokens_provider
 
 
 
@@ -399,6 +421,9 @@ TODO
 
 -- ref
 -- url: https://docs.rs/lsp-types/latest/lsp_types/enum.SemanticTokensFullOptions.html
+
+-- ref
+-- url: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_semanticTokens
 
 
 
