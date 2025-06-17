@@ -11,8 +11,6 @@ log output that goes to a file and
 to std out. 
 
 
-
-
 -- notes/
 
 - Adding ``#[instrument]`` to ``main`` doesn't
@@ -146,5 +144,6 @@ https://github.com/tokio-rs/tracing/tree/main/examples
 -- id: 2y/sz/ds/en
 -- template: post
 -- status: scratch
+
 
 
