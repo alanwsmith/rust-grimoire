@@ -7,7 +7,7 @@ use tracing_subscriber::prelude::*;
 
 pub fn init_logger(log_dir: &PathBuf) -> WorkerGuard {
   let appender = RollingFileAppender::builder()
-    .rotation(Rotation::DAILY)
+    .rotation(Rotation::HOURLY)
     .filename_suffix("json-lines")
     .max_log_files(2)
     .build(log_dir)
