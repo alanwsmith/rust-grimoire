@@ -1,0 +1,28 @@
+-- title
+
+Run Tests from a Directory in Rust
+
+
+-- checklist 
+
+[x] Scan a directory for a list of
+other directories. 
+
+[x] Use those directories as the payloads
+for running tests.
+
+[x] Use the directory names in the 
+test outpust so you can see what failed.
+
+[x] Automatically rerun tests when the 
+files in the directories change.
+
+
+-- page
+-- created: 2025-06-17T15:37:15-04:00
+-- updated: 2025-06-17T15:37:15-04:00
+-- id: 2y/ej/jn/al
+-- template: post
+-- status: scratch
+
+
