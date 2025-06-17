@@ -21,7 +21,7 @@ pub fn server_capabilities() -> Value {
           change: Some(
             lsp_types::TextDocumentSyncKind::FULL,
           ),
-          open_close: None,
+          open_close: Some(true),
           will_save: None,
           will_save_wait_until: None,
           save: None,
