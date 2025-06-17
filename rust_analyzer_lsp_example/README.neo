@@ -167,8 +167,11 @@ I'm using a string instead.
 - I'm using [[unicode_segmentation|
 https://docs.rs/unicode-segmentation/latest/unicode_segmentation/index.html]]
 to get __graphemes__ to do character counting. That's based
-on some prior work. One TODO is to add tests to verify
-that's the proper approach here. 
+on some prior work. 
+
+There's an explicit encoding setup to look at:
+https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocuments
+
 
 - This is set up to send the full contents of the file
 to the LSP server on every change. Setting up to 
@@ -199,6 +202,19 @@ with that is outside the scope of this example.
 - This isn't set up for unsaved files. It expects everything
 to have a URI. 
 
+
+
+-- h2
+
+TODO
+
+-- list
+
+- Look at position_encoding
+
+- Figure out: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentSymbol
+
+- semantic_tokens_provider
 
 
 
@@ -380,6 +396,9 @@ to have a URI.
 
 -- ref
 -- url: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/
+
+-- ref
+-- url: https://docs.rs/lsp-types/latest/lsp_types/enum.SemanticTokensFullOptions.html
 
 
 
