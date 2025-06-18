@@ -18,6 +18,15 @@ test outpust so you can see what failed.
 files in the directories change.
 
 
+-- notes
+
+- Uses a ``test_runner`` function for the example. 
+The idea is you can use that as a helper
+function and then just throw directories
+at it for processing from different
+source files. 
+
+
 -- page
 -- created: 2025-06-17T15:37:15-04:00
 -- updated: 2025-06-17T15:37:15-04:00
