@@ -9,7 +9,8 @@ Log to STDOUT with tracing in Rust
 
 - Uses a custom format for the output
 
-
+- functions with ``#[instrument]`` show
+up in the list below the level/timestamp line
 
 
 -- page
