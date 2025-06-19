@@ -1,6 +1,8 @@
 #![allow(unused)]
 use anyhow::{Result, anyhow};
-use grimoire_project::cacher::Cacher;
+use grimoire_project::{
+  cacher::Cacher, logger::Logger,
+};
 use redb::{Database, TableDefinition};
 use reqwest::blocking::get;
 use scraper::{Html, Selector};
@@ -30,7 +32,7 @@ impl Pages<'_> {
       if let None = page.html {
         if let Ok(html) = fetch_file(&page.url) {
           &self.catcher.save(&page.url, &html);
-          page.html = Some(html.to_string());
+          page.html = Some(Html::parse_document(&html));
         }
       }
     }
@@ -38,9 +40,15 @@ impl Pages<'_> {
   }
 
   pub fn load_cache(&mut self) -> Result<()> {
+    event!(Level::INFO, "Loading from cache");
     for page in self.pages.iter_mut() {
       match self.catcher.get(&page.url) {
-        Ok(cache) => page.html = cache,
+        Ok(cache) => {
+          if let Some(html) = cache {
+            page.html =
+              Some(Html::parse_document(&html))
+          }
+        }
         Err(_) => {}
       }
     }
@@ -82,23 +90,22 @@ impl Pages<'_> {
     Ok(())
   }
 
-  fn make_links(&self) -> Result<Vec<String>> {
-    let lines = self
-      .urls()?
-      .iter()
-      .filter(|url| self.catcher.get(&url).is_ok())
-      .filter(|url| {
-        self.catcher.get(&url).unwrap().is_some()
-      })
-      .filter_map(|url| {
-        let html =
-          self.catcher.get(&url).unwrap().unwrap();
-        get_title(&html)
-      })
-      .collect();
-
-    Ok(lines)
-  }
+  // fn make_links(&self) -> Result<Vec<String>> {
+  //   let lines = self
+  //     .urls()?
+  //     .iter()
+  //     .filter(|url| self.catcher.get(&url).is_ok())
+  //     .filter(|url| {
+  //       self.catcher.get(&url).unwrap().is_some()
+  //     })
+  //     .filter_map(|url| {
+  //       let html =
+  //         self.catcher.get(&url).unwrap().unwrap();
+  //       get_title(&html)
+  //     })
+  //     .collect();
+  //   Ok(lines)
+  // }
 
   fn urls(&self) -> Result<Vec<String>> {
     let content = fs::read_to_string("input.txt")?;
@@ -130,23 +137,23 @@ impl Pages<'_> {
 
 struct Page {
   url: String,
-  html: Option<String>,
+  html: Option<Html>,
 }
 
 impl Page {
   pub fn link(&self) -> String {
     match &self.html {
       None => {
-        format!("[[{}|{}]]", self.url, self.url)
+        format!("- [[{}|{}]]\n", self.url, self.url)
       }
       Some(html) => match get_title(&html) {
         Some(title) => {
           let txt =
             title.replace("  ", " ").replace("|", "~");
-          format!("[[{}|{}]]", txt.trim(), self.url)
+          format!("- [[{}|{}]]\n", txt.trim(), self.url)
         }
         None => {
-          format!("[[{}|{}]]", self.url, self.url)
+          format!("- [[{}|{}]]\n", self.url, self.url)
         }
       },
     }
@@ -158,12 +165,12 @@ impl Page {
 }
 
 fn main() -> Result<()> {
-  init_logger()?;
+  let _logger = Logger::new("INFO");
   event!(Level::INFO, "Starting");
   let mut pages = Pages::new()?;
   pages.load_input();
   pages.load_cache();
-  pages.fetch_new_html();
+  // pages.fetch_new_html();
   pages.write_lines();
 
   // pages.fetch_files()?;
@@ -183,20 +190,19 @@ pub fn fetch_file(url: &str) -> Result<String> {
   }
 }
 
-fn init_logger() -> Result<()> {
-  let layer = tracing_subscriber::fmt::Layer::default()
-    .with_ansi(false)
-    .with_writer(std::io::stdout)
-    .compact();
-  let subscriber =
-    tracing_subscriber::Registry::default().with(layer);
-  tracing::subscriber::set_global_default(subscriber)?;
-  event!(Level::INFO, "Logger Initialized");
-  Ok(())
-}
+// fn init_logger() -> Result<()> {
+//   let layer = tracing_subscriber::fmt::Layer::default()
+//     .with_ansi(false)
+//     .with_writer(std::io::stdout)
+//     .compact();
+//   let subscriber =
+//     tracing_subscriber::Registry::default().with(layer);
+//   tracing::subscriber::set_global_default(subscriber)?;
+//   event!(Level::INFO, "Logger Initialized");
+//   Ok(())
+// }
 
-fn get_title(html: &str) -> Option<String> {
-  let document = Html::parse_document(html);
+fn get_title(document: &Html) -> Option<String> {
   let selector = Selector::parse("title").unwrap();
   let mut found = document.select(&selector);
   if let Some(title_tag) = found.next() {
@@ -205,6 +211,38 @@ fn get_title(html: &str) -> Option<String> {
     Some(title_text)
   } else {
     None
+  }
+}
+
+fn get_description(document: &Html) -> Option<&str> {
+  if let Some(text) = get_og_description(document) {
+    return Some(text);
+  }
+  get_meta_description(document)
+}
+
+fn get_meta_description(
+  document: &Html
+) -> Option<&str> {
+  let selector =
+    Selector::parse(r#"meta[name="description"]"#)
+      .unwrap();
+  let mut found = document.select(&selector);
+  match found.next() {
+    Some(tag) => tag.value().attr("content"),
+    None => None,
+  }
+}
+
+fn get_og_description(document: &Html) -> Option<&str> {
+  let selector = Selector::parse(
+    r#"meta[property="og:description"]"#,
+  )
+  .unwrap();
+  let mut found = document.select(&selector);
+  match found.next() {
+    Some(tag) => tag.value().attr("content"),
+    None => None,
   }
 }
 
