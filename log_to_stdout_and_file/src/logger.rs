@@ -201,6 +201,10 @@ impl Default for Logger {
   }
 }
 
+// NOTE: This is largely copy paste from tracing
+// TODO: is to clean it up some and remove
+// unnecessary parts
+
 pub struct MiniFormat;
 impl<S, N> FormatEvent<S, N> for MiniFormat
 where

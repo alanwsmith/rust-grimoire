@@ -1,15 +1,14 @@
 use anyhow::Result;
 use grimoire_project::logger::Logger;
-use std::path::PathBuf;
 use tracing::{Level, event, instrument};
 
 fn main() -> Result<()> {
-  let log_dir = PathBuf::from("scratch-output");
-  let log_level = "DEBUG";
-  let _logger = Logger::new(&log_dir, log_level)?;
+  let _ = Logger::new("DEBUG")?;
+
   event!(Level::INFO, "In main");
   example_fn_alfa();
   example_fn_bravo();
+
   Ok(())
 }
 

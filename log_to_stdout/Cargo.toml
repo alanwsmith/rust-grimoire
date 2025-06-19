@@ -1,0 +1,9 @@
+[package]
+name = "grimoire_project"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.98"
+tracing = "0.1.41"
+tracing-subscriber = { version = "0.3.19" }
