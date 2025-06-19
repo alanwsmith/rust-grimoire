@@ -12,6 +12,23 @@ Log to STDOUT with tracing in Rust
 - functions with ``#[instrument]`` show
 up in the list below the level/timestamp line
 
+-- pre
+
+
+https://docs.rs/tracing-subscriber/latest/tracing_subscriber/fmt/struct.FmtContext.html
+https://docs.rs/tracing-subscriber/latest/tracing_subscriber/registry/struct.SpanRef.html
+https://docs.rs/tracing-core/0.1.34/tracing_core/event/struct.Event.html#method.fields
+https://docs.rs/tracing-core/0.1.34/tracing_core/event/struct.Event.html
+https://docs.rs/tracing-core/0.1.34/tracing_core/field/index.html
+https://docs.rs/tracing-core/0.1.34/tracing_core/struct.Metadata.html
+https://docs.rs/tracing-core/0.1.34/tracing_core/field/struct.Field.html
+https://docs.rs/tracing-core/0.1.34/tracing_core/metadata/struct.Level.html
+https://docs.rs/tracing-subscriber/latest/tracing_subscriber/filter/struct.LevelFilter.html
+https://docs.rs/tracing-subscriber/latest/tracing_subscriber/layer/trait.Filter.html
+https://docs.rs/tracing/latest/tracing/struct.Level.html
+
+
+
 
 -- page
 -- created: 2025-06-19T17:30:20-04:00
@@ -19,5 +36,6 @@ up in the list below the level/timestamp line
 -- id: 2y/kb/jq/gg
 -- template: post
 -- status: scratch
+
 
 
