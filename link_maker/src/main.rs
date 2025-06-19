@@ -70,6 +70,7 @@ impl Pages<'_> {
 
   pub fn fetch_files(&mut self) -> Result<()> {
     for url in self.urls()?.iter() {
+      event!(Level::INFO, "Fetching: {}", &url);
       let mut page = Page {
         url: url.to_string(),
         html: None,
@@ -124,6 +125,7 @@ impl Pages<'_> {
   }
 
   pub fn write_lines(&self) -> Result<()> {
+    event!(Level::INFO, "Writing lines");
     let output = self
       .pages
       .iter()
@@ -144,23 +146,42 @@ impl Page {
   pub fn link(&self) -> String {
     match &self.html {
       None => {
-        format!("- [[{}|{}]]\n", self.url, self.url)
+        format!("[[{}|{}]]", self.url, self.url)
       }
       Some(html) => match get_title(&html) {
         Some(title) => {
           let txt =
             title.replace("  ", " ").replace("|", "~");
-          format!("- [[{}|{}]]\n", txt.trim(), self.url)
+          format!("[[{}|{}]]", txt.trim(), self.url)
         }
         None => {
-          format!("- [[{}|{}]]\n", self.url, self.url)
+          format!("[[{}|{}]]", self.url, self.url)
         }
       },
     }
   }
 
   pub fn item(&self) -> String {
-    self.link()
+    if let Some(html) = &self.html {
+      match get_description(html) {
+        Some(desc) => {
+          format!(
+            "- {}\n\n{}",
+            self.link(),
+            desc
+              .lines()
+              .map(|line| format!("{}\n\n", line))
+              .collect::<Vec<_>>()
+              .join("")
+          )
+        }
+        None => {
+          format!("- {}\n", self.link())
+        }
+      }
+    } else {
+      "".to_string()
+    }
   }
 }
 
