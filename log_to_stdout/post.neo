@@ -3,6 +3,11 @@
 Log to STDOUT with tracing in Rust
 
 
+-- notes
+
+- Uses tracing to write to STDOUT
+
+- Uses a custom format for the output
 
 
 

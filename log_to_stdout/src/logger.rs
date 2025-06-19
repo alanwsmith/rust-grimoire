@@ -5,11 +5,13 @@ use tracing::level_filters::LevelFilter;
 use tracing_subscriber::fmt::FmtContext;
 use tracing_subscriber::fmt::FormatEvent;
 use tracing_subscriber::fmt::FormatFields;
+use tracing_subscriber::fmt::FormattedFields;
 use tracing_subscriber::fmt::format::Writer;
 use tracing_subscriber::fmt::time::FormatTime;
 use tracing_subscriber::fmt::time::SystemTime;
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::registry::LookupSpan;
+use tracing_subscriber::registry::Scope;
 
 pub struct Logger {}
 
@@ -60,12 +62,17 @@ where
     let meta = event.metadata();
     write!(writer, "{} ", meta.level())?;
     let _ = SystemTime.format_time(&mut writer);
+
+    let _ = ctx.visit_spans(|span| {
+      writeln!(writer)?;
+      write!(writer, ":{}", span.name())
+    });
     writeln!(writer)?;
     if let Some(line_number) = meta.line() {
-      write!(writer, "Line: {}", line_number,)?;
+      write!(writer, "Line {}", line_number,)?;
     }
     if let Some(filename) = meta.file() {
-      write!(writer, " - {}", filename)?;
+      write!(writer, " : {}", filename)?;
     }
     writeln!(writer)?;
     ctx.format_fields(writer.by_ref(), event)?;
