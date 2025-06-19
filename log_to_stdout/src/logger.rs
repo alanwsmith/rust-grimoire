@@ -5,13 +5,11 @@ use tracing::level_filters::LevelFilter;
 use tracing_subscriber::fmt::FmtContext;
 use tracing_subscriber::fmt::FormatEvent;
 use tracing_subscriber::fmt::FormatFields;
-use tracing_subscriber::fmt::FormattedFields;
 use tracing_subscriber::fmt::format::Writer;
 use tracing_subscriber::fmt::time::FormatTime;
 use tracing_subscriber::fmt::time::SystemTime;
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::registry::LookupSpan;
-use tracing_subscriber::registry::Scope;
 
 pub struct Logger {}
 
