@@ -1,1 +1,1 @@
-pub mod init_logger;
+pub mod logger;

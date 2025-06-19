@@ -1,5 +1,5 @@
 [package]
-name = "basic_logging_to_a_file"
+name = "grimoire_project"
 version = "0.1.0"
 edition = "2024"
 
