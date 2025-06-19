@@ -1,0 +1,8 @@
+[package]
+name = "grimoire_example"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.98"
+redb = "2.6.0"
