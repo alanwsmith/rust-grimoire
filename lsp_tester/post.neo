@@ -23,12 +23,127 @@ Skipping them until it becomes an issue.
 
 
 
-https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#didChangeTextDocumentParams
-https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#formattingOptions
-https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocumentIdentifier
-https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didOpen
-https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocumentItem
-https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#versionedTextDocumentIdentifier
+-- list
+-- title: Links
+
+- [[ChildStdout in std::process - Rust|https://dev-doc.rust-lang.org/beta/std/process/struct.ChildStdout.html]]
+
+A handle to a child process’s standard output (stdout).
+
+
+- [[mod.rs - source|https://doc.rust-lang.org/nightly/src/std/io/mod.rs.html#965]]
+
+Source of the Rust file `library/std/src/io/mod.rs`.
+
+
+- [[Pipes - Rust By Example|https://doc.rust-lang.org/rust-by-example/std_misc/process/pipe.html]]
+
+Rust by Example (RBE) is a collection of runnable examples that illustrate various Rust concepts and standard libraries.
+
+
+- [[BufWriter in std::io - Rust|https://doc.rust-lang.org/std/io/struct.BufWriter.html]]
+
+Wraps a writer and buffers its output.
+
+
+- [[Stdin in std::io - Rust|https://doc.rust-lang.org/std/io/struct.Stdin.html]]
+
+A handle to the standard input stream of a process.
+
+
+- [[Stdout in std::io - Rust|https://doc.rust-lang.org/std/io/struct.Stdout.html]]
+
+A handle to the global standard output stream of the current process.
+
+
+- [[Child in std::process - Rust|https://doc.rust-lang.org/std/process/struct.Child.html]]
+
+Representation of a running or exited child process.
+
+
+- [[Child in std::process - Rust|https://doc.rust-lang.org/std/process/struct.Child.html#structfield.stdout]]
+
+Representation of a running or exited child process.
+
+
+- [[ChildStdin in std::process - Rust|https://doc.rust-lang.org/std/process/struct.ChildStdin.html]]
+
+A handle to a child process’s standard input (stdin).
+
+
+- [[ChildStdout in std::process - Rust|https://doc.rust-lang.org/std/process/struct.ChildStdout.html]]
+
+A handle to a child process’s standard output (stdout).
+
+
+- [[Initialize in lsp_types::request - Rust|https://docs.rs/lsp-types/latest/lsp_types/request/enum.Initialize.html]]
+
+The initialize request is sent as the first request from the client to the server. If the server receives request or notification before the `initialize` request it should act as follows:
+
+
+- [[BufReader in std::io - Rust|https://docs.rs/rustc-std-workspace-std/latest/std/io/struct.BufReader.html]]
+
+The `BufReader<R>` struct adds buffering to any reader.
+
+
+- [[Stdin in std::io - Rust|https://docs.rs/rustc-std-workspace-std/latest/std/io/struct.Stdin.html]]
+
+A handle to the standard input stream of a process.
+
+
+- [[Read in std::io - Rust|https://docs.rs/rustc-std-workspace-std/latest/std/io/trait.Read.html#method.bytes]]
+
+The `Read` trait allows for reading bytes from a source.
+
+
+- [[Read in std::io - Rust|https://docs.rs/rustc-std-workspace-std/latest/std/io/trait.Read.html#method.read_buf]]
+
+The `Read` trait allows for reading bytes from a source.
+
+
+- [[Popen in subprocess - Rust|https://docs.rs/subprocess/latest/subprocess/struct.Popen.html#method.communicate]]
+
+Interface to a running subprocess.
+
+
+- [[rust-analyzer/crates/rust-analyzer/tests/slow-tests/cli.rs at master · rust-lang/rust-analyzer · GitHub|https://github.com/rust-lang/rust-analyzer/blob/master/crates/rust-analyzer/tests/slow-tests/cli.rs]]
+
+A Rust compiler front-end for IDEs. Contribute to rust-lang/rust-analyzer development by creating an account on GitHub.
+
+
+- [[rust-analyzer/lib/lsp-server/examples/goto_def.rs at master · rust-lang/rust-analyzer · GitHub|https://github.com/rust-lang/rust-analyzer/blob/master/lib/lsp-server/examples/goto_def.rs]]
+
+A Rust compiler front-end for IDEs. Contribute to rust-lang/rust-analyzer development by creating an account on GitHub.
+
+
+- [[Specification|https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#didChangeTextDocumentParams]]
+
+This document describes the 3.17.x version of the language server protocol. An implementation for node of the 3.17.x version of the protocol can be found here.
+
+
+- [[Specification|https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#formattingOptions]]
+
+This document describes the 3.17.x version of the language server protocol. An implementation for node of the 3.17.x version of the protocol can be found here.
+
+
+- [[Specification|https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didOpen]]
+
+This document describes the 3.17.x version of the language server protocol. An implementation for node of the 3.17.x version of the protocol can be found here.
+
+
+- [[Specification|https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocumentIdentifier]]
+
+This document describes the 3.17.x version of the language server protocol. An implementation for node of the 3.17.x version of the protocol can be found here.
+
+
+- [[Specification|https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocumentItem]]
+
+This document describes the 3.17.x version of the language server protocol. An implementation for node of the 3.17.x version of the protocol can be found here.
+
+
+- [[Specification|https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#versionedTextDocumentIdentifier]]
+
+This document describes the 3.17.x version of the language server protocol. An implementation for node of the 3.17.x version of the protocol can be found here.
 
 
 
@@ -36,22 +151,19 @@ https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/spe
 
 
 
+- [[Communication with child process through pipe - help - The Rust Programming Language Forum|https://users.rust-lang.org/t/communication-with-child-process-through-pipe/98876]]
+
+Hi there,  I am learning to use std::process to spawn child processes and talk to them with pipe.  Here is the code:  use std::io::{Read, Write}; use std::process::{Command, Stdio};  fn main() {     let mut child = Command::new("rev")         // Allocate two pipes for stdin and stdout through which the parent can         // talk to the child.         .stdin(Stdio::piped())         .stdout(Stdio::piped())         .spawn()         .expect("failed to run rev");      let mut stdin = child.stdin.take...
 
 
+- [[Read from stdin and write to stdout of child in different threads - help - The Rust Programming Language Forum|https://users.rust-lang.org/t/read-from-stdin-and-write-to-stdout-of-child-in-different-threads/14396]]
+
+Hello Rust users!  I've been migrating from C++ to rust starting last year and it is been a challenging but fun experience.  Now I've come across a problem that I couldn't find many documentation / examples to help me solve it. I'm writing a simple gdb GUI front-end for debugging firmware for ARM microcontrollers, my program talks with gdb through the 'mi' protocol. This protocol uses a mixture of synchronous and asynchronous messages, so I need a dedicated thread to to read from the gdb stdout ...
 
 
+- [[Writing to a long running child stdin multiple times - help - The Rust Programming Language Forum|https://users.rust-lang.org/t/writing-to-a-long-running-child-stdin-multiple-times/76269]]
 
-
-
-
-
-
-
-
-
-
-
-
+I spawned the child with a Tokio Command. I also piped stdout, stdin and stderr, after that I put the child into a global Mutex and use it in an actix_web route (The method below is getting called from the route). There I get the child out of the global mutex and try to write to the stdin. This works the first time, but because I'm using take(), the stdin Option is empty after that and it doesn't work anymore. How can I approach this? I tried to use as_mut() on the stdin, this compiled, but didn...
 
 
 
