@@ -1,7 +1,30 @@
 #![allow(unused)]
+use anyhow::Result;
+use serde_json::Value;
 use std::path::PathBuf;
 use std::process::*;
 use std::{io::*, vec};
+
+pub struct LspTester {
+  output: Option<Value>,
+}
+
+impl LspTester {
+  pub fn process_input(
+    input: Vec<LspMessage>
+  ) -> Option<Value> {
+    let lt = LspTester { output: None };
+
+    lt.output
+
+    //Some(serde_json::to_value("{}")?
+  }
+}
+
+pub enum LspMessage {
+  Request,
+  Notificaion,
+}
 
 pub fn run_test() {
   let path = PathBuf::from(
@@ -93,8 +116,10 @@ mod tests {
   use super::*;
 
   #[test]
-  fn it_works() {
-    run_test();
+  fn run_a_test() {
+    let input = vec![LspMessage::Request];
+
+    let lt = LspTester::process_input(input);
   }
 }
 
