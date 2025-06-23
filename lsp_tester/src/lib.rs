@@ -2,18 +2,38 @@
 use anyhow::Result;
 use serde_json::Value;
 use std::path::PathBuf;
+use std::process::Child;
+use std::process::ChildStdin;
+use std::process::ChildStdout;
+use std::process::Command;
+use std::process::Stdio;
 use std::process::*;
 use std::{io::*, vec};
 
 pub struct LspTester {
   output: Option<Value>,
+  _child_in: ChildStdin,
+  _child_out: ChildStdout,
+  _child_shell: Child,
 }
 
 impl LspTester {
   pub fn process_input(
-    input: Vec<LspMessage>
+    path: &PathBuf,
+    input: Vec<LspMessage>,
   ) -> Option<Value> {
-    let lt = LspTester { output: None };
+    let mut child_shell = Command::new(path)
+      .stdin(Stdio::piped())
+      .stdout(Stdio::piped())
+      .spawn()
+      .expect("failed to open connection");
+
+    let lt = LspTester {
+      _child_in: child_shell.stdin.take().unwrap(),
+      _child_out: child_shell.stdout.take().unwrap(),
+      _child_shell: child_shell,
+      output: None,
+    };
 
     lt.output
 
@@ -22,8 +42,8 @@ impl LspTester {
 }
 
 pub enum LspMessage {
-  Request,
-  Notificaion,
+  Request { method: String, params: String },
+  Notification { method: String, params: String },
 }
 
 pub fn run_test() {
@@ -93,34 +113,9 @@ pub fn run_test() {
   //   println!("{}", byte.unwrap());
   // }
 
-  //child_in.flush();
-  //child_out.read_to_string(&mut line).unwrap();
-  // println!("OUTPUT: {}", line);
-  //dbg!(&child_in);
-
-  // let (r2, counter) =
-  //   make_request("initialized", r#"{ }"#, counter)
-  //     .unwrap();
-  // // let mut line = String::new();
-  // child_in.write(r2.as_bytes()).unwrap();
-  // child_out.read_to_string(&mut line).unwrap();
-  // println!("{}", line);
-
   let ecode = child_shell
     .kill()
     .expect("failed to wait on child");
-}
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[test]
-  fn run_a_test() {
-    let input = vec![LspMessage::Request];
-
-    let lt = LspTester::process_input(input);
-  }
 }
 
 fn make_request(
@@ -154,5 +149,28 @@ fn make_request(
       );
       Ok((payload, new_counter))
     }
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn run_a_test() {
+    let path = PathBuf::from(
+      "/Users/alan/workshop/rust-grimoire/rust_analyzer_lsp_example/target/debug/rust_analyzer_lsp_example",
+    );
+    let input = vec![
+      LspMessage::Request {
+        method: "initialize".to_string(),
+        params: r#"{ "capabilities": {}}"#.to_string(),
+      },
+      LspMessage::Notification {
+        method: "initialized".to_string(),
+        params: r#"{}"#.to_string(),
+      },
+    ];
+    let lt = LspTester::process_input(&path, input);
   }
 }
