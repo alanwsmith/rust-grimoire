@@ -191,7 +191,7 @@ fn main() -> Result<()> {
   let mut pages = Pages::new()?;
   pages.load_input();
   pages.load_cache();
-  // pages.fetch_new_html();
+  pages.fetch_new_html();
   pages.write_lines();
 
   // pages.fetch_files()?;
