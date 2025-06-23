@@ -18,10 +18,6 @@ pub struct LspTester {
   output: Option<Value>,
 }
 
-// let mut child_out = BufReader::new(
-//   child_shell.stdout.as_mut().unwrap(),
-// );
-
 impl LspTester {
   pub fn test_input(
     path: &PathBuf,
@@ -91,7 +87,6 @@ impl LspTester {
           self._child_out.read_exact(&mut header);
           let mut vec_for_number_to_get: Vec<u8> =
             vec![];
-          // let _ = vec_for_number_to_get.pop();
           self
             ._child_out
             .read_until(13, &mut vec_for_number_to_get);
@@ -104,8 +99,6 @@ impl LspTester {
           self._child_out.read_exact(&mut chomper);
           let num =
             number_string.parse::<usize>().unwrap();
-          //let mut delivery = [0; 10];
-          //child_out.read_exact(&mut delivery);
           let mut delivery: Vec<u8> =
             Vec::with_capacity(num);
           delivery.resize(num, 0);
@@ -117,32 +110,6 @@ impl LspTester {
       }
     }
   }
-
-  //pub fn process_response(&mut self) {
-  //  let mut header = [0; 16];
-  //  self._child_out.read_exact(&mut header);
-  //  let mut vec_for_number_to_get: Vec<u8> = vec![];
-  //  // let _ = vec_for_number_to_get.pop();
-  //  self
-  //    ._child_out
-  //    .read_until(13, &mut vec_for_number_to_get);
-  //  let number_string =
-  //    str::from_utf8(&vec_for_number_to_get)
-  //      .unwrap()
-  //      .trim();
-  //  // remove the whitespace
-  //  let mut chomper = [0; 3];
-  //  self._child_out.read_exact(&mut chomper);
-  //  let num = number_string.parse::<usize>().unwrap();
-  //  //let mut delivery = [0; 10];
-  //  //child_out.read_exact(&mut delivery);
-  //  let mut delivery: Vec<u8> = Vec::with_capacity(num);
-  //  delivery.resize(num, 0);
-  //  let _ = self._child_out.read(&mut delivery);
-  //  let json_string =
-  //    str::from_utf8(&delivery).unwrap();
-  //  println!("{}", &json_string);
-  //}
 }
 
 #[derive(Debug)]

@@ -5,3 +5,11 @@
 {"timestamp":"2025-06-23T01:02:15.231548Z","level":"DEBUG","fields":{"message":"Defining server capabilities"},"target":"rust_analyzer_lsp_example::server_capabilities"}
 {"timestamp":"2025-06-23T01:02:23.148488Z","level":"DEBUG","fields":{"message":"Starting generic LSP server"},"target":"rust_analyzer_lsp_example"}
 {"timestamp":"2025-06-23T01:02:23.148545Z","level":"DEBUG","fields":{"message":"Defining server capabilities"},"target":"rust_analyzer_lsp_example::server_capabilities"}
+{"timestamp":"2025-06-23T01:02:42.000614Z","level":"DEBUG","fields":{"message":"Starting generic LSP server"},"target":"rust_analyzer_lsp_example"}
+{"timestamp":"2025-06-23T01:02:42.000678Z","level":"DEBUG","fields":{"message":"Defining server capabilities"},"target":"rust_analyzer_lsp_example::server_capabilities"}
+{"timestamp":"2025-06-23T01:02:47.165792Z","level":"DEBUG","fields":{"message":"Starting generic LSP server"},"target":"rust_analyzer_lsp_example"}
+{"timestamp":"2025-06-23T01:02:47.165860Z","level":"DEBUG","fields":{"message":"Defining server capabilities"},"target":"rust_analyzer_lsp_example::server_capabilities"}
+{"timestamp":"2025-06-23T01:02:50.945179Z","level":"DEBUG","fields":{"message":"Starting generic LSP server"},"target":"rust_analyzer_lsp_example"}
+{"timestamp":"2025-06-23T01:02:50.945244Z","level":"DEBUG","fields":{"message":"Defining server capabilities"},"target":"rust_analyzer_lsp_example::server_capabilities"}
+{"timestamp":"2025-06-23T01:03:05.198491Z","level":"DEBUG","fields":{"message":"Starting generic LSP server"},"target":"rust_analyzer_lsp_example"}
+{"timestamp":"2025-06-23T01:03:05.198563Z","level":"DEBUG","fields":{"message":"Defining server capabilities"},"target":"rust_analyzer_lsp_example::server_capabilities"}
