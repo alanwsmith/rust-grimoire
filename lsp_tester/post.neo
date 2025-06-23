@@ -1,0 +1,68 @@
+-- title
+
+LSP Tester
+
+-- h2
+
+Introduction
+
+I'm working on an LSP for Neopoligen and Neopolitan. 
+This is the basic framework I'm using to test
+it. It's very hacky, but it does the job I 
+need which is to send in some Notifications
+and Requests and return an output at the end. 
+
+This was the first time I've done anything with
+Rust that involved processing bytes coming 
+from STDIN/STDOUT. The approach feels hacky, 
+but, again, it's working. 
+
+I don't know how it would hold up with 
+graphemes. I don't need those for testing.
+Skipping them until it becomes an issue. 
+
+
+
+https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#didChangeTextDocumentParams
+https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#formattingOptions
+https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocumentIdentifier
+https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didOpen
+https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocumentItem
+https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#versionedTextDocumentIdentifier
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- page
+-- created: 2025-06-22T21:36:48-04:00
+-- updated: 2025-06-22T21:36:48-04:00
+-- id: 2y/t8/f6/zt
+-- template: post
+-- status: scratch
+
+
