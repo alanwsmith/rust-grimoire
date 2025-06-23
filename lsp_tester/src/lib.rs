@@ -11,12 +11,16 @@ use std::{io::*, vec};
 
 pub struct LspTester {
   _child_in: ChildStdin,
-  _child_out: ChildStdout,
+  _child_out: BufReader<ChildStdout>,
   _child_shell: Child,
   _input: Vec<LspMessage>,
   counter: usize,
   output: Option<Value>,
 }
+
+// let mut child_out = BufReader::new(
+//   child_shell.stdout.as_mut().unwrap(),
+// );
 
 impl LspTester {
   pub fn test_input(
@@ -31,7 +35,9 @@ impl LspTester {
 
     let mut lt = LspTester {
       _child_in: child_shell.stdin.take().unwrap(),
-      _child_out: child_shell.stdout.take().unwrap(),
+      _child_out: BufReader::new(
+        child_shell.stdout.take().unwrap(),
+      ),
       _child_shell: child_shell,
       _input: input,
       counter: 0,
@@ -44,7 +50,6 @@ impl LspTester {
       .kill()
       .expect("could not kill child process");
     lt.output
-    //Some(serde_json::to_value("{}")?
   }
 
   pub fn process_input(&mut self) {
@@ -63,7 +68,7 @@ impl LspTester {
           let mut line = String::new();
           self
             ._child_in
-            .write(payload.as_bytes())
+            .write_all(payload.as_bytes())
             .unwrap();
         }
         LspMessage::Request { method, params } => {
@@ -80,12 +85,64 @@ impl LspTester {
           let mut line = String::new();
           self
             ._child_in
-            .write(payload.as_bytes())
+            .write_all(payload.as_bytes())
             .unwrap();
+          let mut header = [0; 16];
+          self._child_out.read_exact(&mut header);
+          let mut vec_for_number_to_get: Vec<u8> =
+            vec![];
+          // let _ = vec_for_number_to_get.pop();
+          self
+            ._child_out
+            .read_until(13, &mut vec_for_number_to_get);
+          let number_string =
+            str::from_utf8(&vec_for_number_to_get)
+              .unwrap()
+              .trim();
+          // remove the whitespace
+          let mut chomper = [0; 3];
+          self._child_out.read_exact(&mut chomper);
+          let num =
+            number_string.parse::<usize>().unwrap();
+          //let mut delivery = [0; 10];
+          //child_out.read_exact(&mut delivery);
+          let mut delivery: Vec<u8> =
+            Vec::with_capacity(num);
+          delivery.resize(num, 0);
+          let _ = self._child_out.read(&mut delivery);
+          let json_string =
+            str::from_utf8(&delivery).unwrap();
+          println!("{}", &json_string);
         }
       }
     }
   }
+
+  //pub fn process_response(&mut self) {
+  //  let mut header = [0; 16];
+  //  self._child_out.read_exact(&mut header);
+  //  let mut vec_for_number_to_get: Vec<u8> = vec![];
+  //  // let _ = vec_for_number_to_get.pop();
+  //  self
+  //    ._child_out
+  //    .read_until(13, &mut vec_for_number_to_get);
+  //  let number_string =
+  //    str::from_utf8(&vec_for_number_to_get)
+  //      .unwrap()
+  //      .trim();
+  //  // remove the whitespace
+  //  let mut chomper = [0; 3];
+  //  self._child_out.read_exact(&mut chomper);
+  //  let num = number_string.parse::<usize>().unwrap();
+  //  //let mut delivery = [0; 10];
+  //  //child_out.read_exact(&mut delivery);
+  //  let mut delivery: Vec<u8> = Vec::with_capacity(num);
+  //  delivery.resize(num, 0);
+  //  let _ = self._child_out.read(&mut delivery);
+  //  let json_string =
+  //    str::from_utf8(&delivery).unwrap();
+  //  println!("{}", &json_string);
+  //}
 }
 
 #[derive(Debug)]
@@ -106,13 +163,11 @@ pub fn run_test() {
     .stdout(Stdio::piped())
     .spawn()
     .expect("failed to open connection");
-
   let mut child_in =
     BufWriter::new(child_shell.stdin.take().unwrap());
   let mut child_out = BufReader::new(
     child_shell.stdout.as_mut().unwrap(),
   );
-
   let mut counter = 0;
   let (r1, counter) = make_request(
     "initialize",
@@ -120,13 +175,12 @@ pub fn run_test() {
     counter,
   )
   .unwrap();
-
   //  dbg!(&r1);
-
   let mut line = String::new();
   // dbg!(&child_in);
   child_in.write_all(r1.as_bytes()).unwrap();
   child_in.flush();
+
   let mut header = [0; 16];
   child_out.read_exact(&mut header);
   let mut vec_for_number_to_get: Vec<u8> = vec![];
@@ -139,11 +193,9 @@ pub fn run_test() {
   // remove the whitespace
   let mut chomper = [0; 3];
   child_out.read_exact(&mut chomper);
-
   let num = number_string.parse::<usize>().unwrap();
   //let mut delivery = [0; 10];
   //child_out.read_exact(&mut delivery);
-
   let mut delivery: Vec<u8> = Vec::with_capacity(num);
   delivery.resize(num, 0);
   let _ = child_out.read(&mut delivery);
@@ -154,13 +206,10 @@ pub fn run_test() {
   //   vec_for_number_to_get.try_into().unwrap(),
   // );
   // dbg!(&number);
-
   //dbg!(vec_for_number_to_get[0] as u32);
-
   // for byte in child_out.bytes() {
   //   println!("{}", byte.unwrap());
   // }
-
   let ecode = child_shell
     .kill()
     .expect("failed to wait on child");
