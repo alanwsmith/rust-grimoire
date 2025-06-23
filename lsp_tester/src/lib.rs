@@ -104,7 +104,7 @@ impl LspTester {
           let json_string =
             str::from_utf8(&delivery).unwrap();
           self.output = Some(
-            serde_json::to_value(json_string).unwrap(),
+            serde_json::from_str(json_string).unwrap(),
           );
         }
       }
@@ -147,7 +147,8 @@ mod tests {
       },
 
     ];
-    let output = LspTester::test_input(&path, input);
-    dbg!(output);
+    let output =
+      LspTester::test_input(&path, input).unwrap();
+    dbg!(output.get("result"));
   }
 }
