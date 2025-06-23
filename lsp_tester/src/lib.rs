@@ -7,18 +7,19 @@ use std::process::ChildStdin;
 use std::process::ChildStdout;
 use std::process::Command;
 use std::process::Stdio;
-use std::process::*;
 use std::{io::*, vec};
 
 pub struct LspTester {
-  output: Option<Value>,
   _child_in: ChildStdin,
   _child_out: ChildStdout,
   _child_shell: Child,
+  _input: Vec<LspMessage>,
+  counter: usize,
+  output: Option<Value>,
 }
 
 impl LspTester {
-  pub fn process_input(
+  pub fn test_input(
     path: &PathBuf,
     input: Vec<LspMessage>,
   ) -> Option<Value> {
@@ -28,19 +29,66 @@ impl LspTester {
       .spawn()
       .expect("failed to open connection");
 
-    let lt = LspTester {
+    let mut lt = LspTester {
       _child_in: child_shell.stdin.take().unwrap(),
       _child_out: child_shell.stdout.take().unwrap(),
       _child_shell: child_shell,
+      _input: input,
+      counter: 0,
       output: None,
     };
 
-    lt.output
+    lt.process_input();
 
+    lt._child_shell
+      .kill()
+      .expect("could not kill child process");
+    lt.output
     //Some(serde_json::to_value("{}")?
+  }
+
+  pub fn process_input(&mut self) {
+    for input in self._input.iter() {
+      match input {
+        LspMessage::Notification { method, params } => {
+          let json_string = format!(
+            r#"{{"jsonrpc": "2.0", "method": "{}", "params": {}}}"#,
+            method, params
+          );
+          let content_length = json_string.len();
+          let payload = format!(
+            "Content-Length: {}\r\n\r\n{}",
+            content_length, json_string
+          );
+          let mut line = String::new();
+          self
+            ._child_in
+            .write(payload.as_bytes())
+            .unwrap();
+        }
+        LspMessage::Request { method, params } => {
+          self.counter = self.counter + 1;
+          let json_string = format!(
+            r#"{{"jsonrpc": "2.0", "method": "{}", "id": {}, "params": {}}}"#,
+            method, self.counter, params
+          );
+          let content_length = json_string.len();
+          let payload = format!(
+            "Content-Length: {}\r\n\r\n{}",
+            content_length, json_string
+          );
+          let mut line = String::new();
+          self
+            ._child_in
+            .write(payload.as_bytes())
+            .unwrap();
+        }
+      }
+    }
   }
 }
 
+#[derive(Debug)]
 pub enum LspMessage {
   Request { method: String, params: String },
   Notification { method: String, params: String },
@@ -171,6 +219,6 @@ mod tests {
         params: r#"{}"#.to_string(),
       },
     ];
-    let lt = LspTester::process_input(&path, input);
+    let lt = LspTester::test_input(&path, input);
   }
 }
