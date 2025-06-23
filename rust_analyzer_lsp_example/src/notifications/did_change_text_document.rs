@@ -12,7 +12,7 @@ pub fn did_change_text_document(
 ) {
   match cast_notify::<DidChangeTextDocument>(message) {
     Ok(params) => {
-      event!(Level::TRACE, "{:?}", &params);
+      event!(Level::DEBUG, "{:?}", &params);
       let uri = params.text_document.uri.to_string();
       let version = params.text_document.version;
       let text =

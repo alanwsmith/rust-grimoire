@@ -105,7 +105,9 @@ impl LspTester {
           let _ = self._child_out.read(&mut delivery);
           let json_string =
             str::from_utf8(&delivery).unwrap();
-          println!("{}", &json_string);
+          self.output = Some(
+            serde_json::to_value(json_string).unwrap(),
+          );
         }
       }
     }
@@ -122,9 +124,6 @@ pub fn run_test() {
   let path = PathBuf::from(
     "/Users/alan/workshop/rust-grimoire/rust_analyzer_lsp_example/target/debug/rust_analyzer_lsp_example",
   );
-  // let path = PathBuf::from(
-  //   "/Users/alan/.cargo/bin/rust-analyzer",
-  // );
   let mut child_shell = Command::new(path)
     .stdin(Stdio::piped())
     .stdout(Stdio::piped())
@@ -142,9 +141,7 @@ pub fn run_test() {
     counter,
   )
   .unwrap();
-  //  dbg!(&r1);
   let mut line = String::new();
-  // dbg!(&child_in);
   child_in.write_all(r1.as_bytes()).unwrap();
   child_in.flush();
 
@@ -234,7 +231,18 @@ mod tests {
         method: "initialized".to_string(),
         params: r#"{}"#.to_string(),
       },
+      LspMessage::Notification {
+        method: "textDocument/didOpen".to_string(),
+        params: r#"{ "textDocument": { "uri": "file:///some-path.txt", "languageId": "en", "version": 1, "text": "this is the text" } }"#.to_string(),
+      },
+
+      LspMessage::Request {
+        method: "textDocument/formatting".to_string(),
+        params: r#"{ "textDocument": { "uri": "file:///some-path.txt" } , "options": { "tabSize": 4, "insertSpaces": false, "trimTrailingWhitespace": false, "insertFinalNewline": false, "trimFinalNewlines": false }}"#.to_string(),
+      },
+
     ];
-    let lt = LspTester::test_input(&path, input);
+    let output = LspTester::test_input(&path, input);
+    dbg!(output);
   }
 }
