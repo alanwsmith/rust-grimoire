@@ -9,6 +9,11 @@ Parse HTML in Rust
 - gets og or meta description
 
 
+-- pre
+
+https://docs.rs/scraper/latest/scraper/
+https://docs.rs/scraper/latest/scraper/html/struct.Html.html#method.parse_document
+https://docs.rs/scraper/latest/scraper/selector/struct.Selector.html
 
 
 
